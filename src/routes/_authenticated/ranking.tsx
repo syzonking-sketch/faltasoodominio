@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { fetchRanking } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { friendlyError } from "@/lib/supabase";
-import type { RankingScope } from "@/lib/types";
+type RankingScope = "local" | "state" | "global";
 
 export const Route = createFileRoute("/_authenticated/ranking")({
   head: () => ({
@@ -87,10 +87,10 @@ function RankingPage() {
       ) : (
         <ol className="space-y-2">
           {rows.map((row, index) => {
-            const isMe = row.id === profile?.id;
+            const isMe = row.user_id === profile?.id;
             return (
               <li
-                key={row.id}
+                key={row.user_id}
                 className={`flex items-center gap-3 rounded-2xl border p-3 ${
                   isMe ? "border-primary/60 bg-primary/10" : "border-border bg-card"
                 }`}
@@ -119,9 +119,9 @@ function RankingPage() {
                 </div>
                 <div className="text-right">
                   <p className="text-display text-lg font-bold text-primary">
-                    {row.rating_average.toFixed(2)}
+                    {row.avg_score.toFixed(2)}
                   </p>
-                  <StarRating value={Math.round(row.rating_average)} readOnly size="sm" />
+                  <StarRating value={Math.round(row.avg_score)} size={12} />
                 </div>
               </li>
             );
