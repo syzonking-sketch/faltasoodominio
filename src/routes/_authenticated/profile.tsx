@@ -8,7 +8,6 @@ import { AppShell } from "@/components/app/app-shell";
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { StarRating } from "@/components/app/star-rating";
 import { ErrorState, ListSkeleton } from "@/components/app/states";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
