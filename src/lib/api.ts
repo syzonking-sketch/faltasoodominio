@@ -290,10 +290,21 @@ export async function reportConfrontoScore(input: {
 
 /* --------------------------------- Ranking --------------------------------- */
 
-export async function fetchRanking(): Promise<RankingRow[]> {
-  return unwrap<RankingRow[]>(
-    await supabase.from("player_rankings").select("*").order("avg_score", { ascending: false }),
-  );
+export async function fetchRanking(filter?: {
+  scope: "local" | "state" | "global";
+  city?: string | null;
+  state?: string | null;
+}): Promise<RankingRow[]> {
+  let query = supabase
+    .from("player_rankings")
+    .select("*")
+    .order("avg_score", { ascending: false })
+    .limit(100);
+
+  if (filter?.scope === "local" && filter.city) query = query.eq("city", filter.city);
+  if (filter?.scope === "state" && filter.state) query = query.eq("state", filter.state);
+
+  return unwrap<RankingRow[]>(await query);
 }
 
 /* --------------------------------- Profiles -------------------------------- */
