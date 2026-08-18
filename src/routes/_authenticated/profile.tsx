@@ -86,6 +86,7 @@ function ProfilePage() {
         <p className="text-xs text-muted-foreground">
           {profile?.full_name} · {profile?.city ?? "Cidade"} / {profile?.state ?? "UF"}
         </p>
+      </div>
 
       {statsQuery.isPending ? (
         <div className="mt-4">
