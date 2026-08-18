@@ -15,6 +15,7 @@ import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedMatchesIndexRouteImport } from './routes/_authenticated/matches.index'
 import { Route as AuthenticatedMatchesNewRouteImport } from './routes/_authenticated/matches.new'
 import { Route as AuthenticatedTeamsIndexRouteImport } from './routes/_authenticated/teams.index'
+import { Route as AuthenticatedTeamsConfrontosRouteImport } from './routes/_authenticated/teams.confrontos'
 
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
@@ -46,11 +47,18 @@ const AuthenticatedTeamsIndexRoute = AuthenticatedTeamsIndexRouteImport.update({
   path: '/teams/',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedTeamsConfrontosRoute =
+  AuthenticatedTeamsConfrontosRouteImport.update({
+    id: '/teams/confrontos',
+    path: '/teams/confrontos',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/auth': typeof AuthRoute
   '/matches/new': typeof AuthenticatedMatchesNewRoute
+  '/teams/confrontos': typeof AuthenticatedTeamsConfrontosRoute
   '/matches/': typeof AuthenticatedMatchesIndexRoute
   '/teams/': typeof AuthenticatedTeamsIndexRoute
 }
@@ -58,6 +66,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/': typeof AuthenticatedIndexRoute
   '/matches/new': typeof AuthenticatedMatchesNewRoute
+  '/teams/confrontos': typeof AuthenticatedTeamsConfrontosRoute
   '/matches': typeof AuthenticatedMatchesIndexRoute
   '/teams': typeof AuthenticatedTeamsIndexRoute
 }
@@ -67,20 +76,29 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/matches/new': typeof AuthenticatedMatchesNewRoute
+  '/_authenticated/teams/confrontos': typeof AuthenticatedTeamsConfrontosRoute
   '/_authenticated/matches/': typeof AuthenticatedMatchesIndexRoute
   '/_authenticated/teams/': typeof AuthenticatedTeamsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/matches/new' | '/matches/' | '/teams/'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/matches/new'
+    | '/teams/confrontos'
+    | '/matches/'
+    | '/teams/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/auth' | '/' | '/matches/new' | '/matches' | '/teams'
+  to:
+    '/auth' | '/' | '/matches/new' | '/teams/confrontos' | '/matches' | '/teams'
   id:
     | '__root__'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/'
     | '/_authenticated/matches/new'
+    | '/_authenticated/teams/confrontos'
     | '/_authenticated/matches/'
     | '/_authenticated/teams/'
   fileRoutesById: FileRoutesById
@@ -134,12 +152,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTeamsIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/teams/confrontos': {
+      id: '/_authenticated/teams/confrontos'
+      path: '/teams/confrontos'
+      fullPath: '/teams/confrontos'
+      preLoaderRoute: typeof AuthenticatedTeamsConfrontosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedMatchesNewRoute: typeof AuthenticatedMatchesNewRoute
+  AuthenticatedTeamsConfrontosRoute: typeof AuthenticatedTeamsConfrontosRoute
   AuthenticatedMatchesIndexRoute: typeof AuthenticatedMatchesIndexRoute
   AuthenticatedTeamsIndexRoute: typeof AuthenticatedTeamsIndexRoute
 }
@@ -147,6 +173,7 @@ interface AuthenticatedRouteRouteChildren {
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedMatchesNewRoute: AuthenticatedMatchesNewRoute,
+  AuthenticatedTeamsConfrontosRoute: AuthenticatedTeamsConfrontosRoute,
   AuthenticatedMatchesIndexRoute: AuthenticatedMatchesIndexRoute,
   AuthenticatedTeamsIndexRoute: AuthenticatedTeamsIndexRoute,
 }

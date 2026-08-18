@@ -246,7 +246,7 @@ function ConfrontosPage() {
               <li key={confronto.id} className="card-glow rounded-2xl border border-border bg-card p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <PlayerAvatar name={confronto.team_a?.name ?? "A"} photoUrl={confronto.team_a?.shield_url} size="sm" />
+                    <PlayerAvatar name={confronto.team_a?.name ?? "A"} photoUrl={confronto.team_a?.shield_url ?? null} size="sm" />
                     <span className="truncate text-sm font-semibold text-foreground">
                       {confronto.team_a?.name ?? "Time A"}
                     </span>
@@ -256,7 +256,7 @@ function ConfrontosPage() {
                     <span className="truncate text-sm font-semibold text-foreground">
                       {confronto.team_b?.name ?? "Time B"}
                     </span>
-                    <PlayerAvatar name={confronto.team_b?.name ?? "B"} photoUrl={confronto.team_b?.shield_url} size="sm" />
+                    <PlayerAvatar name={confronto.team_b?.name ?? "B"} photoUrl={confronto.team_b?.shield_url ?? null} size="sm" />
                   </div>
                 </div>
 
