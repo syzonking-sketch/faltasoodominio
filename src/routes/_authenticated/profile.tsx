@@ -86,10 +86,6 @@ function ProfilePage() {
         <p className="text-xs text-muted-foreground">
           {profile?.full_name} · {profile?.city ?? "Cidade"} / {profile?.state ?? "UF"}
         </p>
-        {profile?.position ? (
-          <Badge className="mt-2 bg-primary/20 text-primary">{profile.position}</Badge>
-        ) : null}
-      </div>
 
       {statsQuery.isPending ? (
         <div className="mt-4">

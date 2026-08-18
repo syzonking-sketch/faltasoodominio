@@ -321,3 +321,22 @@ export async function updateProfile(id: string, values: Partial<Profile>): Promi
       .eq("id", id),
   );
 }
+export interface PlayerStats {
+  avg_score: number;
+  ratings_count: number;
+  matches_played: number;
+}
+
+export async function fetchPlayerStats(userId: string): Promise<PlayerStats> {
+  const ratings = await fetchRatingsForUser(userId);
+  const participations = unwrap<{ match_id: string }[]>(
+    await supabase.from("match_participants").select("match_id").eq("user_id", userId),
+  );
+  const total = ratings.reduce((sum, rating) => sum + rating.score, 0);
+
+  return {
+    avg_score: ratings.length > 0 ? total / ratings.length : 0,
+    ratings_count: ratings.length,
+    matches_played: new Set(participations.map((p) => p.match_id)).size,
+  };
+}
