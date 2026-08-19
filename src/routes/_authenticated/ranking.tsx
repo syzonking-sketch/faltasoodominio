@@ -32,10 +32,10 @@ export const Route = createFileRoute("/_authenticated/ranking")({
   component: RankingPage,
 });
 
-const scopes: { value: RankingScope; label: string }[] = [
-  { value: "local", label: "Bairro" },
-  { value: "state", label: "Estado" },
-  { value: "global", label: "Global" },
+const scopes: { value: RankingScope; label: string; description: string }[] = [
+  { value: "local", label: "Bairro", description: "Melhores da sua cidade" },
+  { value: "state", label: "Estado", description: "Elite do seu estado" },
+  { value: "global", label: "Global", description: "Lendas do The Match" },
 ];
 
 const podium = ["text-gold", "text-silver", "text-bronze"];
@@ -56,20 +56,29 @@ function RankingPage() {
 
   const rows = rankingQuery.data ?? [];
 
+  const currentScope = scopes.find((s) => s.value === scope);
+
   return (
     <AppShell title="Ranking" subtitle="Os craques mais bem avaliados">
-      <div className="mb-4 grid grid-cols-3 gap-2">
+      <div className="mb-2 grid grid-cols-3 gap-2">
         {scopes.map((s) => (
           <Button
             key={s.value}
             size="sm"
             variant={scope === s.value ? "default" : "secondary"}
             onClick={() => setScope(s.value)}
+            className="card-glow"
           >
             {s.label}
           </Button>
         ))}
       </div>
+      
+      <p className="mb-4 text-center text-[11px] font-medium tracking-widest text-muted-foreground uppercase">
+        {currentScope?.description} 
+        {scope === "local" && profile?.city && ` (${profile.city})`}
+        {scope === "state" && profile?.state && ` (${profile.state})`}
+      </p>
 
       {rankingQuery.isPending ? (
         <ListSkeleton />
