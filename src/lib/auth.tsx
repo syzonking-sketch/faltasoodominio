@@ -1,7 +1,7 @@
 import type { Session, User } from "@supabase/supabase-js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { createContext, use, useEffect, useState, type ReactNode } from "react";
-
+import { ensureCurrentProfile } from "./api";
 import { supabase } from "./supabase";
 import type { Profile } from "./types";
 
@@ -34,12 +34,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
       if (!mounted) return;
       setSession(nextSession);
+      
       if (event === "SIGNED_OUT") {
         queryClient.clear();
       }
+      
       if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
         if (nextSession?.user.id) {
-          await queryClient.invalidateQueries({ queryKey: ["profile", nextSession.user.id] });
+          // Garante que o perfil existe para o usuário logado
+          void ensureCurrentProfile().then(() => {
+            if (mounted) {
+              void queryClient.invalidateQueries({ queryKey: ["profile", nextSession.user.id] });
+            }
+          });
         }
       }
     });

@@ -345,3 +345,38 @@ export async function fetchPlayerStats(userId: string): Promise<PlayerStats> {
     matches_played: new Set(participations.map((p) => p.match_id)).size,
   };
 }
+
+/**
+ * Migrates existing auth users that don't have a profile yet.
+ * Since we can't list auth.users directly from the client without admin keys,
+ * this attempts to create a profile for the currently logged in user if it's missing.
+ */
+export async function ensureCurrentProfile(): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return;
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("id")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  if (!profile) {
+    console.log("Perfil não encontrado para usuário logado. Criando...");
+    const meta = user.user_metadata || {};
+    const { error } = await supabase.from("profiles").insert({
+      id: user.id,
+      full_name: meta['full_name'] || user.email?.split('@')[0],
+      nickname: meta['nickname'] || user.email?.split('@')[0],
+      avatar_url: meta['avatar_url'] || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
+      city: meta['city'] || "",
+      state: meta['state'] || "",
+    });
+
+    if (error) {
+      console.error("Erro ao criar perfil de fallback:", error);
+    } else {
+      console.log("Perfil criado com sucesso.");
+    }
+  }
+}
