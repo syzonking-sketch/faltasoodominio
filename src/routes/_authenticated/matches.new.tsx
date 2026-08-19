@@ -376,19 +376,22 @@ function NewMatchPage() {
         <Button
           className="w-full"
           size="lg"
-          disabled={!venueId || create.isPending}
+          disabled={create.isPending}
           onClick={async () => {
+            if (!venueId) {
+              toast.error("Selecione uma quadra no mapa primeiro!");
+              return;
+            }
+
             let currentUserId = user?.id;
             
-            // Se o ID não estiver no contexto, tenta pegar direto do Supabase como última alternativa
             if (!currentUserId) {
               const { data } = await supabase.auth.getUser();
               currentUserId = data.user?.id;
             }
 
             if (!currentUserId) {
-              console.error("User ID not found in useAuth or direct check", user);
-              toast.error("Erro de autenticação: seu ID de usuário não foi carregado. Tente atualizar a página.");
+              toast.error("Erro de autenticação: ID de usuário não encontrado.");
               return;
             }
             
