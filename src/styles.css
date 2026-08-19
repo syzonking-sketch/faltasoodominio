@@ -205,7 +205,7 @@
 }
 
 .leaflet-tile-pane {
-  filter: invert(100%) hue-rotate(190deg) brightness(0.3) contrast(1.1) saturate(0.3) grayscale(0.2);
+  filter: invert(100%) hue-rotate(180deg) brightness(0.6) contrast(1.2) saturate(0.5);
 }
 
 .leaflet-control-attribution {
