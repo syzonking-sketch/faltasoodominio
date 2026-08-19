@@ -363,13 +363,14 @@ export async function ensureCurrentProfile(): Promise<void> {
 
   if (!profile) {
     console.log("Perfil não encontrado para usuário logado. Criando...");
+    const meta = user.user_metadata || {};
     const { error } = await supabase.from("profiles").insert({
       id: user.id,
-      full_name: user.user_metadata.full_name || user.email?.split('@')[0],
-      nickname: user.user_metadata.nickname || user.email?.split('@')[0],
-      avatar_url: user.user_metadata.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
-      city: user.user_metadata.city || "",
-      state: user.user_metadata.state || "",
+      full_name: meta['full_name'] || user.email?.split('@')[0],
+      nickname: meta['nickname'] || user.email?.split('@')[0],
+      avatar_url: meta['avatar_url'] || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
+      city: meta['city'] || "",
+      state: meta['state'] || "",
     });
 
     if (error) {
