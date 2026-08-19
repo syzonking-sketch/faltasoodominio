@@ -377,7 +377,7 @@ function MapPage() {
                         </p>
                         {match.scheduled_at && (
                           <div className="mt-0.5 flex flex-col items-end">
-                            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Horário</span>
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Data</span>
                             <span className="text-[10px] font-black text-primary">
                               {new Date(match.scheduled_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} às {new Date(match.scheduled_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                             </span>
