@@ -41,6 +41,8 @@ export async function fetchVenues(search?: string): Promise<Venue[]> {
 export async function createVenue(input: {
   name: string;
   address: string;
+  city?: string | null;
+  state?: string | null;
   latitude: number;
   longitude: number;
 }): Promise<Venue> {
@@ -49,7 +51,7 @@ export async function createVenue(input: {
 
 /* --------------------------------- Matches --------------------------------- */
 
-export async function fetchMatches(status?: "active" | "finished", filter?: { city?: string | null, state?: string | null }): Promise<MatchWithRelations[]> {
+export async function fetchMatches(status?: "active" | "finished", filter?: { city?: string | null | undefined, state?: string | null | undefined }): Promise<MatchWithRelations[]> {
   let query = supabase.from("matches").select(MATCH_SELECT).order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
   
