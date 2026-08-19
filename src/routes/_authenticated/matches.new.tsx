@@ -283,34 +283,36 @@ function NewMatchPage() {
         ) : null}
 
         <div className="grid grid-cols-2 gap-4">
-          <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3">
+          <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3 transition-colors focus-within:border-primary/50">
             <Label htmlFor="start-time" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
               <Calendar className="size-3 text-primary" /> Início
             </Label>
-            <div className="relative">
-              <Input 
+            <div className="relative flex items-center">
+              <input 
                 id="start-time"
                 type="datetime-local" 
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                className="border-none bg-transparent p-0 focus-visible:ring-0"
+                className="w-full border-none bg-transparent p-0 text-sm font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+                aria-label="Data e hora de início"
               />
-              <Clock className="pointer-events-none absolute right-0 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/50" />
+              <Clock className="pointer-events-none absolute right-0 size-4 text-muted-foreground/50" />
             </div>
           </div>
-          <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3">
+          <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3 transition-colors focus-within:border-primary/50">
             <Label htmlFor="end-time" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
               <Clock className="size-3 text-primary" /> Fim (Previsto)
             </Label>
-            <div className="relative">
-              <Input 
+            <div className="relative flex items-center">
+              <input 
                 id="end-time"
                 type="datetime-local" 
                 value={finishedAt}
                 onChange={(e) => setFinishedAt(e.target.value)}
-                className="border-none bg-transparent p-0 focus-visible:ring-0"
+                className="w-full border-none bg-transparent p-0 text-sm font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+                aria-label="Data e hora de término prevista"
               />
-              <Calendar className="pointer-events-none absolute right-0 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/50" />
+              <Calendar className="pointer-events-none absolute right-0 size-4 text-muted-foreground/50" />
             </div>
           </div>
         </div>
