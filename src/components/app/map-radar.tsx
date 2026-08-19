@@ -21,7 +21,7 @@ function pinIcon(pin: RadarPin) {
     iconSize: [46, 46],
     iconAnchor: [23, 23],
     html: `
-      <div style="position:relative;display:grid;place-items:center;width:46px;height:46px;">
+      <div style="position:relative;display:grid;place-items:center;width:46px;height:46px;filter:drop-shadow(0 0 8px ${color})">
         ${
           pin.live
             ? `<span class="radar-ping" style="position:absolute;inset:6px;border-radius:9999px;background:${color};opacity:.5"></span>`
@@ -69,7 +69,7 @@ export default function MapRadar({
   return (
     <MapContainer
       center={[center.lat, center.lng]}
-      zoom={14}
+      zoom={15}
       zoomControl={false}
       attributionControl={false}
       className={className ?? "h-full w-full"}
