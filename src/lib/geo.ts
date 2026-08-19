@@ -39,25 +39,15 @@ export function useGeolocation() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
   const request = useCallback(() => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
+    if (typeof window === "undefined" || !navigator.geolocation) {
       setStatus("denied");
       return;
     }
 
-    // Explicit check for permission state if supported (helps on mobile browsers)
-    if (navigator.permissions && navigator.permissions.query) {
-      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-        if (result.state === 'prompt') {
-          setStatus("idle"); // User hasn't decided yet
-        } else if (result.state === 'denied') {
-          setStatus("denied");
-        }
-      }).catch(() => {
-        // Ignore errors from permissions API
-      });
-    }
-
     setStatus("loading");
+
+    // iOS/Safari fix: check permissions state first if available, but always trigger the call
+    // because some browsers only prompt when the actual function is called.
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const newCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -68,8 +58,16 @@ export function useGeolocation() {
       (err) => {
         console.warn("Geolocation error:", err.code, err.message);
         setStatus("denied");
+        
+        // Error code 1 is PERMISSION_DENIED.
+        // If we get this on iOS without a prompt, it might be due to insecure origin (needs HTTPS)
+        // or the user previously denied and it's cached.
+        if (err.code === 1) {
+          console.error("Localização negada pelo usuário ou pelo sistema.");
+        }
       },
-      { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
+      // enableHighAccuracy: false can sometimes trigger a prompt where true fails on older devices/weak signal
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 },
     );
   }, []);
 

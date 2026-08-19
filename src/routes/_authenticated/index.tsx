@@ -266,7 +266,12 @@ function MapPage() {
               variant="secondary"
               aria-label="Centralizar no meu GPS"
               onClick={() => {
-                request();
+                // Forcing a fresh browser prompt
+                if (navigator.geolocation) {
+                  request();
+                  // A secondary fallback for some browsers/iOS versions
+                  navigator.geolocation.getCurrentPosition(() => {}, () => {});
+                }
               }}
               className="card-glow border-border bg-surface/95 backdrop-blur"
             >
@@ -280,15 +285,18 @@ function MapPage() {
                 {status === "loading" ? "Solicitando localização..." : "Permitir localização?"}
               </p>
               <p className="mt-1 opacity-90">
-                O iPhone/Navegador perguntará se você permite o uso do GPS. Aceite para ver as quadras próximas e entrar nas partidas.
+                O iPhone/Navegador perguntará se você permite o uso do GPS. Aceite para ver as quadras próximas e entrar nas partidas. Se não aparecer, toque no ícone de mira ⌖.
               </p>
             </div>
           ) : status === "denied" ? (
             <div className="pointer-events-auto mx-auto mt-2 max-w-2xl rounded-xl bg-accent/15 px-3 py-2 text-[11px] text-accent">
-              <p className="font-bold">GPS bloqueado — mostrando região padrão.</p>
+              <p className="font-bold flex items-center gap-2">
+                <MapPin className="size-3" /> GPS BLOQUEADO NO NAVEGADOR
+              </p>
               <p className="mt-1 opacity-90">
-                O app precisa saber que você está na quadra. 
-                Vá em Ajustes {"->"} Privacidade {"->"} Localização (no iPhone) ou clique no cadeado da URL e mude para "Permitir".
+                1. No iPhone, vá em <b>Ajustes {"->"} Privacidade {"->"} Localização {"->"} Safari</b> e marque "Ao usar o App".<br />
+                2. No navegador, clique no ícone "AA" ou no cadeado na barra de endereço e selecione <b>Ajustes do Site {"->"} Localização {"->"} Permitir</b>.<br />
+                3. Recarregue a página após mudar as configurações.
               </p>
             </div>
           ) : null}
