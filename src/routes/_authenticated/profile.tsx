@@ -90,6 +90,20 @@ function ProfilePage() {
             <Skeleton className="h-8 w-32" />
             <Skeleton className="h-4 w-48" />
           </div>
+        ) : !profile && !profileLoading ? (
+          <div className="py-4 text-center">
+            <p className="text-sm text-muted-foreground mb-4">
+              Não encontramos seus dados de perfil.
+            </p>
+            <Button 
+              size="sm" 
+              onClick={() => {
+                void queryClient.invalidateQueries({ queryKey: ["profile"] });
+              }}
+            >
+              Tentar carregar novamente
+            </Button>
+          </div>
         ) : (
           <>
             <div className="flex justify-center">
@@ -104,7 +118,7 @@ function ProfilePage() {
               {profile?.nickname || profile?.full_name || "Boleiro"}
             </h2>
             <p className="text-xs text-muted-foreground uppercase tracking-widest">
-              {profile?.full_name || "Carregando..."} · {profile?.city ?? "Cidade"} / {profile?.state ?? "UF"}
+              {profile?.full_name || "Boleiro"} · {profile?.city ?? "Cidade"} / {profile?.state ?? "UF"}
             </p>
           </>
         )}
