@@ -94,7 +94,11 @@ function MapPage() {
               size="icon"
               variant="secondary"
               aria-label="Centralizar no meu GPS"
-              onClick={request}
+              onClick={() => {
+                request();
+                // If we have coords, the Recenter component handles it, but we can also manually trigger if needed
+              }}
+              className="card-glow border-border bg-surface/95 backdrop-blur"
             >
               <Crosshair className="size-4" />
             </Button>
