@@ -35,7 +35,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
 });
 
 function ProfilePage() {
-  const { user, profile, profileLoading, loading: authLoading } = useAuth();
+  const { user, profile, profileLoading, loading: authLoading, refetchProfile } = useAuth();
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -83,11 +83,11 @@ function ProfilePage() {
       <div className="card-glow rounded-2xl border border-border bg-card p-5 text-center">
         {profileLoading || authLoading ? (
           <div className="flex flex-col items-center gap-3">
-            <Skeleton className="size-28 rounded-full" />
-            <Skeleton className="h-8 w-32" />
-            <Skeleton className="h-4 w-48" />
+            <div className="animate-pulse bg-primary/10 size-28 rounded-full" />
+            <div className="animate-pulse rounded-md bg-primary/10 h-8 w-32" />
+            <div className="animate-pulse rounded-md bg-primary/10 h-4 w-48" />
           </div>
-        ) : !profile && !profileLoading ? (
+        ) : !profile ? (
           <div className="py-4 text-center">
             <p className="text-sm text-muted-foreground mb-4">
               Não encontramos seus dados de perfil.
@@ -95,7 +95,7 @@ function ProfilePage() {
             <Button 
               size="sm" 
               onClick={() => {
-                void queryClient.invalidateQueries({ queryKey: ["profile"] });
+                void refetchProfile();
               }}
             >
               Tentar carregar novamente
@@ -123,7 +123,20 @@ function ProfilePage() {
 
       {statsQuery.isPending || authLoading ? (
         <div className="mt-4">
-          <ListSkeleton rows={2} />
+          <div className="space-y-3">
+            {[1, 2].map((i) => (
+              <div key={i} className="rounded-2xl border border-border bg-card p-4">
+                <div className="flex items-center gap-3">
+                  <div className="animate-pulse bg-primary/10 size-12 rounded-full" />
+                  <div className="flex-1 space-y-2">
+                    <div className="animate-pulse rounded-md bg-primary/10 h-4 w-2/3" />
+                    <div className="animate-pulse rounded-md bg-primary/10 h-3 w-1/3" />
+                  </div>
+                  <div className="animate-pulse bg-primary/10 h-8 w-16 rounded-lg" />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       ) : statsQuery.isError ? (
         <div className="mt-4">
@@ -197,8 +210,8 @@ function ProfilePage() {
         )}
       </div>
 
-      <Button variant="ghost" className="mt-3 w-full text-destructive" onClick={() => void signOut()}>
-        <LogOut className="size-4" /> Sair da conta
+      <Button variant="ghost" className="mt-3 w-full text-destructive hover:bg-destructive/10" onClick={() => void signOut()}>
+        <LogOut className="size-4 mr-2" /> Sair da conta
       </Button>
     </AppShell>
   );
