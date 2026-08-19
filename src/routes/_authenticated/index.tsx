@@ -55,21 +55,28 @@ function MapPage() {
     if (!term) return list;
 
     const filtered = list.filter((m) => {
-      const venue = m.venue;
-      const creator = m.creator;
+      const venueName = m.venue?.name?.toLowerCase() ?? "";
+      const venueAddress = m.venue?.address?.toLowerCase() ?? "";
+      const venueCity = m.venue?.city?.toLowerCase() ?? "";
+      const venueState = m.venue?.state?.toLowerCase() ?? "";
+      const creatorNickname = m.creator?.nickname?.toLowerCase() ?? "";
+      
       return (
-        venue?.name.toLowerCase().includes(term) ||
-        venue?.address?.toLowerCase().includes(term) ||
-        venue?.city?.toLowerCase().includes(term) ||
-        venue?.state?.toLowerCase().includes(term) ||
-        creator?.nickname.toLowerCase().includes(term)
+        venueName.includes(term) ||
+        venueAddress.includes(term) ||
+        venueCity.includes(term) ||
+        venueState.includes(term) ||
+        creatorNickname.includes(term)
       );
     });
 
     // If there's a match and we have coordinates for the first result, move the map
-    if (filtered.length > 0 && filtered[0].venue) {
-      const v = filtered[0].venue;
-      setCenter({ lat: Number(v.latitude), lng: Number(v.longitude) });
+    const firstMatch = filtered[0];
+    if (firstMatch?.venue) {
+      setCenter({ 
+        lat: Number(firstMatch.venue.latitude), 
+        lng: Number(firstMatch.venue.longitude) 
+      });
     }
 
     return filtered;
