@@ -41,6 +41,21 @@ function MapPage() {
   const { coords, center, status, request, setCenter } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [lightMap, setLightMap] = useState(false);
+
+  useEffect(() => {
+    const isLight = localStorage.getItem("light-map") === "true";
+    setLightMap(isLight);
+  }, []);
+
+  useEffect(() => {
+    if (lightMap) {
+      document.body.classList.add("light-map");
+    } else {
+      document.body.classList.remove("light-map");
+    }
+    localStorage.setItem("light-map", String(lightMap));
+  }, [lightMap]);
 
   const matchesQuery = useQuery({
     queryKey: ["matches", "active"],
