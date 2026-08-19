@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { LogOut, ShieldCheck, Star, Trophy } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app/app-shell";
@@ -38,9 +38,17 @@ function ProfilePage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
-  const [nickname, setNickname] = useState(profile?.nickname ?? "");
-  const [city, setCity] = useState(profile?.city ?? "");
-  const [state, setState] = useState(profile?.state ?? "");
+  const [nickname, setNickname] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+
+  useEffect(() => {
+    if (profile) {
+      setNickname(profile.nickname ?? "");
+      setCity(profile.city ?? "");
+      setState(profile.state ?? "");
+    }
+  }, [profile]);
 
   const statsQuery = useQuery({
     queryKey: ["player-stats", user?.id],
