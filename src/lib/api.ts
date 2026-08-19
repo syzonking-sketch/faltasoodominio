@@ -72,6 +72,14 @@ export async function createMatch(input: {
   scheduled_at?: string | null;
   finished_at?: string | null;
 }): Promise<string> {
+  const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  if (!uuidPattern.test(input.venue_id)) {
+    throw new Error("Selecione uma quadra válida no mapa.");
+  }
+  if (!uuidPattern.test(input.created_by)) {
+    throw new Error("Sua sessão não carregou corretamente. Entre novamente e tente criar a partida.");
+  }
+
   const matchResponse = await supabase
     .from("matches")
     .insert({

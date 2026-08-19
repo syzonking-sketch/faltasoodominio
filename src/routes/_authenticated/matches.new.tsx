@@ -90,9 +90,10 @@ function NewMatchPage() {
   });
 
   const create = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (currentUserId: string) => {
       if (!venueId) throw new Error("Selecione uma quadra no mapa");
-      const venue = venues.find((v) => v.id === venueId)!;
+      const venue = venues.find((v) => v.id === venueId);
+      if (!venue) throw new Error("A quadra selecionada não foi encontrada. Selecione-a novamente no mapa.");
       const withinRadius =
         coords !== null &&
         distanceMeters(coords, { lat: Number(venue.latitude), lng: Number(venue.longitude) }) <=
@@ -105,7 +106,7 @@ function NewMatchPage() {
 
       return createMatch({
         venue_id: venueId,
-        created_by: user?.id || "",
+        created_by: currentUserId,
         match_type: matchType,
         name: matchName || null,
         role,
@@ -395,7 +396,7 @@ function NewMatchPage() {
               return;
             }
             
-            create.mutate();
+            create.mutate(currentUserId);
           }}
         >
           {create.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
