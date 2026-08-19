@@ -70,7 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useQuery({
     queryKey: ["profile", userId],
     enabled: Boolean(userId),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Force fresh data when profile is missing
     queryFn: async (): Promise<Profile | null> => {
       if (!userId) return null;
       
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .single(); // Mudança para .single() para detectar erro 406 Not Acceptable se não existir
+        .maybeSingle();
 
       if (error) throw error;
       
