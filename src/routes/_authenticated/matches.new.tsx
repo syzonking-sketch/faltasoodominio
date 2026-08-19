@@ -50,7 +50,7 @@ function NewMatchPage() {
   const [side, setSide] = useState<TeamSide>("A");
   const [newVenue, setNewVenue] = useState<{ name: string; address: string; coords: Coords } | null>(null);
   const [scheduledAt, setScheduledAt] = useState("");
-  const [finishedAt, setFinishedAt] = useState("");
+  // removed finishedAt state as per user request
   const [error, setError] = useState<string | undefined>(undefined);
 
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
@@ -102,7 +102,7 @@ function NewMatchPage() {
         team_side: side,
         checked_in_gps: withinRadius,
         scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
-        finished_at: finishedAt ? new Date(finishedAt).toISOString() : null,
+        finished_at: null,
       });
     },
     onSuccess: () => {
@@ -282,70 +282,22 @@ function NewMatchPage() {
           </div>
         ) : null}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3 transition-colors focus-within:border-primary/50">
-            <Label htmlFor="start-time" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              <Calendar className="size-3 text-primary" /> Início
-            </Label>
-            <div className="relative flex items-center">
-              <input 
-                id="start-time"
-                type="datetime-local" 
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full border-none bg-transparent p-0 text-[16px] font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-                aria-label="Data e hora de início"
-              />
-              <Clock className="pointer-events-none absolute right-0 size-4 text-muted-foreground/50" />
-            </div>
-          </div>
-          <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3 transition-colors focus-within:border-primary/50">
-            <Label htmlFor="end-time" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              <Clock className="size-3 text-primary" /> Fim (Previsto)
-            </Label>
-            <div className="relative flex items-center">
-              <input 
-                id="end-time"
-                type="datetime-local" 
-                value={finishedAt}
-                onChange={(e) => setFinishedAt(e.target.value)}
-                className="w-full border-none bg-transparent p-0 text-[16px] font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-                aria-label="Data e hora de término prevista"
-              />
-              <Calendar className="pointer-events-none absolute right-0 size-4 text-muted-foreground/50" />
-            </div>
+        <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-4 transition-colors focus-within:border-primary/50">
+          <Label htmlFor="start-time" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <Calendar className="size-3 text-primary" /> Data e Horário da Partida
+          </Label>
+          <div className="relative flex items-center">
+            <input 
+              id="start-time"
+              type="datetime-local" 
+              value={scheduledAt}
+              onChange={(e) => setScheduledAt(e.target.value)}
+              className="w-full border-none bg-transparent p-0 text-[16px] font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+              aria-label="Data e hora do jogo"
+            />
+            <Clock className="pointer-events-none absolute right-0 size-4 text-muted-foreground/50" />
           </div>
         </div>
-
-        <div className="flex flex-wrap justify-center gap-2">
-          {[60, 90, 120].map((mins) => (
-            <button
-              key={mins}
-              type="button"
-              onClick={() => {
-                if (!scheduledAt) return;
-                const start = new Date(scheduledAt);
-                const end = new Date(start.getTime() + mins * 60000);
-                // Adjust for local timezone offset for datetime-local
-                const offset = end.getTimezoneOffset() * 60000;
-                const localEnd = new Date(end.getTime() - offset).toISOString().slice(0, 16);
-                setFinishedAt(localEnd);
-              }}
-              className="rounded-full border border-border bg-card px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-            >
-              +{mins} min
-            </button>
-          ))}
-        </div>
-
-        {scheduledAt && finishedAt && (
-          <div className="flex justify-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-              <Clock className="size-3" />
-              Duração: {Math.max(0, Math.floor((new Date(finishedAt).getTime() - new Date(scheduledAt).getTime()) / (1000 * 60)))} minutos
-            </div>
-          </div>
-        )}
 
         <FieldError message={error} />
 
