@@ -54,14 +54,17 @@ function MapPage() {
     
     if (!term) return list;
 
-    const filtered = list.filter(
-      (m) =>
-        m.venue?.name.toLowerCase().includes(term) ||
-        m.venue?.address?.toLowerCase().includes(term) ||
-        m.venue?.city?.toLowerCase().includes(term) ||
-        m.venue?.state?.toLowerCase().includes(term) ||
-        m.creator?.nickname.toLowerCase().includes(term),
-    );
+    const filtered = list.filter((m) => {
+      const venue = m.venue;
+      const creator = m.creator;
+      return (
+        venue?.name.toLowerCase().includes(term) ||
+        venue?.address?.toLowerCase().includes(term) ||
+        venue?.city?.toLowerCase().includes(term) ||
+        venue?.state?.toLowerCase().includes(term) ||
+        creator?.nickname.toLowerCase().includes(term)
+      );
+    });
 
     // If there's a match and we have coordinates for the first result, move the map
     if (filtered.length > 0 && filtered[0].venue) {

@@ -33,6 +33,7 @@ export type GeoStatus = "idle" | "loading" | "granted" | "denied";
 
 export function useGeolocation() {
   const [coords, setCoords] = useState<Coords | null>(null);
+  const [center, setCenter] = useState<Coords>(FALLBACK_CENTER);
   const [status, setStatus] = useState<GeoStatus>("idle");
 
   const request = useCallback(() => {
@@ -43,7 +44,9 @@ export function useGeolocation() {
     setStatus("loading");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setCoords({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+        const newCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setCoords(newCoords);
+        setCenter(newCoords);
         setStatus("granted");
       },
       () => setStatus("denied"),
@@ -55,5 +58,5 @@ export function useGeolocation() {
     request();
   }, [request]);
 
-  return { coords, status, request, center: coords ?? FALLBACK_CENTER };
+  return { coords, status, request, center, setCenter };
 }
