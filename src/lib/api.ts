@@ -347,6 +347,10 @@ export interface PlayerStats {
 }
 
 export async function fetchPlayerStats(userId: string): Promise<PlayerStats> {
+  if (!userId) {
+    return { avg_score: 0, ratings_count: 0, matches_played: 0 };
+  }
+
   const [ratingsResult, participationsResult] = await Promise.all([
     supabase.from("ratings").select("score").eq("evaluated_user_id", userId),
     supabase.from("match_participants").select("match_id").eq("user_id", userId)
