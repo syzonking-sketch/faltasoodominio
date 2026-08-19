@@ -102,7 +102,7 @@ function NewMatchPage() {
         team_side: side,
         checked_in_gps: withinRadius,
         scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
-        finished_at: finishedAt ? new Date(finishedAt).toISOString() : null,
+        finished_at: null,
       });
     },
     onSuccess: () => {
