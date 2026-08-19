@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 function MapPage() {
-  const { coords, center, status, request } = useGeolocation();
+  const { coords, center, status, request, setCenter } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -51,16 +51,36 @@ function MapPage() {
   const matches = useMemo(() => {
     const list = matchesQuery.data ?? [];
     const term = search.trim().toLowerCase();
+    
     if (!term) return list;
-    return list.filter(
-      (m) =>
-        m.venue?.name.toLowerCase().includes(term) ||
-        m.venue?.address?.toLowerCase().includes(term) ||
-        m.venue?.city?.toLowerCase().includes(term) ||
-        m.venue?.state?.toLowerCase().includes(term) ||
-        m.creator?.nickname.toLowerCase().includes(term),
-    );
-  }, [matchesQuery.data, search]);
+
+    const filtered = list.filter((m) => {
+      const venueName = m.venue?.name?.toLowerCase() ?? "";
+      const venueAddress = m.venue?.address?.toLowerCase() ?? "";
+      const venueCity = m.venue?.city?.toLowerCase() ?? "";
+      const venueState = m.venue?.state?.toLowerCase() ?? "";
+      const creatorNickname = m.creator?.nickname?.toLowerCase() ?? "";
+      
+      return (
+        venueName.includes(term) ||
+        venueAddress.includes(term) ||
+        venueCity.includes(term) ||
+        venueState.includes(term) ||
+        creatorNickname.includes(term)
+      );
+    });
+
+    // If there's a match and we have coordinates for the first result, move the map
+    const firstMatch = filtered[0];
+    if (firstMatch?.venue) {
+      setCenter({ 
+        lat: Number(firstMatch.venue.latitude), 
+        lng: Number(firstMatch.venue.longitude) 
+      });
+    }
+
+    return filtered;
+  }, [matchesQuery.data, search, setCenter]);
 
   const pins: RadarPin[] = matches
     .filter((m) => m.venue)
