@@ -35,6 +35,8 @@ export interface Match {
   match_type: MatchType;
   score_team_a: number;
   score_team_b: number;
+  scheduled_at: string | null;
+  finished_at: string | null;
   created_at: string;
   updated_at: string;
 }
