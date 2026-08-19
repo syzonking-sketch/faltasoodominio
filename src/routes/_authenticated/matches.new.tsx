@@ -362,7 +362,8 @@ function NewMatchPage() {
         <Button
           className="w-full"
           size="lg"
-          disabled={!venueId || create.isPending || !user?.id}
+          disabled={!venueId || create.isPending}
+
           onClick={() => {
             if (!user?.id) {
               toast.error("Você precisa estar logado para criar uma partida.");
