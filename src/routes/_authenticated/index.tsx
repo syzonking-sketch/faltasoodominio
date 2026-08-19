@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Crosshair, Plus, Radar, Search } from "lucide-react";
-import { lazy, useMemo, useState } from "react";
+import { Crosshair, Plus, Radar, Search, Sun, Moon } from "lucide-react";
+import { lazy, useMemo, useState, useEffect } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
 import { ClientOnly } from "@/components/app/client-only";
