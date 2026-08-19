@@ -305,6 +305,44 @@ function NewMatchPage() {
           </div>
         </div>
 
+        <div className="flex flex-wrap justify-center gap-2">
+          {[60, 90, 120, 180].map((mins) => (
+            <button
+              key={mins}
+              type="button"
+              onClick={() => {
+                const baseDate = scheduledAt ? new Date(scheduledAt) : new Date();
+                const end = new Date(baseDate.getTime() + mins * 60000);
+                const offset = end.getTimezoneOffset() * 60000;
+                const localEnd = new Date(end.getTime() - offset).toISOString().slice(0, 16);
+                
+                if (!scheduledAt) {
+                  const localStart = new Date(baseDate.getTime() - offset).toISOString().slice(0, 16);
+                  setScheduledAt(localStart);
+                }
+                setFinishedAt(localEnd);
+                toast.info(`Duração definida para ${mins} minutos`);
+              }}
+              className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                scheduledAt && finishedAt && Math.floor((new Date(finishedAt).getTime() - new Date(scheduledAt).getTime()) / 60000) === mins
+                  ? "border-primary bg-primary/20 text-primary"
+                  : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-primary"
+              }`}
+            >
+              {mins}m
+            </button>
+          ))}
+        </div>
+
+        {scheduledAt && finishedAt && (
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+              <Clock className="size-3" />
+              Duração: {Math.max(0, Math.floor((new Date(finishedAt).getTime() - new Date(scheduledAt).getTime()) / (1000 * 60)))} minutos
+            </div>
+          </div>
+        )}
+
         <FieldError message={error} />
 
         <Button
