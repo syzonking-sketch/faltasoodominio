@@ -101,19 +101,26 @@ function AuthPage() {
 
     // Manual profile insertion as a fallback in case the trigger fails or hasn't been set up yet
     if (data.user) {
-      const { error: profileError } = await supabase.from("profiles").insert({
+      console.log("Tentando sincronização manual do perfil para:", data.user.id);
+      
+      const { error: profileError } = await supabase.from("profiles").upsert({
         id: data.user.id,
         full_name: values.full_name,
         nickname: values.nickname,
         avatar_url: values.avatar_url,
         city: values.city,
         state: values.state.toUpperCase(),
-      });
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'id' });
 
-      if (profileError && !profileError.message.includes("duplicate key")) {
-        console.error("Profile sync error:", profileError);
-        // We don't block the user if the profile insert fails but they are authenticated, 
-        // as they might just need to confirm email or the trigger might actually work.
+      if (profileError) {
+        console.error("Erro crítico na sincronização do perfil:", profileError);
+        // Se houver erro de RLS (42501), avisamos o usuário que o perfil pode demorar
+        if (profileError.code === '42501') {
+          toast.warning("Conta criada, mas seu perfil pode demorar alguns segundos para aparecer devido às permissões do banco.");
+        }
+      } else {
+        console.log("Perfil sincronizado com sucesso.");
       }
     }
 
