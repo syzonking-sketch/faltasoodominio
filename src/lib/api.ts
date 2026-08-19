@@ -371,17 +371,17 @@ export async function ensureCurrentProfile(): Promise<void> {
     const meta = user.user_metadata || {};
     
     // Tentamos extrair o máximo de info dos metadados do auth.users
-    const fullName = meta.full_name || meta.name || user.email?.split('@')[0] || "Boleiro";
-    const nickname = meta.nickname || fullName.split(' ')[0];
-    const avatarUrl = meta.avatar_url || `https://api.dicebear.com/10.x/dylan/svg?seed=${user.id}`;
+    const fullName = meta['full_name'] || meta['name'] || user.email?.split('@')[0] || "Boleiro";
+    const nickname = meta['nickname'] || String(fullName).split(' ')[0];
+    const avatarUrl = meta['avatar_url'] || `https://api.dicebear.com/10.x/dylan/svg?seed=${user.id}`;
 
     const { error: insertError } = await supabase.from("profiles").upsert({
       id: user.id,
       full_name: fullName,
       nickname: nickname,
       avatar_url: avatarUrl,
-      city: meta.city || "",
-      state: meta.state || "",
+      city: meta['city'] || "",
+      state: meta['state'] || "",
       updated_at: new Date().toISOString(),
     }, { onConflict: 'id' });
 
