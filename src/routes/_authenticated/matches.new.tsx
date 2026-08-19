@@ -50,7 +50,7 @@ function NewMatchPage() {
   const [side, setSide] = useState<TeamSide>("A");
   const [newVenue, setNewVenue] = useState<{ name: string; address: string; coords: Coords } | null>(null);
   const [scheduledAt, setScheduledAt] = useState("");
-  // removed finishedAt state as per user request
+  const [finishedAt, setFinishedAt] = useState("");
   const [error, setError] = useState<string | undefined>(undefined);
 
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
