@@ -35,7 +35,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
 });
 
 function ProfilePage() {
-  const { user, profile, profileLoading } = useAuth();
+  const { user, profile, profileLoading, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
@@ -80,7 +80,7 @@ function ProfilePage() {
   return (
     <AppShell title="Perfil" subtitle="Sua carteira de boleiro">
       <div className="card-glow rounded-2xl border border-border bg-card p-5 text-center">
-        {profileLoading ? (
+        {profileLoading || authLoading ? (
           <div className="flex flex-col items-center gap-3">
             <Skeleton className="size-28 rounded-full" />
             <Skeleton className="h-8 w-32" />
@@ -106,7 +106,7 @@ function ProfilePage() {
         )}
       </div>
 
-      {statsQuery.isPending ? (
+      {statsQuery.isPending || authLoading ? (
         <div className="mt-4">
           <ListSkeleton rows={2} />
         </div>
