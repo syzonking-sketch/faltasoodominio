@@ -28,8 +28,14 @@ const MATCH_SELECT = `
 
 /* ---------------------------------- Venues --------------------------------- */
 
-export async function fetchVenues(): Promise<Venue[]> {
-  return unwrap<Venue[]>(await supabase.from("venues").select("*").order("name"));
+export async function fetchVenues(search?: string): Promise<Venue[]> {
+  let query = supabase.from("venues").select("*").order("name");
+  
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,city.ilike.%${search}%,address.ilike.%${search}%`);
+  }
+  
+  return unwrap<Venue[]>(await query);
 }
 
 export async function createVenue(input: {

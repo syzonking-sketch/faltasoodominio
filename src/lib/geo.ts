@@ -36,6 +36,7 @@ export function useGeolocation() {
   const [center, setCenter] = useState<Coords>(FALLBACK_CENTER);
   const [status, setStatus] = useState<GeoStatus>("idle");
   const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
 
   const request = useCallback(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -56,14 +57,20 @@ export function useGeolocation() {
   }, []);
 
   const searchLocation = useCallback(async (query: string) => {
-    if (!query.trim()) return;
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
     setIsSearching(true);
     try {
+      // Nominatim search with more details
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-        { headers: { 'Accept-Language': 'pt-BR' } }
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
+        { headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'TheMatchApp/1.0' } }
       );
       const data = await response.json();
+      setSearchResults(data || []);
+      
       if (data && data.length > 0) {
         const result = {
           lat: parseFloat(data[0].lat),
@@ -85,5 +92,5 @@ export function useGeolocation() {
     request();
   }, [request]);
 
-  return { coords, status, request, center, setCenter, searchLocation, isSearching };
+  return { coords, status, request, center, setCenter, searchLocation, isSearching, searchResults };
 }

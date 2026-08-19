@@ -102,7 +102,7 @@ function ConfrontosPage() {
 
   const confrontosQuery = useQuery({ queryKey: ["confrontos"], queryFn: fetchConfrontos });
   const teamsQuery = useQuery({ queryKey: ["teams"], queryFn: fetchTeams });
-  const venuesQuery = useQuery({ queryKey: ["venues"], queryFn: fetchVenues });
+  const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
 
   const teams = teamsQuery.data ?? [];
   const venues = venuesQuery.data ?? [];

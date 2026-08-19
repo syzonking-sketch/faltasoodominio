@@ -12,6 +12,7 @@ export interface RadarPin {
   label: string;
   players: number;
   live: boolean;
+  matchId?: string;
 }
 
 function pinIcon(pin: RadarPin) {
