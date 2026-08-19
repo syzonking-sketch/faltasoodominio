@@ -16,20 +16,21 @@ export interface RadarPin {
 
 function pinIcon(pin: RadarPin) {
   const color = pin.live ? "var(--primary)" : "var(--muted-foreground)";
+  const size = pin.live ? 48 : 40;
   return L.divIcon({
     className: "",
-    iconSize: [46, 46],
-    iconAnchor: [23, 23],
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
     html: `
-      <div style="position:relative;display:grid;place-items:center;width:46px;height:46px;">
+      <div style="position:relative;display:grid;place-items:center;width:${size}px;height:${size}px;filter:drop-shadow(0 0 8px ${pin.live ? color : 'transparent'})">
         ${
           pin.live
-            ? `<span class="radar-ping" style="position:absolute;inset:6px;border-radius:9999px;background:${color};opacity:.5"></span>`
+            ? `<span class="radar-ping" style="position:absolute;inset:0;border-radius:9999px;background:${color};opacity:.4"></span>`
             : ""
         }
-        <span style="position:relative;display:grid;place-items:center;width:34px;height:34px;border-radius:9999px;background:${color};color:oklch(0.16 0.04 155);font-weight:800;font-family:'Barlow Condensed',sans-serif;font-size:15px;box-shadow:0 6px 16px -4px rgba(0,0,0,.8);border:2px solid rgba(255,255,255,.35)">
+        <div style="position:relative;display:grid;place-items:center;width:${size - 12}px;height:${size - 12}px;border-radius:9999px;background:${color};color:oklch(0.16 0.04 155);font-weight:900;font-family:'Barlow Condensed',sans-serif;font-size:16px;box-shadow:0 8px 20px -4px rgba(0,0,0,.9);border:2px solid rgba(255,255,255,.4);transition:transform 0.2s ease" class="hover:scale-110">
           ${pin.players}
-        </span>
+        </div>
       </div>`,
   });
 }
@@ -69,7 +70,7 @@ export default function MapRadar({
   return (
     <MapContainer
       center={[center.lat, center.lng]}
-      zoom={14}
+      zoom={15}
       zoomControl={false}
       attributionControl={false}
       className={className ?? "h-full w-full"}
@@ -84,13 +85,20 @@ export default function MapRadar({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <Recenter center={center} />
-      {me ? <Marker position={[me.lat, me.lng]} icon={meIcon()} /> : null}
+      {me ? (
+        <Marker 
+          position={[me.lat, me.lng]} 
+          icon={meIcon()} 
+          zIndexOffset={1000}
+        />
+      ) : null}
       {pins.map((pin) => (
         <Marker
           key={pin.id}
           position={[pin.lat, pin.lng]}
           icon={pinIcon(pin)}
           eventHandlers={{ click: () => onSelect?.(pin.id) }}
+          zIndexOffset={pin.live ? 500 : 0}
         />
       ))}
     </MapContainer>
