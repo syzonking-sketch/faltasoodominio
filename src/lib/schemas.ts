@@ -9,7 +9,7 @@ export type SignInValues = z.infer<typeof signInSchema>;
 export const signUpSchema = z.object({
   full_name: z.string().min(3, "Informe seu nome completo"),
   nickname: z.string().min(2, "Apelido de quadra é obrigatório").max(24, "Máximo 24 caracteres"),
-  avatar_url: z.string().url("Cole o link de uma foto real (https://...)"),
+  avatar_url: z.string().optional().or(z.string().url("Link inválido")),
   city: z.string().min(2, "Informe sua cidade"),
   state: z.string().length(2, "Use a sigla do estado (ex: SP)"),
   email: z.string().min(1, "Informe seu e-mail").email("E-mail inválido"),
@@ -20,7 +20,7 @@ export type SignUpValues = z.infer<typeof signUpSchema>;
 export const profileSchema = z.object({
   full_name: z.string().min(3, "Informe seu nome completo"),
   nickname: z.string().min(2, "Apelido obrigatório").max(24),
-  avatar_url: z.string().url("Informe o link de uma foto real"),
+  avatar_url: z.string().optional().or(z.string().url("Link inválido")),
   city: z.string().min(2, "Informe sua cidade"),
   state: z.string().length(2, "Sigla do estado (ex: SP)"),
 });
