@@ -39,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 function MapPage() {
+  const { user, profile } = useAuth();
   const { coords, center, status, request, setCenter, searchLocation, isSearching, searchResults } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -59,9 +60,10 @@ function MapPage() {
   }, [lightMap]);
 
   const matchesQuery = useQuery({
-    queryKey: ["matches", "active"],
-    queryFn: () => fetchMatches("active"),
+    queryKey: ["matches", "active", profile?.city, profile?.state],
+    queryFn: () => fetchMatches("active", { city: profile?.city, state: profile?.state }),
     refetchInterval: 20000,
+    enabled: !!profile?.state, // Aguarda carregar o estado do perfil para filtrar
   });
 
   const venuesQuery = useQuery({
