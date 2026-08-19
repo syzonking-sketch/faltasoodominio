@@ -288,74 +288,22 @@ function NewMatchPage() {
           </div>
         ) : null}
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3 transition-colors focus-within:border-primary/50">
-            <Label htmlFor="start-time" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              <Calendar className="size-3 text-primary" /> Início
-            </Label>
-            <div className="relative flex items-center">
-              <input 
-                id="start-time"
-                type="datetime-local" 
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full border-none bg-transparent p-0 text-[16px] font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-                aria-label="Data e hora de início"
-              />
-              <Clock className="pointer-events-none absolute right-0 size-4 text-muted-foreground/50" />
-            </div>
-          </div>
-          <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3 transition-colors focus-within:border-primary/50">
-            <Label htmlFor="end-time" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              <Clock className="size-3 text-primary" /> Fim (Previsto)
-            </Label>
-            <div className="relative flex items-center">
-              <input 
-                id="end-time"
-                type="datetime-local" 
-                value={finishedAt}
-                onChange={(e) => setFinishedAt(e.target.value)}
-                className="w-full border-none bg-transparent p-0 text-[16px] font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
-                aria-label="Data e hora de término prevista"
-              />
-              <Calendar className="pointer-events-none absolute right-0 size-4 text-muted-foreground/50" />
-            </div>
+        <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3 transition-colors focus-within:border-primary/50">
+          <Label htmlFor="start-time" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            <Calendar className="size-3 text-primary" /> Início
+          </Label>
+          <div className="relative flex items-center">
+            <input 
+              id="start-time"
+              type="datetime-local" 
+              value={scheduledAt}
+              onChange={(e) => setScheduledAt(e.target.value)}
+              className="w-full border-none bg-transparent p-0 text-[16px] font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+              aria-label="Data e hora de início"
+            />
+            <Clock className="pointer-events-none absolute right-0 size-4 text-muted-foreground/50" />
           </div>
         </div>
-
-        <div className="flex flex-wrap justify-center gap-2">
-          {[60, 90, 120].map((mins) => (
-            <button
-              key={mins}
-              type="button"
-              onClick={() => {
-                // Default to now if start is empty
-                const baseDate = scheduledAt ? new Date(scheduledAt) : new Date();
-                const end = new Date(baseDate.getTime() + mins * 60000);
-                const offset = end.getTimezoneOffset() * 60000;
-                const localEnd = new Date(end.getTime() - offset).toISOString().slice(0, 16);
-                
-                if (!scheduledAt) {
-                  const localStart = new Date(baseDate.getTime() - offset).toISOString().slice(0, 16);
-                  setScheduledAt(localStart);
-                }
-                setFinishedAt(localEnd);
-              }}
-              className="rounded-full border border-border bg-card px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
-            >
-              +{mins} min
-            </button>
-          ))}
-        </div>
-
-        {scheduledAt && finishedAt && (
-          <div className="flex justify-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
-              <Clock className="size-3" />
-              Duração: {Math.max(0, Math.floor((new Date(finishedAt).getTime() - new Date(scheduledAt).getTime()) / (1000 * 60)))} minutos
-            </div>
-          </div>
-        )}
 
         <FieldError message={error} />
 
