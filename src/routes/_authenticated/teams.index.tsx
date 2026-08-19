@@ -82,7 +82,10 @@ function TeamsPage() {
   });
 
   const join = useMutation({
-    mutationFn: (teamId: string) => requestToJoinTeam(teamId, user!.id),
+    mutationFn: (teamId: string) => {
+      if (!user?.id) throw new Error("Sessão não carregada.");
+      return requestToJoinTeam(teamId, user.id);
+    },
     onSuccess: () => {
       toast.success("Solicitação enviada ao capitão.");
       invalidate();
