@@ -303,8 +303,8 @@ export async function fetchRanking(filter?: {
     .order("avg_score", { ascending: false })
     .limit(100);
 
-  if (filter?.scope === "local" && filter.city) query = query.eq("city", filter.city);
-  if (filter?.scope === "state" && filter.state) query = query.eq("state", filter.state);
+  if (filter?.scope === "local" && filter.city) query = query.ilike("city", filter.city);
+  if (filter?.scope === "state" && filter.state) query = query.ilike("state", filter.state);
 
   return unwrap<RankingRow[]>(await query);
 }
