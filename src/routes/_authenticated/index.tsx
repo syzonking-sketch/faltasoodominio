@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Crosshair, Plus, Radar, Search, Sun, Moon } from "lucide-react";
-import { lazy, useMemo, useState, useEffect } from "react";
+import { Crosshair, Plus, Radar, Search, Sun, Moon, Loader2 } from "lucide-react";
+import { lazy, useMemo, useState, useEffect, useCallback } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
 import { ClientOnly } from "@/components/app/client-only";
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 function MapPage() {
-  const { coords, center, status, request, setCenter } = useGeolocation();
+  const { coords, center, status, request, setCenter, searchLocation, isSearching } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [lightMap, setLightMap] = useState(false);
@@ -95,7 +95,29 @@ function MapPage() {
     }
 
     return filtered;
-  }, [matchesQuery.data, search, setCenter]);
+  }, [matchesQuery.data, search]); // Removed setCenter from dependencies to avoid loop
+
+  const handleSearchSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!search.trim()) return;
+
+    // First, try to find in local matches (venues)
+    const localMatch = matches.find(m => 
+      m.venue?.name.toLowerCase().includes(search.toLowerCase()) ||
+      m.venue?.address?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    if (localMatch?.venue) {
+      setCenter({
+        lat: Number(localMatch.venue.latitude),
+        lng: Number(localMatch.venue.longitude)
+      });
+      return;
+    }
+
+    // If not found in active matches, use global geocoding
+    await searchLocation(search);
+  }, [search, matches, searchLocation, setCenter]);
 
   const pins: RadarPin[] = matches
     .filter((m) => m.venue)
@@ -116,18 +138,33 @@ function MapPage() {
         </ClientOnly>
 
         <div className="pt-safe pointer-events-none absolute inset-x-0 top-0 z-400 px-4">
-          <div className="pointer-events-auto mx-auto flex max-w-2xl items-center gap-2">
+          <form 
+            onSubmit={handleSearchSubmit}
+            className="pointer-events-auto mx-auto flex max-w-2xl items-center gap-2"
+          >
             <div className="relative flex-1">
-              <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+              {isSearching ? (
+                <Loader2 className="absolute top-1/2 left-3 size-4 -translate-y-1/2 animate-spin text-primary" />
+              ) : (
+                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
+              )}
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar quadra, campo ou boleiro"
+                placeholder="Buscar bairro, quadra ou rua"
                 aria-label="Buscar partidas"
                 className="card-glow border-border bg-surface/95 pl-9 backdrop-blur"
               />
             </div>
             <Button
+              type="submit"
+              size="icon"
+              className="card-glow border-primary bg-primary text-primary-foreground shadow-lg"
+            >
+              <Search className="size-4" />
+            </Button>
+            <Button
+              type="button"
               size="icon"
               variant="secondary"
               aria-label="Centralizar no meu GPS"
@@ -138,7 +175,7 @@ function MapPage() {
             >
               <Crosshair className="size-4" />
             </Button>
-          </div>
+          </form>
           {status === "denied" ? (
             <div className="pointer-events-auto mx-auto mt-2 max-w-2xl rounded-xl bg-accent/15 px-3 py-2 text-[11px] text-accent">
               <p className="font-bold">GPS bloqueado — mostrando região padrão.</p>

@@ -35,6 +35,7 @@ export function useGeolocation() {
   const [coords, setCoords] = useState<Coords | null>(null);
   const [center, setCenter] = useState<Coords>(FALLBACK_CENTER);
   const [status, setStatus] = useState<GeoStatus>("idle");
+  const [isSearching, setIsSearching] = useState(false);
 
   const request = useCallback(() => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
@@ -54,9 +55,35 @@ export function useGeolocation() {
     );
   }, []);
 
+  const searchLocation = useCallback(async (query: string) => {
+    if (!query.trim()) return;
+    setIsSearching(true);
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+        { headers: { 'Accept-Language': 'pt-BR' } }
+      );
+      const data = await response.json();
+      if (data && data.length > 0) {
+        const result = {
+          lat: parseFloat(data[0].lat),
+          lng: parseFloat(data[0].lon),
+        };
+        setCenter(result);
+        return result;
+      }
+      return null;
+    } catch (error) {
+      console.error("Erro na busca de localização:", error);
+      return null;
+    } finally {
+      setIsSearching(false);
+    }
+  }, []);
+
   useEffect(() => {
     request();
   }, [request]);
 
-  return { coords, status, request, center, setCenter };
+  return { coords, status, request, center, setCenter, searchLocation, isSearching };
 }
