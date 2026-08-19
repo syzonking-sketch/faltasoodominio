@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createMatch, createVenue, fetchVenues } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 import { distanceMeters, formatDistance, GPS_CHECKIN_RADIUS, useGeolocation, type Coords } from "@/lib/geo";
 import { friendlyError } from "@/lib/supabase";
 import type { MatchType, ParticipantRole, TeamSide } from "@/lib/types";
@@ -376,13 +377,21 @@ function NewMatchPage() {
           className="w-full"
           size="lg"
           disabled={!venueId || create.isPending}
+          onClick={async () => {
+            let currentUserId = user?.id;
+            
+            // Se o ID não estiver no contexto, tenta pegar direto do Supabase como última alternativa
+            if (!currentUserId) {
+              const { data } = await supabase.auth.getUser();
+              currentUserId = data.user?.id;
+            }
 
-          onClick={() => {
-            if (!user?.id) {
-              console.error("User ID not found in useAuth", user);
-              toast.error("Erro de autenticação: seu ID de usuário não foi carregado.");
+            if (!currentUserId) {
+              console.error("User ID not found in useAuth or direct check", user);
+              toast.error("Erro de autenticação: seu ID de usuário não foi carregado. Tente atualizar a página.");
               return;
             }
+            
             create.mutate();
           }}
         >
