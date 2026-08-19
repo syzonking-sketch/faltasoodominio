@@ -366,7 +366,8 @@ function NewMatchPage() {
 
           onClick={() => {
             if (!user?.id) {
-              toast.error("Você precisa estar logado para criar uma partida.");
+              console.error("User ID not found in useAuth", user);
+              toast.error("Erro de autenticação: seu ID de usuário não foi carregado.");
               return;
             }
             create.mutate();
