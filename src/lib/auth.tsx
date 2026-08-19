@@ -34,12 +34,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
       if (!mounted) return;
       setSession(nextSession);
+      
       if (event === "SIGNED_OUT") {
         queryClient.clear();
       }
+      
       if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
         if (nextSession?.user.id) {
-          await queryClient.invalidateQueries({ queryKey: ["profile", nextSession.user.id] });
+          // Garante que o perfil existe para o usuário logado
+          void ensureCurrentProfile().then(() => {
+            if (mounted) {
+              void queryClient.invalidateQueries({ queryKey: ["profile", nextSession.user.id] });
+            }
+          });
         }
       }
     });
