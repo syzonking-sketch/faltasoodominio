@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Crosshair, Plus, Radar, Search } from "lucide-react";
-import { lazy, useMemo, useState } from "react";
+import { Crosshair, Plus, Radar, Search, Sun, Moon } from "lucide-react";
+import { lazy, useMemo, useState, useEffect } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
 import { ClientOnly } from "@/components/app/client-only";
@@ -41,6 +41,21 @@ function MapPage() {
   const { coords, center, status, request, setCenter } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [lightMap, setLightMap] = useState(false);
+
+  useEffect(() => {
+    const isLight = localStorage.getItem("light-map") === "true";
+    setLightMap(isLight);
+  }, []);
+
+  useEffect(() => {
+    if (lightMap) {
+      document.body.classList.add("light-map");
+    } else {
+      document.body.classList.remove("light-map");
+    }
+    localStorage.setItem("light-map", String(lightMap));
+  }, [lightMap]);
 
   const matchesQuery = useQuery({
     queryKey: ["matches", "active"],
@@ -111,7 +126,16 @@ function MapPage() {
                 aria-label="Buscar partidas"
                 className="card-glow border-border bg-surface/95 pl-9 backdrop-blur"
               />
-            </div>
+            <Button
+              size="icon"
+              variant="secondary"
+              aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
+              onClick={() => setLightMap(!lightMap)}
+              className="card-glow border-border bg-surface/95 backdrop-blur"
+            >
+              {lightMap ? <Moon className="size-4" /> : <Sun className="size-4" />}
+            </Button>
+          </div>
             <Button
               size="icon"
               variant="secondary"
