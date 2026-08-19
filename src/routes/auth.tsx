@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Loader2, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
+import logoAsset from "@/assets/logo.jpg.asset.json";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -140,6 +141,7 @@ function AuthPage() {
           <span className="text-display inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
             A Elite da Várzea
           </span>
+          <img src={logoAsset.url} alt="Logo" className="mx-auto mb-4 size-24 rounded-2xl border-2 border-primary/20 shadow-lg shadow-primary/10" />
           <h1 className="text-display mt-4 text-6xl leading-none font-extrabold tracking-tight text-foreground italic">
             THE <span className="text-primary">MATCH</span>
           </h1>
