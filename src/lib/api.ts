@@ -202,12 +202,25 @@ export async function createTeam(input: {
   state: string;
   captain_id: string;
 }): Promise<Team> {
-  const team = unwrap<Team>(await supabase.from("teams").insert(input).select("*").single());
-  unwrap<unknown>(
-    await supabase
-      .from("team_members")
-      .insert({ team_id: team.id, user_id: input.captain_id, status: "active" }),
-  );
+  const teamResponse = await supabase.from("teams").insert(input).select("*").single();
+  const team = unwrap<Team>(teamResponse);
+  
+  const memberResponse = await supabase
+    .from("team_members")
+    .insert({ 
+      team_id: team.id, 
+      user_id: input.captain_id, 
+      status: "active" 
+    });
+  
+  try {
+    unwrap<unknown>(memberResponse);
+  } catch (err) {
+    console.error("Erro ao adicionar capitão como membro do time:", err);
+    // Não falhamos a criação do time se apenas a entrada no elenco falhar, 
+    // mas informamos no log para depuração.
+  }
+  
   return team;
 }
 
