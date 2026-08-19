@@ -97,7 +97,7 @@ function AuthPage() {
       return;
     }
     if (!data.session) {
-      toast.success("Conta criada! Confirme seu e-mail para entrar.");
+      toast.success("Conta criada! Você já pode entrar em campo.");
       return;
     }
     toast.success("Carteira do boleiro criada. Boa sorte!");
