@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Crosshair, Plus, Radar, Search, Sun, Moon, Loader2 } from "lucide-react";
+import { Crosshair, Plus, Radar, Search, Sun, Moon, Loader2, MapPin } from "lucide-react";
 import { lazy, useMemo, useState, useEffect, useCallback } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
