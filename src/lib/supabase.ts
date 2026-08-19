@@ -27,7 +27,7 @@ export function friendlyError(error: unknown): string {
   if (/rate limit|too many requests/i.test(message)) return "Muitas tentativas. Aguarde um momento e tente novamente.";
   if (/Password should be/i.test(message)) return "A senha precisa ter pelo menos 6 caracteres.";
   if (/duplicate key/i.test(message)) return "Esse registro já existe.";
-  if (/row-level security/i.test(message)) return "Você não tem permissão para essa ação.";
+  if (/row-level security|forbidden/i.test(message)) return "Erro de permissão (RLS). Certifique-se de estar logado ou que a tabela aceite novos cadastros.";
   if (/Failed to fetch|NetworkError/i.test(message)) return "Sem conexão com a internet. Tente novamente.";
   return message || "Algo deu errado. Tente novamente.";
 }
