@@ -317,6 +317,15 @@ function NewMatchPage() {
           </div>
         </div>
 
+        {scheduledAt && finishedAt && (
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+              <Clock className="size-3" />
+              Duração: {Math.max(0, Math.floor((new Date(finishedAt).getTime() - new Date(scheduledAt).getTime()) / (1000 * 60)))} minutos
+            </div>
+          </div>
+        )}
+
         <FieldError message={error} />
 
         <Button
