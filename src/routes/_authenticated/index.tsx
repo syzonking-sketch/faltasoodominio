@@ -366,9 +366,12 @@ function MapPage() {
                           {match.participants.filter((p) => p.role === "spectator").length} T
                         </p>
                         {match.scheduled_at && (
-                          <p className="mt-0.5 text-[9px] font-bold text-primary">
-                            {new Date(match.scheduled_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                          </p>
+                          <div className="mt-0.5 flex flex-col items-end">
+                            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Início</span>
+                            <span className="text-[10px] font-black text-primary">
+                              {new Date(match.scheduled_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                            </span>
+                          </div>
                         )}
                       </div>
                     </div>
