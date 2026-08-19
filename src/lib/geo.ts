@@ -43,6 +43,20 @@ export function useGeolocation() {
       setStatus("denied");
       return;
     }
+
+    // Explicit check for permission state if supported (helps on mobile browsers)
+    if (navigator.permissions && navigator.permissions.query) {
+      navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+        if (result.state === 'prompt') {
+          setStatus("idle"); // User hasn't decided yet
+        } else if (result.state === 'denied') {
+          setStatus("denied");
+        }
+      }).catch(() => {
+        // Ignore errors from permissions API
+      });
+    }
+
     setStatus("loading");
     navigator.geolocation.getCurrentPosition(
       (pos) => {
@@ -51,7 +65,10 @@ export function useGeolocation() {
         setCenter(newCoords);
         setStatus("granted");
       },
-      () => setStatus("denied"),
+      (err) => {
+        console.warn("Geolocation error:", err.code, err.message);
+        setStatus("denied");
+      },
       { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 },
     );
   }, []);

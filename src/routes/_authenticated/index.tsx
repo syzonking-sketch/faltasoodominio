@@ -270,12 +270,22 @@ function MapPage() {
               <Crosshair className="size-4" />
             </Button>
           </form>
-          {status === "denied" ? (
+          {status === "idle" || status === "loading" ? (
+            <div className="pointer-events-auto mx-auto mt-2 max-w-2xl animate-pulse rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-[11px] text-primary">
+              <p className="font-bold flex items-center gap-2">
+                <MapPin className="size-3" /> 
+                {status === "loading" ? "Solicitando localização..." : "Permitir localização?"}
+              </p>
+              <p className="mt-1 opacity-90">
+                O iPhone/Navegador perguntará se você permite o uso do GPS. Aceite para ver as quadras próximas e entrar nas partidas.
+              </p>
+            </div>
+          ) : status === "denied" ? (
             <div className="pointer-events-auto mx-auto mt-2 max-w-2xl rounded-xl bg-accent/15 px-3 py-2 text-[11px] text-accent">
               <p className="font-bold">GPS bloqueado — mostrando região padrão.</p>
               <p className="mt-1 opacity-90">
-                Para entrar nas partidas e validar placares, o app precisa saber que você está na quadra. 
-                Clique no cadeado ao lado da URL do seu navegador e mude "Localização" para "Permitir", depois recarregue a página.
+                O app precisa saber que você está na quadra. 
+                Vá em Ajustes {"->"} Privacidade {"->"} Localização (no iPhone) ou clique no cadeado da URL e mude para "Permitir".
               </p>
             </div>
           ) : null}
