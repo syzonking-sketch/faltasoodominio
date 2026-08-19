@@ -36,9 +36,6 @@ export const Route = createFileRoute("/_authenticated/profile")({
 
 function ProfilePage() {
   const { user, profile, profileLoading, loading: authLoading } = useAuth();
-  
-  // Debug to verify if data is coming from Supabase
-  console.log('Profile context data:', { profile, profileLoading, authLoading });
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
