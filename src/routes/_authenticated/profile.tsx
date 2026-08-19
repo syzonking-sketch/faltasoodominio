@@ -35,7 +35,7 @@ export const Route = createFileRoute("/_authenticated/profile")({
 });
 
 function ProfilePage() {
-  const { user, profile, profileLoading, loading: authLoading } = useAuth();
+  const { user, profile, profileLoading, loading: authLoading, refetchProfile } = useAuth();
 
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -95,7 +95,7 @@ function ProfilePage() {
             <Button 
               size="sm" 
               onClick={() => {
-                void queryClient.invalidateQueries({ queryKey: ["profile"] });
+                void refetchProfile();
               }}
             >
               Tentar carregar novamente

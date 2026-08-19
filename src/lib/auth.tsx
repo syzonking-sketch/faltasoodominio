@@ -9,6 +9,7 @@ interface AuthContextValue {
   session: Session | null;
   user: User | null;
   profile: Profile | null;
+  refetchProfile: () => Promise<any>;
   loading: boolean;
   profileLoading: boolean;
   signOut: () => Promise<void>;
@@ -101,6 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile: profile ?? null,
     loading,
     profileLoading,
+    refetchProfile,
     signOut: async () => {
       await queryClient.cancelQueries();
       queryClient.clear();
