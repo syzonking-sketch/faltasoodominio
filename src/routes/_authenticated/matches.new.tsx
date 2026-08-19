@@ -139,7 +139,17 @@ function NewMatchPage() {
               setVenueId(id);
               setNewVenue(null);
             }}
-            onMapClick={(c) => setNewVenue({ name: "", address: "", city: "", state: "", coords: c })}
+            onMapClick={async (c) => {
+              const { reverseGeocode } = await import("@/lib/geo");
+              const addressInfo = await reverseGeocode(c.lat, c.lng);
+              setNewVenue({
+                name: "",
+                address: addressInfo.address,
+                city: addressInfo.city,
+                state: addressInfo.state,
+                coords: c
+              });
+            }}
           />
         </ClientOnly>
       </div>

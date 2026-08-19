@@ -94,3 +94,29 @@ export function useGeolocation() {
 
   return { coords, status, request, center, setCenter, searchLocation, isSearching, searchResults };
 }
+
+export async function reverseGeocode(lat: number, lng: number): Promise<{ address: string; city: string; state: string }> {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`,
+      { headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'TheMatchApp/1.0' } }
+    );
+    const data = await response.json();
+    const addr = data.address || {};
+    
+    // Extracting best matches for PT-BR
+    const city = addr.city || addr.town || addr.village || addr.municipality || "";
+    const state = addr.state ? addr.state.substring(0, 2).toUpperCase() : "";
+    const street = addr.road || addr.suburb || "";
+    const houseNumber = addr.house_number ? `, ${addr.house_number}` : "";
+    
+    return {
+      address: street ? `${street}${houseNumber}` : "Local sem endereço mapeado",
+      city: city,
+      state: state.length === 2 ? state : "",
+    };
+  } catch (error) {
+    console.error("Erro na geocodificação reversa:", error);
+    return { address: "", city: "", state: "" };
+  }
+}
