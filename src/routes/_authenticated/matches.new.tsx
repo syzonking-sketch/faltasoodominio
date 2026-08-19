@@ -48,7 +48,7 @@ function NewMatchPage() {
   const [matchType, setMatchType] = useState<MatchType>("pelada");
   const [role, setRole] = useState<ParticipantRole>("player");
   const [side, setSide] = useState<TeamSide>("A");
-  const [newVenue, setNewVenue] = useState<{ name: string; address: string; coords: Coords } | null>(null);
+  const [newVenue, setNewVenue] = useState<{ name: string; address: string; city: string; state: string; coords: Coords } | null>(null);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const venuesQuery = useQuery({ queryKey: ["venues"], queryFn: fetchVenues });
@@ -69,6 +69,8 @@ function NewMatchPage() {
       createVenue({
         name: newVenue!.name,
         address: newVenue!.address,
+        city: newVenue!.city,
+        state: newVenue!.state,
         latitude: newVenue!.coords.lat,
         longitude: newVenue!.coords.lng,
       }),
@@ -137,7 +139,7 @@ function NewMatchPage() {
               setVenueId(id);
               setNewVenue(null);
             }}
-            onMapClick={(c) => setNewVenue({ name: "", address: "", coords: c })}
+            onMapClick={(c) => setNewVenue({ name: "", address: "", city: "", state: "", coords: c })}
           />
         </ClientOnly>
       </div>
@@ -173,6 +175,27 @@ function NewMatchPage() {
                   onChange={(e) => setNewVenue({ ...newVenue, address: e.target.value })}
                   placeholder="Rua das Palmeiras, 120"
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor="venue-city">Cidade</Label>
+                  <Input
+                    id="venue-city"
+                    value={newVenue.city}
+                    onChange={(e) => setNewVenue({ ...newVenue, city: e.target.value })}
+                    placeholder="São Paulo"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="venue-state">UF</Label>
+                  <Input
+                    id="venue-state"
+                    value={newVenue.state}
+                    onChange={(e) => setNewVenue({ ...newVenue, state: e.target.value.toUpperCase() })}
+                    placeholder="SP"
+                    maxLength={2}
+                  />
+                </div>
               </div>
               <div className="flex gap-2">
                 <Button
