@@ -163,21 +163,26 @@ function AuthPage() {
 
             <TabsContent value="signup" className="mt-5">
               <form className="space-y-4" onSubmit={signUp.handleSubmit(handleSignUp)}>
-                <div className="flex items-center gap-3 rounded-2xl bg-surface-2 p-3">
-                  <PlayerAvatar
-                    name={signUp.watch("full_name") || "Novo boleiro"}
-                    nickname={nicknamePreview}
-                    photoUrl={avatarPreview}
-                    size="lg"
-                  />
-                  <div className="text-xs text-muted-foreground">
-                    Sem avatar genérico: use uma foto real sua. Cole o link da imagem.
+                <div className="flex flex-col gap-3 rounded-2xl bg-surface-2 p-4 border border-border/50">
+                  <div className="flex items-center gap-4">
+                    <PlayerAvatar
+                      name={signUp.watch("full_name") || "Novo boleiro"}
+                      nickname={nicknamePreview}
+                      photoUrl={avatarPreview}
+                      size="xl"
+                    />
+                    <div className="space-y-1">
+                      <p className="text-sm font-bold text-foreground">Sua Identidade Visual</p>
+                      <p className="text-[11px] leading-relaxed text-muted-foreground">
+                        Plataforma premium não usa avatar genérico. Cole o link de uma foto real sua para ser reconhecido na elite.
+                      </p>
+                    </div>
                   </div>
                 </div>
                 <div>
                   <Label htmlFor="avatar_url">Foto de perfil (URL)</Label>
                   <Input id="avatar_url" placeholder="https://..." {...signUp.register("avatar_url")} />
-                  <FieldError message={signUp.formState.errors.avatar_url?.message} />
+                  <FieldError message={signUp.formState.errors.avatar_url?.message || "Cole o link de uma foto real (https://...)"} />
                 </div>
                 <div>
                   <Label htmlFor="full_name">Nome completo</Label>
