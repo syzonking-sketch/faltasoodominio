@@ -173,7 +173,8 @@ function MapPage() {
                           {match.venue?.name ?? "Quadra"}
                         </p>
                         <p className="truncate text-xs text-muted-foreground">
-                          {match.venue?.address ?? "Sem endereço"}
+                          {match.venue?.address}
+                          {match.venue?.city ? ` · ${match.venue.city}` : ""}
                           {dist !== null ? ` · ${formatDistance(dist)}` : ""}
                         </p>
                       </div>
