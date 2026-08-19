@@ -71,6 +71,7 @@ export default function MapRadar({
       center={[center.lat, center.lng]}
       zoom={14}
       zoomControl={false}
+      attributionControl={false}
       className={className ?? "h-full w-full"}
       ref={(map) => {
         if (map && onMapClick) {
@@ -81,7 +82,6 @@ export default function MapRadar({
     >
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
       />
       <Recenter center={center} />
       {me ? <Marker position={[me.lat, me.lng]} icon={meIcon()} /> : null}
