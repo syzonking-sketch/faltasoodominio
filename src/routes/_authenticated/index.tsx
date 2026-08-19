@@ -56,6 +56,7 @@ function MapPage() {
       (m) =>
         m.venue?.name.toLowerCase().includes(term) ||
         m.venue?.address?.toLowerCase().includes(term) ||
+        m.venue?.city?.toLowerCase().includes(term) ||
         m.creator?.nickname.toLowerCase().includes(term),
     );
   }, [matchesQuery.data, search]);
