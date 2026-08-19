@@ -316,7 +316,7 @@ export async function fetchRanking(filter?: {
 /* --------------------------------- Profiles -------------------------------- */
 
 export async function fetchProfiles(): Promise<Profile[]> {
-  return unwrap<Profile[]>(await supabase.from("profiles").select("*").order("nickname"));
+  return unwrap<Profile[]>(await supabase.from("profiles").select("*").order("nickname", { ascending: true }));
 }
 
 export async function updateProfile(id: string, values: Partial<Profile>): Promise<void> {
