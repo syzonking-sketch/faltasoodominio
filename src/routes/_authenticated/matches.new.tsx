@@ -51,7 +51,7 @@ function NewMatchPage() {
   const [newVenue, setNewVenue] = useState<{ name: string; address: string; city: string; state: string; coords: Coords } | null>(null);
   const [error, setError] = useState<string | undefined>(undefined);
 
-  const venuesQuery = useQuery({ queryKey: ["venues"], queryFn: fetchVenues });
+  const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
   const venues = venuesQuery.data ?? [];
   const selectedVenue = venues.find((v) => v.id === venueId) ?? null;
 
