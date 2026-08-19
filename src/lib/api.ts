@@ -72,21 +72,21 @@ export async function createMatch(input: {
   scheduled_at?: string | null;
   finished_at?: string | null;
 }): Promise<string> {
-  const match = unwrap<{ id: string }>(
-    await supabase
-      .from("matches")
-      .insert({
-        venue_id: input.venue_id,
-        created_by: input.created_by,
-        name: input.name || null,
-        match_type: input.match_type,
-        status: "active",
-        scheduled_at: input.scheduled_at || new Date().toISOString(),
-        finished_at: null,
-      })
-      .select("id")
-      .single(),
-  );
+  const matchResponse = await supabase
+    .from("matches")
+    .insert({
+      venue_id: input.venue_id,
+      created_by: input.created_by,
+      name: input.name || null,
+      match_type: input.match_type,
+      status: "active",
+      scheduled_at: input.scheduled_at || new Date().toISOString(),
+      finished_at: input.finished_at || null,
+    })
+    .select("id")
+    .single();
+
+  const match = unwrap<{ id: string }>(matchResponse);
 
   unwrap<unknown>(
     await supabase.from("match_participants").insert({
