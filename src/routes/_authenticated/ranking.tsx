@@ -42,7 +42,7 @@ const podium = ["text-gold", "text-silver", "text-bronze"];
 
 function RankingPage() {
   const { profile } = useAuth();
-  const [scope, setScope] = useState<RankingScope>("local");
+  const [scope, setScope] = useState<RankingScope>("global");
 
   const rankingQuery = useQuery({
     queryKey: ["ranking", scope, profile?.city ?? "", profile?.state ?? ""],
