@@ -362,10 +362,12 @@ function NewMatchPage() {
         <Button
           className="w-full"
           size="lg"
-          disabled={!venueId || create.isPending || !user?.id}
+          disabled={!venueId || create.isPending}
+
           onClick={() => {
             if (!user?.id) {
-              toast.error("Você precisa estar logado para criar uma partida.");
+              console.error("User ID not found in useAuth", user);
+              toast.error("Erro de autenticação: seu ID de usuário não foi carregado.");
               return;
             }
             create.mutate();
