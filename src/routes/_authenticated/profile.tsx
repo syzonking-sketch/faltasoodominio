@@ -90,7 +90,7 @@ function ProfilePage() {
         ) : !profile ? (
           <div className="py-4 text-center">
             <p className="text-sm text-muted-foreground mb-4">
-              Não encontramos seus dados de perfil.
+              Não conseguimos carregar seus dados de jogador. Verifique se o perfil existe no banco de dados.
             </p>
             <Button 
               size="sm" 
