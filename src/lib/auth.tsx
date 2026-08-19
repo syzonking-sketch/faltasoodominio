@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from("profiles")
         .select("*")
         .eq("id", userId)
-        .maybeSingle();
+        .single(); // Mudança para .single() para detectar erro 406 Not Acceptable se não existir
 
       if (error) throw error;
       
