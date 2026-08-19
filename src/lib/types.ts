@@ -20,6 +20,8 @@ export interface Venue {
   id: string;
   name: string;
   address: string | null;
+  city: string | null;
+  state: string | null;
   latitude: number;
   longitude: number;
   description: string | null;

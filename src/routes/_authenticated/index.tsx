@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchMatches, fetchVenues } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 import { distanceMeters, formatDistance, useGeolocation } from "@/lib/geo";
 import { friendlyError } from "@/lib/supabase";
 
