@@ -243,11 +243,25 @@ export function MatchDrawer({
                         ? "ENCERRADA"
                         : "CANCELADA"}
                   </Badge>
-                  <p className="mt-1 text-[11px] text-muted-foreground capitalize">
-                    {match.match_type}
-                    {match.scheduled_at && ` · Início: ${new Date(match.scheduled_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
-                    {match.finished_at && ` · Fim: ${new Date(match.finished_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
-                  </p>
+                  <div className="mt-2 flex flex-col items-center gap-1">
+                    <Badge variant="outline" className="text-[9px] font-bold uppercase tracking-widest text-primary/80 border-primary/20">
+                      {match.match_type}
+                    </Badge>
+                    <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-medium">
+                      {match.scheduled_at && (
+                        <span className="flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary/40" />
+                          {new Date(match.scheduled_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      )}
+                      {match.finished_at && (
+                        <span className="flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
+                          {new Date(match.finished_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground">Time B</p>
