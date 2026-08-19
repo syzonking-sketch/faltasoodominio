@@ -21,6 +21,7 @@ const AuthContext = createContext<AuthContextValue>({
   profile: null,
   loading: true,
   profileLoading: false,
+  refetchProfile: async () => {},
   signOut: async () => {},
 });
 
