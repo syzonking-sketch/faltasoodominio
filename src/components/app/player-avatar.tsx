@@ -24,8 +24,8 @@ export function PlayerAvatar({
   className,
 }: {
   name: string;
-  nickname?: string | null;
-  photoUrl?: string | null;
+  nickname?: string | null | undefined;
+  photoUrl?: string | null | undefined;
   size?: keyof typeof sizes;
   className?: string;
 }) {
