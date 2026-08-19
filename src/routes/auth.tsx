@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
-import { PlayerAvatar } from "@/components/app/player-avatar";
+import { PlayerAvatar, GENERIC_AVATARS } from "@/components/app/player-avatar";
 import { FieldError } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/lib/auth";
 import { signInSchema, signUpSchema, type SignInValues, type SignUpValues } from "@/lib/schemas";
 import { friendlyError, isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -163,26 +164,49 @@ function AuthPage() {
 
             <TabsContent value="signup" className="mt-5">
               <form className="space-y-4" onSubmit={signUp.handleSubmit(handleSignUp)}>
-                <div className="flex flex-col gap-3 rounded-2xl bg-surface-2 p-4 border border-border/50">
+                <div className="flex flex-col gap-4 rounded-2xl bg-surface-2 p-4 border border-border/50">
                   <div className="flex items-center gap-4">
                     <PlayerAvatar
                       name={signUp.watch("full_name") || "Novo boleiro"}
                       nickname={nicknamePreview}
                       photoUrl={avatarPreview}
-                      size="xl"
+                      size="lg"
                     />
                     <div className="space-y-1">
-                      <p className="text-sm font-bold text-foreground">Sua Identidade Visual</p>
+                      <p className="text-sm font-bold text-foreground italic">ESCOLHA SEU AVATAR</p>
                       <p className="text-[11px] leading-relaxed text-muted-foreground">
-                        Plataforma premium não usa avatar genérico. Cole o link de uma foto real sua para ser reconhecido na elite.
+                        Selecione um dos avatares da galera ou cole um link se preferir algo único.
                       </p>
                     </div>
                   </div>
-                </div>
-                <div>
-                  <Label htmlFor="avatar_url">Foto de perfil (URL)</Label>
-                  <Input id="avatar_url" placeholder="https://..." {...signUp.register("avatar_url")} />
-                  <FieldError message={signUp.formState.errors.avatar_url?.message || "Cole o link de uma foto real (https://...)"} />
+                  
+                  <div className="grid grid-cols-6 gap-2">
+                    {GENERIC_AVATARS.map((avatar) => (
+                      <button
+                        key={avatar.id}
+                        type="button"
+                        onClick={() => signUp.setValue("avatar_url", avatar.url)}
+                        className={cn(
+                          "relative size-10 overflow-hidden rounded-full border-2 transition-all hover:scale-110",
+                          avatarPreview === avatar.url 
+                            ? "border-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]" 
+                            : "border-border hover:border-primary/50"
+                        )}
+                      >
+                        <img src={avatar.url} alt={avatar.label} className="size-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+
+                  <div>
+                    <Label htmlFor="avatar_url" className="text-[10px] uppercase tracking-tighter opacity-70">Ou cole um link de imagem</Label>
+                    <Input 
+                      id="avatar_url" 
+                      className="h-8 text-xs" 
+                      placeholder="https://..." 
+                      {...signUp.register("avatar_url")} 
+                    />
+                  </div>
                 </div>
                 <div>
                   <Label htmlFor="full_name">Nome completo</Label>
