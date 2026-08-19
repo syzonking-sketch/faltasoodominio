@@ -230,3 +230,7 @@
 .radar-ping {
   animation: radar-ping 2.2s ease-out infinite;
 }
+
+#lovable-badge {
+  display: none !important;
+}
