@@ -39,7 +39,7 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 function MapPage() {
-  const { coords, center, status, request, setCenter, searchLocation, isSearching } = useGeolocation();
+  const { coords, center, status, request, setCenter, searchLocation, isSearching, searchResults } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [lightMap, setLightMap] = useState(false);
@@ -203,6 +203,57 @@ function MapPage() {
                 className="card-glow border-border bg-surface/95 pl-9 backdrop-blur"
               />
             </div>
+            {search.length > 2 && (isSearching || (searchResults && searchResults.length > 0) || (venuesQuery.data && venuesQuery.data.length > 0)) && (
+              <div className="card-glow pointer-events-auto absolute inset-x-0 top-full z-500 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-border bg-surface/95 p-2 backdrop-blur">
+                {isSearching && (
+                  <div className="flex items-center justify-center p-4">
+                    <Loader2 className="size-5 animate-spin text-primary" />
+                  </div>
+                )}
+                
+                {/* Local Venues */}
+                {venuesQuery.data?.map(v => (
+                  <button
+                    key={v.id}
+                    type="button"
+                    onClick={() => {
+                      setCenter({ lat: Number(v.latitude), lng: Number(v.longitude) });
+                      setSearch(v.name);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-white/5"
+                  >
+                    <MapPin className="size-4 shrink-0 text-primary" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-foreground">{v.name}</p>
+                      <p className="truncate text-[10px] text-muted-foreground">{v.address || v.city}</p>
+                    </div>
+                    <Badge variant="outline" className="text-[9px] uppercase">Quadra</Badge>
+                  </button>
+                ))}
+
+                {/* Global Locations (Nominatim) */}
+                {searchResults?.map((res, i) => (
+                  <button
+                    key={`global-${i}`}
+                    type="button"
+                    onClick={() => {
+                      setCenter({ lat: parseFloat(res.lat), lng: parseFloat(res.lon) });
+                      setSearch(res.display_name);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-white/5"
+                  >
+                    <Radar className="size-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm text-foreground">{res.display_name}</p>
+                    </div>
+                  </button>
+                ))}
+
+                {!isSearching && !venuesQuery.data?.length && !searchResults?.length && (
+                  <p className="p-4 text-center text-xs text-muted-foreground">Nenhum local encontrado</p>
+                )}
+              </div>
+            )}
             <Button
               type="submit"
               size="icon"
