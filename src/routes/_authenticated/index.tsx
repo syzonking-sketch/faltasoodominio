@@ -285,7 +285,7 @@ function MapPage() {
               <p className="font-bold">GPS bloqueado — mostrando região padrão.</p>
               <p className="mt-1 opacity-90">
                 O app precisa saber que você está na quadra. 
-                Vá em Ajustes > Privacidade > Localização (no iPhone) ou clique no cadeado da URL e mude para "Permitir".
+                Vá em Ajustes {"->"} Privacidade {"->"} Localização (no iPhone) ou clique no cadeado da URL e mude para "Permitir".
               </p>
             </div>
           ) : null}
