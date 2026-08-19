@@ -51,6 +51,7 @@ function NewMatchPage() {
   const [newVenue, setNewVenue] = useState<{ name: string; address: string; coords: Coords } | null>(null);
   const [scheduledAt, setScheduledAt] = useState("");
   const [finishedAt, setFinishedAt] = useState("");
+  const [duration, setDuration] = useState<number>(60); // Default 60 mins
   const [error, setError] = useState<string | undefined>(undefined);
 
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
@@ -297,7 +298,17 @@ function NewMatchPage() {
               id="start-time"
               type="datetime-local" 
               value={scheduledAt}
-              onChange={(e) => setScheduledAt(e.target.value)}
+              onChange={(e) => {
+                const newStart = e.target.value;
+                setScheduledAt(newStart);
+                if (newStart) {
+                  const baseDate = new Date(newStart);
+                  const end = new Date(baseDate.getTime() + duration * 60000);
+                  const offset = end.getTimezoneOffset() * 60000;
+                  const localEnd = new Date(end.getTime() - offset).toISOString().slice(0, 16);
+                  setFinishedAt(localEnd);
+                }
+              }}
               className="w-full border-none bg-transparent p-0 text-[16px] font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
               aria-label="Data e hora de início"
             />
@@ -311,20 +322,23 @@ function NewMatchPage() {
               key={mins}
               type="button"
               onClick={() => {
+                setDuration(mins);
                 const baseDate = scheduledAt ? new Date(scheduledAt) : new Date();
-                const end = new Date(baseDate.getTime() + mins * 60000);
-                const offset = end.getTimezoneOffset() * 60000;
-                const localEnd = new Date(end.getTime() - offset).toISOString().slice(0, 16);
                 
+                // If starting from "now", set start time too
                 if (!scheduledAt) {
+                  const offset = baseDate.getTimezoneOffset() * 60000;
                   const localStart = new Date(baseDate.getTime() - offset).toISOString().slice(0, 16);
                   setScheduledAt(localStart);
                 }
+
+                const end = new Date((scheduledAt ? new Date(scheduledAt) : baseDate).getTime() + mins * 60000);
+                const offset = end.getTimezoneOffset() * 60000;
+                const localEnd = new Date(end.getTime() - offset).toISOString().slice(0, 16);
                 setFinishedAt(localEnd);
-                toast.info(`Duração definida para ${mins} minutos`);
               }}
               className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                scheduledAt && finishedAt && Math.floor((new Date(finishedAt).getTime() - new Date(scheduledAt).getTime()) / 60000) === mins
+                duration === mins
                   ? "border-primary bg-primary/20 text-primary"
                   : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-primary"
               }`}
