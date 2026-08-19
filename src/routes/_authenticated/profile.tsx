@@ -88,18 +88,27 @@ function ProfilePage() {
             <div className="animate-pulse rounded-md bg-primary/10 h-4 w-48" />
           </div>
         ) : !profile ? (
-          <div className="py-4 text-center">
-            <p className="text-sm text-muted-foreground mb-4">
-              Não conseguimos carregar seus dados de jogador. Verifique se o perfil existe no banco de dados.
-            </p>
+          <div className="py-8 text-center">
+            <div className="bg-destructive/10 text-destructive p-4 rounded-xl mb-6">
+              <p className="font-bold mb-1">Perfil não encontrado no banco</p>
+              <p className="text-xs opacity-80">
+                Os dados foram criados no Auth mas não migraram para a tabela Profiles. 
+                Isso geralmente acontece por erro de permissão (GRANT) ou RLS.
+              </p>
+            </div>
+            
             <Button 
-              size="sm" 
+              className="w-full mb-3"
               onClick={() => {
                 void refetchProfile();
               }}
             >
               Tentar carregar novamente
             </Button>
+            
+            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+              ID do Usuário: {user?.id}
+            </p>
           </div>
         ) : (
           <>

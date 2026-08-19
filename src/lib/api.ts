@@ -380,13 +380,15 @@ export async function ensureCurrentProfile(): Promise<void> {
   }
 
   if (!profile) {
-    console.log("Perfil não encontrado para usuário logado. Migrando dados do Auth para Profiles...");
+    console.log("ensureCurrentProfile: Perfil não encontrado para usuário logado. Migrando dados do Auth para Profiles...");
     const meta = user.user_metadata || {};
     
     // Tentamos extrair o máximo de info dos metadados do auth.users
     const fullName = meta['full_name'] || meta['name'] || user.email?.split('@')[0] || "Boleiro";
     const nickname = meta['nickname'] || String(fullName).split(' ')[0];
     const avatarUrl = meta['avatar_url'] || `https://api.dicebear.com/10.x/dylan/svg?seed=${user.id}`;
+    
+    console.log(`ensureCurrentProfile: Criando perfil para ${user.id} (${nickname})...`);
 
     const { error: insertError } = await supabase.from("profiles").upsert({
       id: user.id,
