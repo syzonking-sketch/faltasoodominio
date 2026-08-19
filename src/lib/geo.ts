@@ -72,8 +72,10 @@ export function useGeolocation() {
         setCenter(result);
         return result;
       }
+      return null;
     } catch (error) {
       console.error("Erro na busca de localização:", error);
+      return null;
     } finally {
       setIsSearching(false);
     }
