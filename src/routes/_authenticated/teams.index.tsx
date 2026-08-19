@@ -78,7 +78,10 @@ function TeamsPage() {
       form.reset();
       invalidate();
     },
-    onError: (error) => toast.error(friendlyError(error)),
+    onError: (error) => {
+      console.error("Erro ao criar clã:", error);
+      toast.error(friendlyError(error));
+    },
   });
 
   const join = useMutation({
