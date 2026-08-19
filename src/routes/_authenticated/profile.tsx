@@ -90,24 +90,34 @@ function ProfilePage() {
         ) : !profile ? (
           <div className="py-8 text-center">
             <div className="bg-destructive/10 text-destructive p-4 rounded-xl mb-6">
-              <p className="font-bold mb-1">Perfil não encontrado no banco</p>
-              <p className="text-xs opacity-80">
-                Os dados foram criados no Auth mas não migraram para a tabela Profiles. 
-                Isso geralmente acontece por erro de permissão (GRANT) ou RLS.
+              <p className="font-bold mb-1 text-sm uppercase">Perfil Não Sincronizado</p>
+              <p className="text-[10px] leading-tight opacity-80">
+                Seu usuário existe no Auth, mas o perfil não foi criado automaticamente na tabela Profiles. 
+                Clique no botão abaixo para tentar criar seu perfil agora.
               </p>
             </div>
             
             <Button 
-              className="w-full mb-3"
-              onClick={() => {
-                void refetchProfile();
+              className="w-full mb-4 bg-primary text-primary-foreground font-bold"
+              onClick={async () => {
+                const toastId = toast.loading("Sincronizando perfil...");
+                try {
+                  const res = await refetchProfile();
+                  if (res.data) {
+                    toast.success("Perfil sincronizado com sucesso!", { id: toastId });
+                  } else {
+                    toast.error("Ainda não conseguimos criar seu perfil. Tente novamente.", { id: toastId });
+                  }
+                } catch (e) {
+                  toast.error("Falha ao sincronizar.", { id: toastId });
+                }
               }}
             >
-              Tentar carregar novamente
+              CRIAR MEU PERFIL AGORA
             </Button>
             
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-              ID do Usuário: {user?.id}
+            <p className="text-[9px] text-muted-foreground uppercase tracking-widest break-all">
+              ID: {user?.id}
             </p>
           </div>
         ) : (
