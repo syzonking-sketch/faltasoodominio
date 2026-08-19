@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createMatch, createVenue, fetchVenues } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { supabase } from "@/lib/supabase";
 import { distanceMeters, formatDistance, GPS_CHECKIN_RADIUS, useGeolocation, type Coords } from "@/lib/geo";
 import { friendlyError } from "@/lib/supabase";
 import type { MatchType, ParticipantRole, TeamSide } from "@/lib/types";
