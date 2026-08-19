@@ -317,6 +317,27 @@ function NewMatchPage() {
           </div>
         </div>
 
+        <div className="flex flex-wrap justify-center gap-2">
+          {[60, 90, 120].map((mins) => (
+            <button
+              key={mins}
+              type="button"
+              onClick={() => {
+                if (!scheduledAt) return;
+                const start = new Date(scheduledAt);
+                const end = new Date(start.getTime() + mins * 60000);
+                // Adjust for local timezone offset for datetime-local
+                const offset = end.getTimezoneOffset() * 60000;
+                const localEnd = new Date(end.getTime() - offset).toISOString().slice(0, 16);
+                setFinishedAt(localEnd);
+              }}
+              className="rounded-full border border-border bg-card px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+            >
+              +{mins} min
+            </button>
+          ))}
+        </div>
+
         {scheduledAt && finishedAt && (
           <div className="flex justify-center">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
