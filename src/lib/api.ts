@@ -64,7 +64,7 @@ export async function fetchMatch(id: string): Promise<MatchWithRelations | null>
 export async function createMatch(input: {
   venue_id: string;
   created_by: string;
-  name?: string;
+  name?: string | null;
   match_type: "pelada" | "campeonato";
   role: ParticipantRole;
   team_side: TeamSide;

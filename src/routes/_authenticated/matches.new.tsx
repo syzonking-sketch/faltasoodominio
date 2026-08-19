@@ -106,7 +106,7 @@ function NewMatchPage() {
         venue_id: venueId,
         created_by: user?.id || "",
         match_type: matchType,
-        name: matchName || undefined,
+        name: matchName || null,
         role,
         team_side: side,
         checked_in_gps: withinRadius,
