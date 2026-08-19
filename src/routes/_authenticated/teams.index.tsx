@@ -51,7 +51,7 @@ export const Route = createFileRoute("/_authenticated/teams/")({
 });
 
 function TeamsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
 
@@ -60,14 +60,18 @@ function TeamsPage() {
 
   const form = useForm<TeamValues>({
     resolver: zodResolver(teamSchema),
-    defaultValues: { name: "", shield_url: "", city: "", state: "" },
+    defaultValues: { name: "", shield_url: "", city: profile?.city || "", state: profile?.state || "" },
   });
 
   const invalidate = () => void queryClient.invalidateQueries({ queryKey: ["teams"] });
 
   const create = useMutation({
-    mutationFn: (values: TeamValues) =>
-      createTeam({ ...values, state: values.state.toUpperCase(), captain_id: user!.id }),
+    mutationFn: async (values: TeamValues) => {
+      if (!user?.id) {
+        throw new Error("Sessão não carregada. Tente fazer login novamente.");
+      }
+      return createTeam({ ...values, state: values.state.toUpperCase(), captain_id: user.id });
+    },
     onSuccess: () => {
       toast.success("Clã fundado! Agora chame o elenco.");
       setOpen(false);
