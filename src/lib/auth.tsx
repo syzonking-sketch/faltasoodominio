@@ -38,7 +38,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         queryClient.clear();
       }
       if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
-        await queryClient.invalidateQueries({ queryKey: ["profile"] });
+        if (nextSession?.user.id) {
+          await queryClient.invalidateQueries({ queryKey: ["profile", nextSession.user.id] });
+        }
       }
     });
 
@@ -58,8 +60,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["profile", userId],
-    enabled: !!userId,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled: Boolean(userId),
+    staleTime: 0, // Disable staleTime for testing profile loading issues
     queryFn: async (): Promise<Profile | null> => {
       if (!userId) return null;
       console.log('Fetching profile for:', userId);
