@@ -307,7 +307,10 @@ function MapPage() {
       <div className="mx-auto max-w-2xl px-4 py-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-display text-xl text-foreground">Partidas ao vivo</h2>
-          <Badge className="bg-primary/20 text-primary">{matches.length}</Badge>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">No Radar</span>
+            <Badge className="bg-primary/20 text-primary">{matches.length}</Badge>
+          </div>
         </div>
 
         {matchesQuery.isPending ? (
