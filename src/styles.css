@@ -206,6 +206,11 @@
 
 .leaflet-tile-pane {
   filter: invert(100%) hue-rotate(180deg) brightness(0.6) contrast(1.2) saturate(0.5);
+  transition: filter 0.3s ease;
+}
+
+.light-map .leaflet-tile-pane {
+  filter: none !important;
 }
 
 .leaflet-control-attribution {
