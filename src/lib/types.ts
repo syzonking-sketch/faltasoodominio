@@ -29,6 +29,7 @@ export interface Venue {
 
 export interface Match {
   id: string;
+  name: string | null;
   venue_id: string;
   created_by: string;
   status: MatchStatus;
