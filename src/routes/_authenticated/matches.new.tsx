@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, MapPin, Plus } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Loader2, MapPin, Plus } from "lucide-react";
 import { lazy, useState } from "react";
 import { toast } from "sonner";
 
@@ -283,23 +283,35 @@ function NewMatchPage() {
         ) : null}
 
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="start-time" className="mb-2 block">Início</Label>
-            <Input 
-              id="start-time"
-              type="datetime-local" 
-              value={scheduledAt}
-              onChange={(e) => setScheduledAt(e.target.value)}
-            />
+          <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3">
+            <Label htmlFor="start-time" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <Calendar className="size-3 text-primary" /> Início
+            </Label>
+            <div className="relative">
+              <Input 
+                id="start-time"
+                type="datetime-local" 
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                className="border-none bg-transparent p-0 focus-visible:ring-0"
+              />
+              <Clock className="pointer-events-none absolute right-0 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/50" />
+            </div>
           </div>
-          <div>
-            <Label htmlFor="end-time" className="mb-2 block">Fim (Previsto)</Label>
-            <Input 
-              id="end-time"
-              type="datetime-local" 
-              value={finishedAt}
-              onChange={(e) => setFinishedAt(e.target.value)}
-            />
+          <div className="card-glow space-y-2 rounded-2xl border border-border bg-card/50 p-3">
+            <Label htmlFor="end-time" className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              <Clock className="size-3 text-primary" /> Fim (Previsto)
+            </Label>
+            <div className="relative">
+              <Input 
+                id="end-time"
+                type="datetime-local" 
+                value={finishedAt}
+                onChange={(e) => setFinishedAt(e.target.value)}
+                className="border-none bg-transparent p-0 focus-visible:ring-0"
+              />
+              <Calendar className="pointer-events-none absolute right-0 top-1/2 size-4 -translate-y-1/2 text-muted-foreground/50" />
+            </div>
           </div>
         </div>
 
