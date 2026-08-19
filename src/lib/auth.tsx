@@ -31,12 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const { data: sub } = supabase.auth.onAuthStateChange((event, nextSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
       if (!mounted) return;
       setSession(nextSession);
-      if (event === "SIGNED_OUT") queryClient.clear();
-      if (event === "SIGNED_IN" || event === "USER_UPDATED") {
-        void queryClient.invalidateQueries();
+      if (event === "SIGNED_OUT") {
+        queryClient.clear();
+      }
+      if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
+        await queryClient.invalidateQueries({ queryKey: ["profile"] });
       }
     });
 
@@ -56,14 +58,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const { data: profile, isLoading: profileLoading } = useQuery({
     queryKey: ["profile", userId],
-    enabled: Boolean(userId),
+    enabled: !!userId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
     queryFn: async (): Promise<Profile | null> => {
+      if (!userId) return null;
+      console.log('Fetching profile for:', userId);
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", userId!)
+        .eq("id", userId)
         .maybeSingle();
-      if (error) throw error;
+      if (error) {
+        console.error('Profile fetch error:', error);
+        throw error;
+      }
       return (data as Profile | null) ?? null;
     },
   });
