@@ -293,7 +293,7 @@ function NewMatchPage() {
                 type="datetime-local" 
                 value={scheduledAt}
                 onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full border-none bg-transparent p-0 text-sm font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+                className="w-full border-none bg-transparent p-0 text-[16px] font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
                 aria-label="Data e hora de início"
               />
               <Clock className="pointer-events-none absolute right-0 size-4 text-muted-foreground/50" />
@@ -309,7 +309,7 @@ function NewMatchPage() {
                 type="datetime-local" 
                 value={finishedAt}
                 onChange={(e) => setFinishedAt(e.target.value)}
-                className="w-full border-none bg-transparent p-0 text-sm font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
+                className="w-full border-none bg-transparent p-0 text-[16px] font-medium text-foreground outline-none focus:ring-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:inset-0 [&::-webkit-calendar-picker-indicator]:cursor-pointer [&::-webkit-calendar-picker-indicator]:opacity-0"
                 aria-label="Data e hora de término prevista"
               />
               <Calendar className="pointer-events-none absolute right-0 size-4 text-muted-foreground/50" />
