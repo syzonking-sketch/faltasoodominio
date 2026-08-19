@@ -76,7 +76,9 @@ function MapPage() {
   return (
     <AppShell title="Radar" bare>
       <div className="relative h-[65dvh] w-full border-b border-border/10">
-        <MapRadar center={center} me={coords} pins={pins} onSelect={setSelected} />
+        <ClientOnly fallback={<Skeleton className="h-full w-full rounded-none" />}>
+          <MapRadar center={center} me={coords} pins={pins} onSelect={setSelected} />
+        </ClientOnly>
 
         <div className="pt-safe pointer-events-none absolute inset-x-0 top-0 z-400 px-4">
           <div className="pointer-events-auto mx-auto flex max-w-2xl items-center gap-2">
