@@ -8,12 +8,12 @@ const sizes = {
 } as const;
 
 export const GENERIC_AVATARS = [
-  { id: "br", label: "Brasil", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" },
-  { id: "team1", label: "Time A", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aneka" },
-  { id: "team2", label: "Time B", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aiden" },
-  { id: "state", label: "Estado", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Caleb" },
-  { id: "player1", label: "Jogador 1", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jordan" },
-  { id: "player2", label: "Jogador 2", url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Taylor" },
+  { id: "v1", label: "Estilo 1", url: "https://api.dicebear.com/10.x/dylan/svg?seed=Felix" },
+  { id: "v2", label: "Estilo 2", url: "https://api.dicebear.com/10.x/dylan/svg?seed=Aneka" },
+  { id: "v3", label: "Estilo 3", url: "https://api.dicebear.com/10.x/dylan/svg?seed=Aiden" },
+  { id: "v4", label: "Estilo 4", url: "https://api.dicebear.com/10.x/dylan/svg?seed=Caleb" },
+  { id: "v5", label: "Estilo 5", url: "https://api.dicebear.com/10.x/dylan/svg?seed=Jordan" },
+  { id: "v6", label: "Estilo 6", url: "https://api.dicebear.com/10.x/dylan/svg?seed=Taylor" },
 ];
 
 export function PlayerAvatar({
