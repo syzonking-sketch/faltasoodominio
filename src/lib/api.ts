@@ -372,51 +372,50 @@ export async function fetchPlayerStats(userId: string): Promise<PlayerStats> {
  * Since we can't list auth.users directly from the client without admin keys,
  * this attempts to create a profile for the currently logged in user if it's missing.
  */
-export async function ensureCurrentProfile(): Promise<void> {
+export async function ensureCurrentProfile(): Promise<Profile | null> {
   const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return;
+  if (!user) return null;
 
   console.log(`ensureCurrentProfile: Verificando perfil para ID ${user.id}...`);
   const { data: profile, error: fetchError } = await supabase
     .from("profiles")
-    .select("id")
+    .select("*")
     .eq("id", user.id)
     .maybeSingle();
 
   if (fetchError) {
     console.error("ensureCurrentProfile: Erro ao buscar perfil:", fetchError);
-    // Se for um erro de permissão (42501) ou falta de RLS, pode ser a causa do carregamento infinito
-    if (fetchError.code === '42501') {
-      console.warn("ensureCurrentProfile: Falha de permissão RLS na tabela profiles.");
-    }
-    return;
+    return null;
   }
 
-  if (!profile) {
-    console.log("ensureCurrentProfile: Perfil não encontrado para usuário logado. Migrando dados do Auth para Profiles...");
-    const meta = user.user_metadata || {};
-    
-    // Tentamos extrair o máximo de info dos metadados do auth.users
-    const fullName = meta['full_name'] || meta['name'] || user.email?.split('@')[0] || "Boleiro";
-    const nickname = meta['nickname'] || String(fullName).split(' ')[0];
-    const avatarUrl = meta['avatar_url'] || `https://api.dicebear.com/10.x/dylan/svg?seed=${user.id}`;
-    
-    console.log(`ensureCurrentProfile: Criando perfil para ${user.id} (${nickname})...`);
+  if (profile) return profile as Profile;
 
-    const { error: insertError } = await supabase.from("profiles").upsert({
-      id: user.id,
-      full_name: fullName,
-      nickname: nickname,
-      avatar_url: avatarUrl,
-      city: meta['city'] || "",
-      state: meta['state'] || "",
-      updated_at: new Date().toISOString(),
-    }, { onConflict: 'id' });
+  console.log("ensureCurrentProfile: Perfil não encontrado. Criando...");
+  const meta = user.user_metadata || {};
+  const fullName = meta['full_name'] || meta['name'] || user.email?.split('@')[0] || "Boleiro";
+  const nickname = meta['nickname'] || String(fullName).split(' ')[0];
+  const avatarUrl = meta['avatar_url'] || `https://api.dicebear.com/10.x/dylan/svg?seed=${user.id}`;
+  
+  const newProfile = {
+    id: user.id,
+    full_name: fullName,
+    nickname: nickname,
+    avatar_url: avatarUrl,
+    city: meta['city'] || "",
+    state: meta['state'] || "",
+    updated_at: new Date().toISOString(),
+  };
 
-    if (insertError) {
-      console.error("Erro ao migrar perfil de usuário existente:", insertError);
-    } else {
-      console.log("Perfil migrado com sucesso.");
-    }
+  const { data: inserted, error: insertError } = await supabase
+    .from("profiles")
+    .upsert(newProfile, { onConflict: 'id' })
+    .select("*")
+    .single();
+
+  if (insertError) {
+    console.error("Erro ao migrar perfil de usuário existente:", insertError);
+    return null;
   }
+  
+  return inserted as Profile;
 }

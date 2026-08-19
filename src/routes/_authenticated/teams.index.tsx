@@ -122,44 +122,49 @@ function TeamsPage() {
               <Swords className="size-4" /> Contras
             </Link>
           </Button>
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={open} onOpenChange={(v) => {
+            setOpen(v);
+            if (v && profile) {
+              form.setValue("city", profile.city || "");
+              form.setValue("state", profile.state || "");
+            }
+          }}>
             <DialogTrigger asChild>
               <Button size="sm">Criar</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-[90vw] rounded-2xl">
               <DialogHeader>
                 <DialogTitle className="text-display text-2xl">Fundar um clã</DialogTitle>
               </DialogHeader>
               <form
-                className="space-y-3"
+                className="space-y-4 py-2"
                 onSubmit={form.handleSubmit((values) => create.mutate(values))}
               >
-                <div>
-                  <Label htmlFor="team-name">Nome do time</Label>
-                  <Input id="team-name" {...form.register("name")} />
+                <div className="space-y-1.5">
+                  <Label htmlFor="team-name" className="text-sm font-semibold">Nome do time</Label>
+                  <Input id="team-name" placeholder="Ex: Topa do Ouro Preto" {...form.register("name")} className="h-12 bg-surface-1" />
                   <FieldError message={form.formState.errors.name?.message} />
                 </div>
-                <div>
-                  <Label htmlFor="shield">Escudo (URL da imagem)</Label>
-                  <Input id="shield" placeholder="https://..." {...form.register("shield_url")} />
+                <div className="space-y-1.5">
+                  <Label htmlFor="shield" className="text-sm font-semibold">Escudo (URL da imagem)</Label>
+                  <Input id="shield" placeholder="https://lh3.googleusercontent.com/..." {...form.register("shield_url")} className="h-12 bg-surface-1" />
                   <FieldError message={form.formState.errors.shield_url?.message} />
                 </div>
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="col-span-2">
-                    <Label htmlFor="team-city">Cidade</Label>
-                    <Input id="team-city" {...form.register("city")} />
+                  <div className="col-span-2 space-y-1.5">
+                    <Label htmlFor="team-city" className="text-sm font-semibold">Cidade</Label>
+                    <Input id="team-city" placeholder="Nova Iguaçu" {...form.register("city")} className="h-12 bg-surface-1" />
                     <FieldError message={form.formState.errors.city?.message} />
                   </div>
-                  <div>
-                    <Label htmlFor="team-state">UF</Label>
-                    <Input id="team-state" maxLength={2} {...form.register("state")} />
+                  <div className="space-y-1.5">
+                    <Label htmlFor="team-state" className="text-sm font-semibold">UF</Label>
+                    <Input id="team-state" placeholder="RJ" maxLength={2} {...form.register("state")} className="h-12 bg-surface-1 uppercase text-center" />
                     <FieldError message={form.formState.errors.state?.message} />
                   </div>
                 </div>
-                <DialogFooter>
-                  <Button type="submit" disabled={create.isPending} className="w-full">
-                    {create.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                    Fundar clã
+                <DialogFooter className="pt-2">
+                  <Button type="submit" disabled={create.isPending} className="w-full h-12 text-lg font-bold shadow-gold/20 shadow-lg">
+                    {create.isPending ? <Loader2 className="size-5 animate-spin" /> : "Fundar clã"}
                   </Button>
                 </DialogFooter>
               </form>
