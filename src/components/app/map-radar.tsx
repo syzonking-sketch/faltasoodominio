@@ -30,7 +30,8 @@ function pinIcon(pin: RadarPin) {
             : ""
         }
         <div style="position:relative;display:grid;place-items:center;width:${size - 12}px;height:${size - 12}px;border-radius:9999px;background:${color};color:oklch(0.16 0.04 155);font-weight:900;font-family:'Barlow Condensed',sans-serif;font-size:16px;box-shadow:0 8px 20px -4px rgba(0,0,0,.9);border:2px solid rgba(255,255,255,.4);transition:transform 0.2s ease" class="hover:scale-110">
-          ${pin.players}
+          ${pin.live ? pin.players : ''}
+          ${!pin.live ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>' : ''}
         </div>
       </div>`,
   });
