@@ -355,28 +355,40 @@ export async function ensureCurrentProfile(): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
-  const { data: profile } = await supabase
+  const { data: profile, error: fetchError } = await supabase
     .from("profiles")
     .select("id")
     .eq("id", user.id)
     .maybeSingle();
 
+  if (fetchError) {
+    console.error("Erro ao buscar perfil:", fetchError);
+    return;
+  }
+
   if (!profile) {
-    console.log("Perfil não encontrado para usuário logado. Criando...");
+    console.log("Perfil não encontrado para usuário logado. Migrando dados do Auth para Profiles...");
     const meta = user.user_metadata || {};
-    const { error } = await supabase.from("profiles").insert({
+    
+    // Tentamos extrair o máximo de info dos metadados do auth.users
+    const fullName = meta['full_name'] || meta['name'] || user.email?.split('@')[0] || "Boleiro";
+    const nickname = meta['nickname'] || String(fullName).split(' ')[0];
+    const avatarUrl = meta['avatar_url'] || `https://api.dicebear.com/10.x/dylan/svg?seed=${user.id}`;
+
+    const { error: insertError } = await supabase.from("profiles").upsert({
       id: user.id,
-      full_name: meta['full_name'] || user.email?.split('@')[0],
-      nickname: meta['nickname'] || user.email?.split('@')[0],
-      avatar_url: meta['avatar_url'] || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`,
+      full_name: fullName,
+      nickname: nickname,
+      avatar_url: avatarUrl,
       city: meta['city'] || "",
       state: meta['state'] || "",
-    });
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'id' });
 
-    if (error) {
-      console.error("Erro ao criar perfil de fallback:", error);
+    if (insertError) {
+      console.error("Erro ao migrar perfil de usuário existente:", insertError);
     } else {
-      console.log("Perfil criado com sucesso.");
+      console.log("Perfil migrado com sucesso.");
     }
   }
 }
