@@ -79,15 +79,11 @@ function MapPage() {
     const filtered = list.filter((m) => {
       const venueName = m.venue?.name?.toLowerCase() ?? "";
       const venueAddress = m.venue?.address?.toLowerCase() ?? "";
-      const venueCity = m.venue?.city?.toLowerCase() ?? "";
-      const venueState = m.venue?.state?.toLowerCase() ?? "";
       const creatorNickname = m.creator?.nickname?.toLowerCase() ?? "";
       
       return (
         venueName.includes(term) ||
         venueAddress.includes(term) ||
-        venueCity.includes(term) ||
-        venueState.includes(term) ||
         creatorNickname.includes(term)
       );
     });
@@ -225,7 +221,7 @@ function MapPage() {
                     <MapPin className="size-4 shrink-0 text-primary" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-bold text-foreground">{v.name}</p>
-                      <p className="truncate text-[10px] text-muted-foreground">{v.address || v.city}</p>
+                      <p className="truncate text-[10px] text-muted-foreground">{v.address}</p>
                     </div>
                     <Badge variant="outline" className="text-[9px] uppercase">Quadra</Badge>
                   </button>
@@ -355,7 +351,6 @@ function MapPage() {
                         </p>
                         <p className="truncate text-xs text-muted-foreground">
                           {match.venue?.address}
-                          {match.venue?.city ? ` · ${match.venue.city}` : ""}
                           {dist !== null ? ` · ${formatDistance(dist)}` : ""}
                         </p>
                       </div>
