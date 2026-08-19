@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Crosshair, Plus, Radar, Search, Sun, Moon, Loader2 } from "lucide-react";
 import { lazy, useMemo, useState, useEffect, useCallback } from "react";
@@ -12,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchMatches } from "@/lib/api";
+import { fetchMatches, fetchVenues } from "@/lib/api";
 import { distanceMeters, formatDistance, useGeolocation } from "@/lib/geo";
 import { friendlyError } from "@/lib/supabase";
 
@@ -61,6 +62,12 @@ function MapPage() {
     queryKey: ["matches", "active"],
     queryFn: () => fetchMatches("active"),
     refetchInterval: 20000,
+  });
+
+  const venuesQuery = useQuery({
+    queryKey: ["venues", search],
+    queryFn: () => fetchVenues(search),
+    enabled: search.length > 2,
   });
 
   const matches = useMemo(() => {
@@ -119,22 +126,62 @@ function MapPage() {
     await searchLocation(search);
   }, [search, matches, searchLocation, setCenter]);
 
-  const pins: RadarPin[] = matches
-    .filter((m) => m.venue)
-    .map((m) => ({
-      id: m.id,
-      lat: Number(m.venue!.latitude),
-      lng: Number(m.venue!.longitude),
-      label: m.venue!.name,
-      players: m.participants.filter((p) => p.role === "player").length,
-      live: m.status === "active",
-    }));
+  const pins: RadarPin[] = useMemo(() => {
+    // Collect unique venues from matches
+    const venuePins: Record<string, RadarPin> = {};
+    
+    // Add venues from active matches
+    matches.forEach(m => {
+      if (m.venue && !venuePins[m.venue.id]) {
+        venuePins[m.venue.id] = {
+          id: m.venue.id,
+          lat: Number(m.venue.latitude),
+          lng: Number(m.venue.longitude),
+          label: m.venue.name,
+          players: m.participants.filter((p) => p.role === "player").length,
+          live: true,
+          matchId: m.id
+        };
+      }
+    });
+
+    // Add venues from search results if not already there
+    if (venuesQuery.data) {
+      venuesQuery.data.forEach(v => {
+        if (!venuePins[v.id]) {
+          venuePins[v.id] = {
+            id: v.id,
+            lat: Number(v.latitude),
+            lng: Number(v.longitude),
+            label: v.name,
+            players: 0,
+            live: false
+          };
+        }
+      });
+    }
+
+    return Object.values(venuePins);
+  }, [matches, venuesQuery.data]);
 
   return (
     <AppShell title="Radar" bare>
       <div className="relative h-[65dvh] w-full border-b border-border/10">
         <ClientOnly fallback={<Skeleton className="h-full w-full rounded-none" />}>
-          <MapRadar center={center} me={coords} pins={pins} onSelect={setSelected} />
+          <MapRadar 
+            center={center} 
+            me={coords} 
+            pins={pins} 
+            onSelect={(id) => {
+              const pin = pins.find(p => p.id === id);
+              if (pin?.matchId) {
+                setSelected(pin.matchId);
+              } else {
+                // If it's a venue without an active match, maybe show a hint
+                toast.info(`Quadra: ${pin?.label}. Nenhuma partida ao vivo no momento.`);
+              }
+            }} 
+          />
         </ClientOnly>
 
         <div className="pt-safe pointer-events-none absolute inset-x-0 top-0 z-400 px-4">

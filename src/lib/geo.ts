@@ -59,11 +59,13 @@ export function useGeolocation() {
     if (!query.trim()) return;
     setIsSearching(true);
     try {
+      // 1. First search via OSM Nominatim for geographical coordinates
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
-        { headers: { 'Accept-Language': 'pt-BR' } }
+        { headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'TheMatchApp/1.0' } }
       );
       const data = await response.json();
+      
       if (data && data.length > 0) {
         const result = {
           lat: parseFloat(data[0].lat),
