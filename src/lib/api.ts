@@ -363,6 +363,7 @@ export async function ensureCurrentProfile(): Promise<void> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) return;
 
+  console.log(`ensureCurrentProfile: Verificando perfil para ID ${user.id}...`);
   const { data: profile, error: fetchError } = await supabase
     .from("profiles")
     .select("id")
@@ -370,7 +371,11 @@ export async function ensureCurrentProfile(): Promise<void> {
     .maybeSingle();
 
   if (fetchError) {
-    console.error("Erro ao buscar perfil:", fetchError);
+    console.error("ensureCurrentProfile: Erro ao buscar perfil:", fetchError);
+    // Se for um erro de permissão (42501) ou falta de RLS, pode ser a causa do carregamento infinito
+    if (fetchError.code === '42501') {
+      console.warn("ensureCurrentProfile: Falha de permissão RLS na tabela profiles.");
+    }
     return;
   }
 

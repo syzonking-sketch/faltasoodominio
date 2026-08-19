@@ -83,13 +83,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (error) throw error;
       
       if (!data) {
+        console.log("AuthProvider: Perfil não encontrado, tentando criar...");
         // Fallback: try to ensure profile exists if missing
         await ensureCurrentProfile();
-        const { data: retriedData } = await supabase
+        const { data: retriedData, error: retryError } = await supabase
           .from("profiles")
           .select("*")
           .eq("id", userId)
           .maybeSingle();
+        
+        if (retryError) {
+          console.error("AuthProvider: Erro na segunda tentativa de buscar perfil:", retryError);
+          throw retryError;
+        }
+        
         return (retriedData as Profile | null) ?? null;
       }
 
