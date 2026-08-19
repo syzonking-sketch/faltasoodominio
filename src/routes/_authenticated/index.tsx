@@ -126,7 +126,16 @@ function MapPage() {
                 aria-label="Buscar partidas"
                 className="card-glow border-border bg-surface/95 pl-9 backdrop-blur"
               />
-            </div>
+            <Button
+              size="icon"
+              variant="secondary"
+              aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
+              onClick={() => setLightMap(!lightMap)}
+              className="card-glow border-border bg-surface/95 backdrop-blur"
+            >
+              {lightMap ? <Moon className="size-4" /> : <Sun className="size-4" />}
+            </Button>
+          </div>
             <Button
               size="icon"
               variant="secondary"
