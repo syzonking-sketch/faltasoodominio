@@ -109,13 +109,13 @@ function AuthPage() {
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <span className="text-display inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-            Futebol de várzea ao vivo
+            A Elite da Várzea
           </span>
-          <h1 className="text-display mt-4 text-5xl leading-none font-extrabold text-foreground">
-            The <span className="text-primary">Match</span>
+          <h1 className="text-display mt-4 text-6xl leading-none font-extrabold tracking-tight text-foreground italic">
+            THE <span className="text-primary">MATCH</span>
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Radar de peladas, notas de verdade e ranking da quebrada.
+          <p className="mt-2 text-sm font-medium text-muted-foreground uppercase tracking-widest">
+            Radar Pro · Notas Reais · Ranking Elite
           </p>
         </div>
 
@@ -156,7 +156,7 @@ function AuthPage() {
                 </div>
                 <Button type="submit" className="w-full" disabled={submitting}>
                   {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-                  Entrar em campo
+                  CONVOCAR JOGADOR
                 </Button>
               </form>
             </TabsContent>
@@ -218,7 +218,7 @@ function AuthPage() {
                 </div>
                 <Button type="submit" className="w-full" disabled={submitting}>
                   {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-                  Criar carteira do boleiro
+                  REGISTRAR NO ELENCO
                 </Button>
               </form>
             </TabsContent>
