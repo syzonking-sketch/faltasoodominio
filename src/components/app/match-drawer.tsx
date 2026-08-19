@@ -256,12 +256,6 @@ export function MatchDrawer({
                           {new Date(match.scheduled_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
                         </span>
                       )}
-                      {match.finished_at && (
-                        <span className="flex items-center gap-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40" />
-                          {new Date(match.finished_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
