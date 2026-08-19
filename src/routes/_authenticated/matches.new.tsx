@@ -51,7 +51,8 @@ function NewMatchPage() {
   const [newVenue, setNewVenue] = useState<{ name: string; address: string; coords: Coords } | null>(null);
   const [scheduledAt, setScheduledAt] = useState("");
   const [finishedAt, setFinishedAt] = useState("");
-  const [duration, setDuration] = useState<number>(60); // Default 60 mins
+  const [duration, setDuration] = useState<number>(60);
+  const [matchName, setMatchName] = useState("");
   const [error, setError] = useState<string | undefined>(undefined);
 
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
@@ -105,6 +106,7 @@ function NewMatchPage() {
         venue_id: venueId,
         created_by: user?.id || "",
         match_type: matchType,
+        name: matchName || null,
         role,
         team_side: side,
         checked_in_gps: withinRadius,
@@ -232,6 +234,17 @@ function NewMatchPage() {
               para cadastrar uma nova.
             </p>
           )}
+        </div>
+
+        <div>
+          <Label htmlFor="match-name" className="mb-2 block">Nome da partida (opcional)</Label>
+          <Input
+            id="match-name"
+            value={matchName}
+            onChange={(e) => setMatchName(e.target.value)}
+            placeholder="Ex: Pelada dos Amigos, Final da Champions..."
+            className="rounded-2xl"
+          />
         </div>
 
         <div>

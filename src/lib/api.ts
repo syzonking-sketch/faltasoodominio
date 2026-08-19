@@ -64,6 +64,7 @@ export async function fetchMatch(id: string): Promise<MatchWithRelations | null>
 export async function createMatch(input: {
   venue_id: string;
   created_by: string;
+  name?: string | null;
   match_type: "pelada" | "campeonato";
   role: ParticipantRole;
   team_side: TeamSide;
@@ -77,6 +78,7 @@ export async function createMatch(input: {
       .insert({
         venue_id: input.venue_id,
         created_by: input.created_by,
+        name: input.name || null,
         match_type: input.match_type,
         status: "active",
         scheduled_at: input.scheduled_at || new Date().toISOString(),
