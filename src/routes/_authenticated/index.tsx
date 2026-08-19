@@ -126,23 +126,13 @@ function MapPage() {
                 aria-label="Buscar partidas"
                 className="card-glow border-border bg-surface/95 pl-9 backdrop-blur"
               />
-            <Button
-              size="icon"
-              variant="secondary"
-              aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
-              onClick={() => setLightMap(!lightMap)}
-              className="card-glow border-border bg-surface/95 backdrop-blur"
-            >
-              {lightMap ? <Moon className="size-4" /> : <Sun className="size-4" />}
-            </Button>
-          </div>
+            </div>
             <Button
               size="icon"
               variant="secondary"
               aria-label="Centralizar no meu GPS"
               onClick={() => {
                 request();
-                // If we have coords, the Recenter component handles it, but we can also manually trigger if needed
               }}
               className="card-glow border-border bg-surface/95 backdrop-blur"
             >
@@ -158,6 +148,18 @@ function MapPage() {
               </p>
             </div>
           ) : null}
+        </div>
+
+        <div className="absolute right-4 bottom-24 z-400 flex flex-col gap-2">
+          <Button
+            size="icon"
+            variant="secondary"
+            aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
+            onClick={() => setLightMap(!lightMap)}
+            className="card-glow size-12 rounded-full border-border bg-surface/95 shadow-lg backdrop-blur"
+          >
+            {lightMap ? <Moon className="size-5" /> : <Sun className="size-5" />}
+          </Button>
         </div>
 
         <div className="absolute right-4 bottom-6 z-400 flex flex-col gap-2">
