@@ -115,8 +115,8 @@ function AuthPage() {
 
       if (profileError) {
         console.error("Erro crítico na sincronização do perfil:", profileError);
-        // Se houver erro de permissão (403) ou RLS, avisamos o usuário que o perfil pode demorar
-        if (profileError.code === '42501' || profileError.status === 403) {
+        // Se houver erro de RLS (42501), avisamos o usuário que o perfil pode demorar
+        if (profileError.code === '42501') {
           toast.warning("Conta criada, mas seu perfil pode demorar alguns segundos para aparecer devido às permissões do banco.");
         }
       } else {
