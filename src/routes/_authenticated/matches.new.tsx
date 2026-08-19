@@ -96,7 +96,7 @@ function NewMatchPage() {
           GPS_CHECKIN_RADIUS;
       return createMatch({
         venue_id: venueId,
-        created_by: user!.id,
+        created_by: user?.id || "",
         match_type: matchType,
         role,
         team_side: side,
@@ -352,8 +352,14 @@ function NewMatchPage() {
         <Button
           className="w-full"
           size="lg"
-          disabled={!venueId || create.isPending}
-          onClick={() => create.mutate()}
+          disabled={!venueId || create.isPending || !user?.id}
+          onClick={() => {
+            if (!user?.id) {
+              toast.error("Você precisa estar logado para criar uma partida.");
+              return;
+            }
+            create.mutate();
+          }}
         >
           {create.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
           Colocar a bola pra rolar
