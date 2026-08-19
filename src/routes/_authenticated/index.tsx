@@ -38,7 +38,7 @@ export const Route = createFileRoute("/_authenticated/")({
 });
 
 function MapPage() {
-  const { coords, center, status, request } = useGeolocation();
+  const { coords, center, status, request, setCenter } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -51,8 +51,10 @@ function MapPage() {
   const matches = useMemo(() => {
     const list = matchesQuery.data ?? [];
     const term = search.trim().toLowerCase();
+    
     if (!term) return list;
-    return list.filter(
+
+    const filtered = list.filter(
       (m) =>
         m.venue?.name.toLowerCase().includes(term) ||
         m.venue?.address?.toLowerCase().includes(term) ||
@@ -60,7 +62,15 @@ function MapPage() {
         m.venue?.state?.toLowerCase().includes(term) ||
         m.creator?.nickname.toLowerCase().includes(term),
     );
-  }, [matchesQuery.data, search]);
+
+    // If there's a match and we have coordinates for the first result, move the map
+    if (filtered.length > 0 && filtered[0].venue) {
+      const v = filtered[0].venue;
+      setCenter({ lat: Number(v.latitude), lng: Number(v.longitude) });
+    }
+
+    return filtered;
+  }, [matchesQuery.data, search, setCenter]);
 
   const pins: RadarPin[] = matches
     .filter((m) => m.venue)
