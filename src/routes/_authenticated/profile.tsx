@@ -55,7 +55,7 @@ function ProfilePage() {
   const statsQuery = useQuery({
     queryKey: ["player-stats", user?.id],
     queryFn: () => fetchPlayerStats(user!.id),
-    enabled: Boolean(user?.id),
+    enabled: Boolean(user?.id && profile),
   });
 
   const save = useMutation({
