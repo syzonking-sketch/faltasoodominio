@@ -24,7 +24,7 @@ export function friendlyError(error: unknown): string {
   if (/Invalid login credentials/i.test(message)) return "E-mail ou senha incorretos.";
   if (/User already registered/i.test(message)) return "Este e-mail já está cadastrado.";
   if (/Email not confirmed/i.test(message)) return "E-mail não confirmado. Verifique sua caixa de entrada.";
-  if (/rate limit/i.test(message)) return "Muitas tentativas. Aguarde um momento e tente novamente.";
+  if (/rate limit|too many requests/i.test(message)) return "Muitas tentativas. Aguarde um momento e tente novamente.";
   if (/Password should be/i.test(message)) return "A senha precisa ter pelo menos 6 caracteres.";
   if (/duplicate key/i.test(message)) return "Esse registro já existe.";
   if (/row-level security/i.test(message)) return "Você não tem permissão para essa ação.";
