@@ -121,9 +121,14 @@ function NewMatchPage() {
       void queryClient.invalidateQueries({ queryKey: ["matches"] });
       void navigate({ to: "/" });
     },
-    onError: (err) => {
-      setError(friendlyError(err));
-      toast.error(friendlyError(err));
+    onError: (err: any) => {
+      const msg = friendlyError(err);
+      const isRLS = msg.includes("RLS") || (err?.message && err.message.includes("row-level security"));
+      const finalMsg = isRLS 
+        ? "Erro de permissão no banco de dados. Você precisa executar o script SQL de atualização no painel do seu projeto Supabase."
+        : msg;
+      setError(finalMsg);
+      toast.error(finalMsg, { duration: 6000 });
     },
   });
 
