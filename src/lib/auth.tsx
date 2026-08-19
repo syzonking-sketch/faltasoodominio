@@ -65,22 +65,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const userId = session?.user.id ?? null;
 
-  const { data: profile, isLoading: profileLoading } = useQuery({
+  const { data: profile, isLoading: profileLoading, refetch: refetchProfile } = useQuery({
     queryKey: ["profile", userId],
     enabled: Boolean(userId),
-    staleTime: 0, // Disable staleTime for testing profile loading issues
+    staleTime: 1000 * 60 * 5, // 5 minutes
     queryFn: async (): Promise<Profile | null> => {
       if (!userId) return null;
-      console.log('Fetching profile for:', userId);
+      
       const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", userId)
         .maybeSingle();
-      if (error) {
-        console.error('Profile fetch error:', error);
-        throw error;
+
+      if (error) throw error;
+      
+      if (!data) {
+        // Fallback: try to ensure profile exists if missing
+        await ensureCurrentProfile();
+        const { data: retriedData } = await supabase
+          .from("profiles")
+          .select("*")
+          .eq("id", userId)
+          .maybeSingle();
+        return (retriedData as Profile | null) ?? null;
       }
+
       return (data as Profile | null) ?? null;
     },
   });
