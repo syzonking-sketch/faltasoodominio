@@ -56,6 +56,8 @@ function MapPage() {
       (m) =>
         m.venue?.name.toLowerCase().includes(term) ||
         m.venue?.address?.toLowerCase().includes(term) ||
+        m.venue?.city?.toLowerCase().includes(term) ||
+        m.venue?.state?.toLowerCase().includes(term) ||
         m.creator?.nickname.toLowerCase().includes(term),
     );
   }, [matchesQuery.data, search]);
@@ -171,7 +173,8 @@ function MapPage() {
                           {match.venue?.name ?? "Quadra"}
                         </p>
                         <p className="truncate text-xs text-muted-foreground">
-                          {match.venue?.address ?? "Sem endereço"}
+                          {match.venue?.address}
+                          {match.venue?.city ? ` · ${match.venue.city}` : ""}
                           {dist !== null ? ` · ${formatDistance(dist)}` : ""}
                         </p>
                       </div>

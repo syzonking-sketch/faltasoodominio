@@ -35,6 +35,8 @@ export async function fetchVenues(): Promise<Venue[]> {
 export async function createVenue(input: {
   name: string;
   address: string;
+  city: string;
+  state: string;
   latitude: number;
   longitude: number;
 }): Promise<Venue> {
