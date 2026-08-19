@@ -330,11 +330,14 @@ export interface PlayerStats {
 }
 
 export async function fetchPlayerStats(userId: string): Promise<PlayerStats> {
-  const ratings = await fetchRatingsForUser(userId);
-  const participations = unwrap<{ match_id: string }[]>(
-    await supabase.from("match_participants").select("match_id").eq("user_id", userId),
-  );
-  const total = ratings.reduce((sum, rating) => sum + rating.score, 0);
+  const [ratingsResult, participationsResult] = await Promise.all([
+    supabase.from("ratings").select("score").eq("evaluated_user_id", userId),
+    supabase.from("match_participants").select("match_id").eq("user_id", userId)
+  ]);
+
+  const ratings = (ratingsResult.data || []) as { score: number }[];
+  const participations = (participationsResult.data || []) as { match_id: string }[];
+  const total = ratings.reduce((sum, r) => sum + r.score, 0);
 
   return {
     avg_score: ratings.length > 0 ? total / ratings.length : 0,
