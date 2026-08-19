@@ -80,11 +80,18 @@ export async function createMatch(input: {
     throw new Error("Sua sessão não carregou corretamente. Entre novamente e tente criar a partida.");
   }
 
+  const { data: { user } } = await supabase.auth.getUser();
+  const createdBy = user?.id || input.created_by;
+
+  if (!uuidPattern.test(createdBy)) {
+    throw new Error("Sua sessão não carregou corretamente. Entre novamente e tente criar a partida.");
+  }
+
   const matchResponse = await supabase
     .from("matches")
     .insert({
       venue_id: input.venue_id,
-      created_by: input.created_by,
+      created_by: createdBy,
       name: input.name || null,
       match_type: input.match_type,
       status: "active",
@@ -98,7 +105,7 @@ export async function createMatch(input: {
   unwrap<unknown>(
     await supabase.from("match_participants").insert({
       match_id: match.id,
-      user_id: input.created_by,
+      user_id: createdBy,
       role: input.role,
       team_side: input.role === "player" ? input.team_side : null,
       checked_in_gps: input.checked_in_gps,
@@ -202,14 +209,25 @@ export async function createTeam(input: {
   state: string;
   captain_id: string;
 }): Promise<Team> {
-  const teamResponse = await supabase.from("teams").insert(input).select("*").single();
+  const { data: { user } } = await supabase.auth.getUser();
+  const captainId = user?.id || input.captain_id;
+
+  if (!captainId) {
+    throw new Error("Sessão não carregada. Tente fazer login novamente.");
+  }
+
+  const teamResponse = await supabase.from("teams").insert({
+    ...input,
+    captain_id: captainId
+  }).select("*").single();
+  
   const team = unwrap<Team>(teamResponse);
   
   const memberResponse = await supabase
     .from("team_members")
     .insert({ 
       team_id: team.id, 
-      user_id: input.captain_id, 
+      user_id: captainId, 
       status: "active" 
     });
   
@@ -217,8 +235,6 @@ export async function createTeam(input: {
     unwrap<unknown>(memberResponse);
   } catch (err) {
     console.error("Erro ao adicionar capitão como membro do time:", err);
-    // Não falhamos a criação do time se apenas a entrada no elenco falhar, 
-    // mas informamos no log para depuração.
   }
   
   return team;
