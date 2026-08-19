@@ -92,11 +92,32 @@ function AuthPage() {
         },
       },
     });
-    setSubmitting(false);
+
     if (error) {
+      setSubmitting(false);
       toast.error(friendlyError(error));
       return;
     }
+
+    // Manual profile insertion as a fallback in case the trigger fails or hasn't been set up yet
+    if (data.user) {
+      const { error: profileError } = await supabase.from("profiles").insert({
+        id: data.user.id,
+        full_name: values.full_name,
+        nickname: values.nickname,
+        avatar_url: values.avatar_url,
+        city: values.city,
+        state: values.state.toUpperCase(),
+      });
+
+      if (profileError && !profileError.message.includes("duplicate key")) {
+        console.error("Profile sync error:", profileError);
+        // We don't block the user if the profile insert fails but they are authenticated, 
+        // as they might just need to confirm email or the trigger might actually work.
+      }
+    }
+
+    setSubmitting(false);
     if (!data.session) {
       toast.success("Conta criada! Verifique seu e-mail para confirmar o acesso.");
       return;
