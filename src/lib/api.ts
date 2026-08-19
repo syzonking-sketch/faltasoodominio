@@ -41,6 +41,8 @@ export async function fetchVenues(search?: string): Promise<Venue[]> {
 export async function createVenue(input: {
   name: string;
   address: string;
+  city?: string | null;
+  state?: string | null;
   latitude: number;
   longitude: number;
 }): Promise<Venue> {
@@ -49,10 +51,30 @@ export async function createVenue(input: {
 
 /* --------------------------------- Matches --------------------------------- */
 
-export async function fetchMatches(status?: "active" | "finished"): Promise<MatchWithRelations[]> {
+export async function fetchMatches(status?: "active" | "finished", filter?: { city?: string | null | undefined, state?: string | null | undefined }): Promise<MatchWithRelations[]> {
   let query = supabase.from("matches").select(MATCH_SELECT).order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
-  return unwrap<MatchWithRelations[]>(await query);
+  
+  const results = unwrap<MatchWithRelations[]>(await query);
+
+  // Filtragem e ordenação por Bairro/Estado
+  if (filter?.state) {
+    const state = filter.state.toUpperCase();
+    const city = filter.city?.toLowerCase();
+
+    return results.filter(m => m.venue?.state?.toUpperCase() === state)
+      .sort((a, b) => {
+        const cityA = a.venue?.city?.toLowerCase();
+        const cityB = b.venue?.city?.toLowerCase();
+
+        // Se ambos são da mesma cidade do usuário, mantém ordem original ou por distância se disponível
+        if (cityA === city && cityB !== city) return -1;
+        if (cityA !== city && cityB === city) return 1;
+        return 0;
+      });
+  }
+
+  return results;
 }
 
 export async function fetchMatch(id: string): Promise<MatchWithRelations | null> {
