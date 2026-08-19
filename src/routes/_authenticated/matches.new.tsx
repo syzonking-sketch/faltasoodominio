@@ -80,7 +80,10 @@ function NewMatchPage() {
       setVenueId(venue.id);
       void queryClient.invalidateQueries({ queryKey: ["venues"] });
     },
-    onError: (err) => toast.error(friendlyError(err)),
+    onError: (err) => {
+      console.error("Erro ao salvar quadra:", err);
+      toast.error(friendlyError(err));
+    },
   });
 
   const create = useMutation({
