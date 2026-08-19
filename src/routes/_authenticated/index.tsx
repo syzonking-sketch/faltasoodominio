@@ -114,12 +114,15 @@ function MapPage() {
           ) : null}
         </div>
 
-        <Link
-          to="/matches/new"
-          className="card-glow absolute right-4 bottom-4 z-400 inline-flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-bold text-primary-foreground"
-        >
-          <Plus className="size-4" /> Criar partida
-        </Link>
+        <div className="absolute right-4 bottom-6 z-400 flex flex-col gap-2">
+          <Link
+            to="/matches/new"
+            className="card-glow inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg active:scale-95 transition-transform"
+            aria-label="Criar nova partida"
+          >
+            <Plus className="size-6" />
+          </Link>
+        </div>
       </div>
 
       <div className="mx-auto max-w-2xl px-4 py-4">

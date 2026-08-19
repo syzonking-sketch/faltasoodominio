@@ -85,13 +85,20 @@ export default function MapRadar({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <Recenter center={center} />
-      {me ? <Marker position={[me.lat, me.lng]} icon={meIcon()} /> : null}
+      {me ? (
+        <Marker 
+          position={[me.lat, me.lng]} 
+          icon={meIcon()} 
+          zIndexOffset={1000}
+        />
+      ) : null}
       {pins.map((pin) => (
         <Marker
           key={pin.id}
           position={[pin.lat, pin.lng]}
           icon={pinIcon(pin)}
           eventHandlers={{ click: () => onSelect?.(pin.id) }}
+          zIndexOffset={pin.live ? 500 : 0}
         />
       ))}
     </MapContainer>

@@ -199,8 +199,9 @@
 
 /* Leaflet: keep OSM tiles on-theme for the night-radar look */
 .leaflet-container {
-  background: var(--background);
+  background: oklch(0.12 0.02 260);
   font-family: var(--font-sans);
+  cursor: crosshair !important;
 }
 
 .leaflet-tile-pane {
