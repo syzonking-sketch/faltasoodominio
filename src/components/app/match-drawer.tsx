@@ -245,6 +245,8 @@ export function MatchDrawer({
                   </Badge>
                   <p className="mt-1 text-[11px] text-muted-foreground capitalize">
                     {match.match_type}
+                    {match.scheduled_at && ` · Início: ${new Date(match.scheduled_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
+                    {match.finished_at && ` · Fim: ${new Date(match.finished_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}`}
                   </p>
                 </div>
                 <div className="text-center">

@@ -358,10 +358,15 @@ function MapPage() {
                         <p className="text-display text-2xl font-extrabold text-primary">
                           {match.score_team_a}–{match.score_team_b}
                         </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          {match.participants.filter((p) => p.role === "player").length} jogadores ·{" "}
-                          {match.participants.filter((p) => p.role === "spectator").length} torcida
+                        <p className="text-[10px] text-muted-foreground">
+                          {match.participants.filter((p) => p.role === "player").length} J ·{" "}
+                          {match.participants.filter((p) => p.role === "spectator").length} T
                         </p>
+                        {match.scheduled_at && (
+                          <p className="mt-0.5 text-[9px] font-bold text-primary">
+                            {new Date(match.scheduled_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </button>

@@ -68,6 +68,8 @@ export async function createMatch(input: {
   role: ParticipantRole;
   team_side: TeamSide;
   checked_in_gps: boolean;
+  scheduled_at?: string | null;
+  finished_at?: string | null;
 }): Promise<string> {
   const match = unwrap<{ id: string }>(
     await supabase
@@ -77,6 +79,8 @@ export async function createMatch(input: {
         created_by: input.created_by,
         match_type: input.match_type,
         status: "active",
+        scheduled_at: input.scheduled_at || new Date().toISOString(),
+        finished_at: input.finished_at || null,
       })
       .select("id")
       .single(),

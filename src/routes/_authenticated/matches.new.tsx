@@ -49,6 +49,8 @@ function NewMatchPage() {
   const [role, setRole] = useState<ParticipantRole>("player");
   const [side, setSide] = useState<TeamSide>("A");
   const [newVenue, setNewVenue] = useState<{ name: string; address: string; coords: Coords } | null>(null);
+  const [scheduledAt, setScheduledAt] = useState("");
+  const [finishedAt, setFinishedAt] = useState("");
   const [error, setError] = useState<string | undefined>(undefined);
 
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
@@ -96,6 +98,8 @@ function NewMatchPage() {
         role,
         team_side: side,
         checked_in_gps: withinRadius,
+        scheduled_at: scheduledAt ? new Date(scheduledAt).toISOString() : null,
+        finished_at: finishedAt ? new Date(finishedAt).toISOString() : null,
       });
     },
     onSuccess: () => {
@@ -274,6 +278,27 @@ function NewMatchPage() {
             </div>
           </div>
         ) : null}
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="start-time" className="mb-2 block">Início</Label>
+            <Input 
+              id="start-time"
+              type="datetime-local" 
+              value={scheduledAt}
+              onChange={(e) => setScheduledAt(e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="end-time" className="mb-2 block">Fim (Previsto)</Label>
+            <Input 
+              id="end-time"
+              type="datetime-local" 
+              value={finishedAt}
+              onChange={(e) => setFinishedAt(e.target.value)}
+            />
+          </div>
+        </div>
 
         <FieldError message={error} />
 
