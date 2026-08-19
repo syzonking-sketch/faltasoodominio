@@ -1,13 +1,14 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { LogOut, ShieldCheck, Star, Trophy } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app/app-shell";
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { StarRating } from "@/components/app/star-rating";
 import { ErrorState, ListSkeleton } from "@/components/app/states";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,13 +35,21 @@ export const Route = createFileRoute("/_authenticated/profile")({
 });
 
 function ProfilePage() {
-  const { user, profile } = useAuth();
+  const { user, profile, profileLoading } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
-  const [nickname, setNickname] = useState(profile?.nickname ?? "");
-  const [city, setCity] = useState(profile?.city ?? "");
-  const [state, setState] = useState(profile?.state ?? "");
+  const [nickname, setNickname] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+
+  useEffect(() => {
+    if (profile) {
+      setNickname(profile.nickname ?? "");
+      setCity(profile.city ?? "");
+      setState(profile.state ?? "");
+    }
+  }, [profile]);
 
   const statsQuery = useQuery({
     queryKey: ["player-stats", user?.id],
@@ -71,20 +80,30 @@ function ProfilePage() {
   return (
     <AppShell title="Perfil" subtitle="Sua carteira de boleiro">
       <div className="card-glow rounded-2xl border border-border bg-card p-5 text-center">
-        <div className="flex justify-center">
-          <PlayerAvatar
-            name={profile?.full_name ?? "Boleiro"}
-            nickname={profile?.nickname ?? null}
-            photoUrl={profile?.avatar_url ?? null}
-            size="xl"
-          />
-        </div>
-        <h2 className="text-display mt-3 text-2xl font-extrabold text-foreground">
-          {profile?.nickname || profile?.full_name}
-        </h2>
-        <p className="text-xs text-muted-foreground">
-          {profile?.full_name} · {profile?.city ?? "Cidade"} / {profile?.state ?? "UF"}
-        </p>
+        {profileLoading ? (
+          <div className="flex flex-col items-center gap-3">
+            <Skeleton className="size-28 rounded-full" />
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+        ) : (
+          <>
+            <div className="flex justify-center">
+              <PlayerAvatar
+                name={profile?.full_name ?? "Boleiro"}
+                nickname={profile?.nickname ?? null}
+                photoUrl={profile?.avatar_url ?? null}
+                size="xl"
+              />
+            </div>
+            <h2 className="text-display mt-3 text-2xl font-extrabold text-foreground">
+              {profile?.nickname || profile?.full_name || "Boleiro"}
+            </h2>
+            <p className="text-xs text-muted-foreground uppercase tracking-widest">
+              {profile?.full_name || "Carregando..."} · {profile?.city ?? "Cidade"} / {profile?.state ?? "UF"}
+            </p>
+          </>
+        )}
       </div>
 
       {statsQuery.isPending ? (
