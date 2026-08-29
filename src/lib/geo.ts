@@ -45,7 +45,7 @@ function browserDiagnostics(permission: GeoPermission): GeolocationDiagnostics {
   const secureContext = typeof window !== "undefined" ? window.isSecureContext : false;
   const geolocationSupported = typeof navigator !== "undefined" && "geolocation" in navigator;
   const permissionsApiSupported = typeof navigator !== "undefined" && "permissions" in navigator;
-  const standalone = typeof window !== "undefined" && (window.matchMedia?.("(display-mode: standalone)").matches || navigator.standalone === true);
+  const standalone = typeof window !== "undefined" && (window.matchMedia?.("(display-mode: standalone").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true);
   return { secureContext, geolocationSupported, permissionsApiSupported, permission, standalone, userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "" };
 }
 
