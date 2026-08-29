@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/teams/confrontos")({
       {
         name: "description",
         content:
-          "Agende confrontos entre clãs e valide o placar em dupla checagem entre capitães. Divergência anula a partida.",
+          "Agende confrontos entre times e valide o placar em dupla checagem entre capitães. Divergência anula a partida.",
       },
       { property: "og:title", content: "Contras entre Times — The Match" },
       {
