@@ -282,6 +282,11 @@ function MapPage() {
               <p className="mt-1 opacity-90">
                 O iPhone/Navegador perguntará se você permite o uso do GPS. Aceite para ver as quadras próximas e entrar nas partidas. Se não aparecer, toque no ícone de mira ⌖.
               </p>
+              {status === "prompt" && (
+                <Button type="button" size="sm" className="mt-2" onClick={() => void requestLocation()}>
+                  <Crosshair className="size-3" /> Usar minha localização
+                </Button>
+              )}
             </div>
           ) : status === "denied" || status === "unavailable" || status === "error" ? (
             <div className="pointer-events-auto mx-auto mt-2 max-w-2xl rounded-xl bg-accent/15 px-3 py-2 text-[11px] text-accent">
