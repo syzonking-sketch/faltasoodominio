@@ -34,7 +34,7 @@ export const Route = createFileRoute("/_authenticated/teams/confrontos")({
       {
         name: "description",
         content:
-          "Agende confrontos entre clãs e valide o placar em dupla checagem entre capitães. Divergência anula a partida.",
+          "Agende confrontos entre times e valide o placar em dupla checagem entre capitães. Divergência anula a partida.",
       },
       { property: "og:title", content: "Contras entre Times — The Match" },
       {
@@ -135,7 +135,7 @@ function ConfrontosPage() {
   return (
     <AppShell
       title="Contras"
-      subtitle="Confrontos entre clãs com validação cruzada"
+      subtitle="Confrontos entre times com validação cruzada"
       action={
         <div className="flex gap-2">
           <Button asChild size="sm" variant="ghost">
@@ -231,7 +231,7 @@ function ConfrontosPage() {
         <EmptyState
           icon={<Swords className="size-7" />}
           title="Nenhum contra marcado"
-          description="Capitães podem marcar confrontos entre clãs e validar o placar em dupla checagem."
+          description="Capitães podem marcar confrontos entre times e validar o placar em dupla checagem."
         />
       ) : (
         <ul className="space-y-3">

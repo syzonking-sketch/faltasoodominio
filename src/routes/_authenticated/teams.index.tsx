@@ -35,12 +35,12 @@ import { useForm } from "react-hook-form";
 export const Route = createFileRoute("/_authenticated/teams/")({
   head: () => ({
     meta: [
-      { title: "Times e Clãs — The Match" },
+      { title: "Times — The Match" },
       {
         name: "description",
-        content: "Crie seu clã, convide boleiros, aprove solicitações e marque confrontos entre times da várzea.",
+        content: "Crie seu time, convide boleiros, aprove solicitações e marque confrontos entre times da várzea.",
       },
-      { property: "og:title", content: "Times e Clãs — The Match" },
+      { property: "og:title", content: "Times — The Match" },
       {
         property: "og:description",
         content: "O hub dos times da sua região: escudo, elenco e confrontos.",
@@ -73,13 +73,13 @@ function TeamsPage() {
       return createTeam({ ...values, state: values.state.toUpperCase(), captain_id: user.id });
     },
     onSuccess: () => {
-      toast.success("Clã fundado! Agora chame o elenco.");
+      toast.success("Time fundado! Agora chame o elenco.");
       setOpen(false);
       form.reset();
       invalidate();
     },
     onError: (error) => {
-      console.error("Erro ao criar clã:", error);
+      console.error("Erro ao criar time:", error);
       toast.error(friendlyError(error));
     },
   });
@@ -117,7 +117,7 @@ function TeamsPage() {
   return (
     <AppShell
       title="Times"
-      subtitle="Clãs da sua região"
+      subtitle="Times da sua região"
       action={
         <div className="flex gap-2">
           <Button asChild size="sm" variant="secondary">
@@ -137,7 +137,7 @@ function TeamsPage() {
             </DialogTrigger>
             <DialogContent className="max-w-[90vw] rounded-2xl">
               <DialogHeader>
-                <DialogTitle className="text-display text-2xl">Fundar um clã</DialogTitle>
+                <DialogTitle className="text-display text-2xl">Criar um time</DialogTitle>
               </DialogHeader>
               <form
                 className="space-y-4 py-2"
@@ -167,7 +167,7 @@ function TeamsPage() {
                 </div>
                 <DialogFooter className="pt-2">
                   <Button type="submit" disabled={create.isPending} className="w-full h-12 text-lg font-bold shadow-gold/20 shadow-lg">
-                    {create.isPending ? <Loader2 className="size-5 animate-spin" /> : "Fundar clã"}
+                    {create.isPending ? <Loader2 className="size-5 animate-spin" /> : "Criar time"}
                   </Button>
                 </DialogFooter>
               </form>
@@ -183,9 +183,9 @@ function TeamsPage() {
       ) : teams.length === 0 ? (
         <EmptyState
           icon={<Shield className="size-7" />}
-          title="Nenhum clã por perto"
+          title="Nenhum time por perto"
           description="Funde o primeiro time da região, escolha o escudo e comece a marcar contras."
-          action={<Button onClick={() => setOpen(true)}>Fundar clã</Button>}
+          action={<Button onClick={() => setOpen(true)}>Criar time</Button>}
         />
       ) : (
         <ul className="space-y-3">
