@@ -33,20 +33,37 @@ export type GeoPermission = "granted" | "prompt" | "denied" | "unsupported" | "u
 export type GeoStatus = "idle" | "checking" | "prompt" | "requesting" | "granted" | "denied" | "unavailable" | "error";
 
 export interface GeolocationDiagnostics {
+  supported: boolean;
   secureContext: boolean;
   geolocationSupported: boolean;
   permissionsApiSupported: boolean;
   permission: GeoPermission;
   standalone: boolean;
   userAgent: string;
+  platform: string;
+  maxTouchPoints: number;
+  ios: boolean;
+  errorCode: number | null;
+  errorMessage: string | null;
 }
 
-function browserDiagnostics(permission: GeoPermission): GeolocationDiagnostics {
+export function isIOS(): boolean {
+  if (typeof navigator === "undefined") return false;
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
+function browserDiagnostics(permission: GeoPermission, errorCode: number | null = null, errorMessage: string | null = null): GeolocationDiagnostics {
   const secureContext = typeof window !== "undefined" ? window.isSecureContext : false;
   const geolocationSupported = typeof navigator !== "undefined" && "geolocation" in navigator;
   const permissionsApiSupported = typeof navigator !== "undefined" && "permissions" in navigator;
   const standalone = typeof window !== "undefined" && (window.matchMedia?.("(display-mode: standalone)").matches || (navigator as Navigator & { standalone?: boolean }).standalone === true);
-  return { secureContext, geolocationSupported, permissionsApiSupported, permission, standalone, userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "" };
+  return { supported: geolocationSupported, secureContext, geolocationSupported, permissionsApiSupported, permission, standalone, userAgent: typeof navigator !== "undefined" ? navigator.userAgent : "", platform: typeof navigator !== "undefined" ? navigator.platform : "", maxTouchPoints: typeof navigator !== "undefined" ? navigator.maxTouchPoints : 0, ios: isIOS(), errorCode, errorMessage };
+}
+
+export async function diagnoseGeolocation(): Promise<GeolocationDiagnostics> {
+  const permission = await checkGeolocationPermission();
+  return browserDiagnostics(permission);
 }
 
 export async function checkGeolocationPermission(): Promise<GeoPermission> {
@@ -67,6 +84,8 @@ export function useGeolocation() {
   const [status, setStatus] = useState<GeoStatus>("idle");
   const [permission, setPermission] = useState<GeoPermission>("unknown");
   const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<number | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const requestInFlight = useRef(false);
   const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -87,6 +106,8 @@ export function useGeolocation() {
     requestInFlight.current = true;
     setStatus("requesting");
     setError(null);
+    setErrorCode(null);
+    setErrorMessage(null);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         const newCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
@@ -98,9 +119,11 @@ export function useGeolocation() {
       },
       (err) => {
         console.warn("Geolocation error:", err.code, err.message);
+        setErrorCode(err.code);
+        setErrorMessage(err.message || null);
         setPermission(err.code === 1 ? "denied" : "unknown");
-        setStatus(err.code === 1 ? "denied" : err.code === 2 ? "unavailable" : "error");
-        setError(err.code === 1 ? "Permissão de localização não concedida." : err.code === 2 ? "Não foi possível determinar sua localização. Verifique o GPS e a conexão." : "A localização demorou muito para responder. Tente novamente.");
+        setStatus(err.code === 1 ? "denied" : err.code === 2 ? "unavailable" : err.code === 3 ? "error" : "error");
+        setError(err.code === 1 ? "Não foi possível acessar sua localização. O navegador não concedeu permissão para este site." : err.code === 2 ? "Seu dispositivo não conseguiu determinar sua localização. Verifique se a localização está ativada e tente novamente." : err.code === 3 ? "O dispositivo demorou para obter sua localização. Tente novamente em um local com melhor sinal." : "Não foi possível obter sua localização. Tente novamente.");
         requestInFlight.current = false;
       },
       { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
@@ -147,12 +170,14 @@ export function useGeolocation() {
     void checkGeolocationPermission().then((state) => {
       if (!active) return;
       setPermission(state);
-      setStatus(state === "granted" ? "granted" : state === "denied" ? "denied" : state === "unsupported" ? "unavailable" : "prompt");
+      // Permissions API is advisory on iOS; only a real geolocation error
+      // should turn the request flow into a confirmed denial.
+      setStatus(state === "unsupported" ? "unavailable" : "prompt");
     });
     return () => { active = false; };
   }, []);
 
-  return { coords, status, permission, error, request, requestLocation: request, retry, center, setCenter, searchLocation, isSearching, searchResults, diagnostics: browserDiagnostics(permission) };
+  return { coords, status, permission, error, request, requestCurrentLocation: request, requestLocation: request, retry, center, setCenter, searchLocation, isSearching, searchResults, diagnostics: browserDiagnostics(permission, errorCode, errorMessage) };
 }
 
 export async function reverseGeocode(lat: number, lng: number): Promise<{ address: string; city: string; state: string }> {
