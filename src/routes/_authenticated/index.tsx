@@ -41,7 +41,7 @@ export const Route = createFileRoute("/_authenticated/")({
 
 function MapPage() {
   const { user, profile } = useAuth();
-  const { coords, center, status, request, setCenter, searchLocation, isSearching, searchResults } = useGeolocation();
+  const { coords, center, status, error, requestLocation, retry, setCenter, searchLocation, isSearching, searchResults } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [lightMap, setLightMap] = useState(false);
@@ -266,38 +266,40 @@ function MapPage() {
               variant="secondary"
               aria-label="Centralizar no meu GPS"
               onClick={() => {
-                // Forcing a fresh browser prompt
-                if (navigator.geolocation) {
-                  request();
-                  // A secondary fallback for some browsers/iOS versions
-                  navigator.geolocation.getCurrentPosition(() => {}, () => {});
-                }
+                void requestLocation();
               }}
               className="card-glow border-border bg-surface/95 backdrop-blur"
             >
               <Crosshair className="size-4" />
             </Button>
           </form>
-          {status === "idle" || status === "loading" ? (
+          {status === "checking" || status === "prompt" || status === "requesting" ? (
             <div className="pointer-events-auto mx-auto mt-2 max-w-2xl animate-pulse rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-[11px] text-primary">
               <p className="font-bold flex items-center gap-2">
                 <MapPin className="size-3" /> 
-                {status === "loading" ? "Solicitando localização..." : "Permitir localização?"}
+                {status === "requesting" ? "Solicitando localização..." : "Permitir localização?"}
               </p>
               <p className="mt-1 opacity-90">
                 O iPhone/Navegador perguntará se você permite o uso do GPS. Aceite para ver as quadras próximas e entrar nas partidas. Se não aparecer, toque no ícone de mira ⌖.
               </p>
+              {status === "prompt" && (
+                <Button type="button" size="sm" className="mt-2" onClick={() => void requestLocation()}>
+                  <Crosshair className="size-3" /> Usar minha localização
+                </Button>
+              )}
             </div>
-          ) : status === "denied" ? (
+          ) : status === "denied" || status === "unavailable" || status === "error" ? (
             <div className="pointer-events-auto mx-auto mt-2 max-w-2xl rounded-xl bg-accent/15 px-3 py-2 text-[11px] text-accent">
               <p className="font-bold flex items-center gap-2">
                 <MapPin className="size-3" /> GPS BLOQUEADO NO NAVEGADOR
               </p>
+              <p className="mt-1 opacity-90">{error}</p>
               <p className="mt-1 opacity-90">
                 1. No iPhone, vá em <b>Ajustes {"->"} Privacidade {"->"} Localização {"->"} Safari</b> e marque "Ao usar o App".<br />
                 2. No navegador, clique no ícone "AA" ou no cadeado na barra de endereço e selecione <b>Ajustes do Site {"->"} Localização {"->"} Permitir</b>.<br />
                 3. Recarregue a página após mudar as configurações.
               </p>
+              <Button type="button" size="sm" variant="outline" className="mt-2" onClick={retry}>Tentar novamente</Button>
             </div>
           ) : null}
         </div>
