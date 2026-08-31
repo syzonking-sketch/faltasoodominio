@@ -276,7 +276,7 @@ function MapPage() {
             </Button>
           </form>
           {status === "checking" || status === "prompt" || status === "requesting" ? (
-            <div className="pointer-events-auto mx-auto mt-2 max-w-2xl animate-pulse rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-[11px] text-primary">
+            <div className="elevate-soft rise-in pointer-events-auto mx-auto mt-2 max-w-2xl rounded-2xl border border-border bg-surface/95 px-3 py-2 text-[11px] text-foreground backdrop-blur-xl">
               <p className="font-bold flex items-center gap-2">
                 <MapPin className="size-3" /> 
                 {status === "requesting" ? "Solicitando localização..." : "Permitir localização?"}
@@ -291,9 +291,9 @@ function MapPage() {
               )}
             </div>
           ) : status === "denied" || status === "unavailable" || status === "error" ? (
-            <div className="pointer-events-auto mx-auto mt-2 max-w-2xl rounded-xl bg-accent/15 px-3 py-2 text-[11px] text-accent">
+            <div className="elevate-soft rise-in pointer-events-auto mx-auto mt-2 max-w-2xl rounded-2xl border border-border bg-surface/95 px-3 py-2 text-[11px] text-foreground backdrop-blur-xl">
               <p className="font-bold flex items-center gap-2">
-                <MapPin className="size-3" /> GPS BLOQUEADO NO NAVEGADOR
+                <MapPin className="size-3" /> Localização indisponível
               </p>
               <p className="mt-1 opacity-90">{error}</p>
               <p className="mt-1 opacity-90">
