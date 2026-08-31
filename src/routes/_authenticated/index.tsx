@@ -327,13 +327,13 @@ function MapPage() {
         </div>
       </div>
 
-      <div className="mx-auto max-w-2xl px-4 py-4">
+      <div className="mx-auto max-w-2xl px-4 py-5">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-display text-xl text-foreground">Partidas ao vivo</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">No Radar</span>
-            <Badge className="bg-primary/20 text-primary">{matches.length}</Badge>
+          <div>
+            <h2 className="text-display text-lg text-foreground">Acontecendo perto de você</h2>
+            <p className="text-xs text-muted-foreground">Toque em uma pelada para ver os detalhes</p>
           </div>
+          <Badge className="rounded-full bg-accent text-accent-foreground">{matches.length}</Badge>
         </div>
 
         {matchesQuery.isPending ? (
@@ -345,11 +345,11 @@ function MapPage() {
           />
         ) : matches.length === 0 ? (
           <EmptyState
-            icon={<Radar className="size-7" />}
+            icon={<Radar className="size-6" />}
             title="Radar silencioso"
             description="Nenhuma bola rolando por aqui agora. Seja o primeiro a abrir uma pelada na sua quadra."
             action={
-              <Button asChild>
+              <Button asChild className="press">
                 <Link to="/matches/new">
                   <Plus className="size-4" /> Criar partida
                 </Link>
@@ -358,53 +358,21 @@ function MapPage() {
           />
         ) : (
           <ul className="space-y-3">
-            {matches.map((match) => {
+            {matches.map((match, i) => {
               const venueCoords = match.venue
                 ? { lat: Number(match.venue.latitude), lng: Number(match.venue.longitude) }
                 : null;
               const dist = coords && venueCoords ? distanceMeters(coords, venueCoords) : null;
               return (
                 <li key={match.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelected(match.id)}
-                    className="card-glow w-full rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/50"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-display truncate text-lg font-bold text-foreground">
-                          {match.venue?.name ?? "Quadra"}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {match.venue?.address}
-                          {dist !== null ? ` · ${formatDistance(dist)}` : ""}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-display text-2xl font-extrabold text-primary">
-                          {match.score_team_a}–{match.score_team_b}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {match.participants.filter((p) => p.role === "player").length} J ·{" "}
-                          {match.participants.filter((p) => p.role === "spectator").length} T
-                        </p>
-                        {match.scheduled_at && (
-                          <div className="mt-0.5 flex flex-col items-end">
-                            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Data</span>
-                            <span className="text-[10px] font-black text-primary">
-                              {new Date(match.scheduled_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} às {new Date(match.scheduled_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </button>
+                  <MatchCard match={match} distance={dist} index={i} onSelect={setSelected} />
                 </li>
               );
             })}
           </ul>
         )}
       </div>
+
 
       <MatchDrawer
         matchId={selected}
