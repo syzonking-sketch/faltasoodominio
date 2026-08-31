@@ -16,7 +16,7 @@ export function AppShell({
   bare?: boolean;
 }) {
   return (
-    <div className="min-h-dvh bg-background pb-24">
+    <div className="min-h-dvh bg-background pb-32">
       {!bare ? (
         <header className="pt-safe sticky top-0 z-400 border-b border-border/70 bg-background/85 px-4 pb-3 backdrop-blur-xl">
           <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
