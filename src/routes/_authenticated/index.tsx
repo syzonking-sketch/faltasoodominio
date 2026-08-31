@@ -201,11 +201,11 @@ function MapPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar bairro, quadra ou rua"
                 aria-label="Buscar partidas"
-                className="card-glow border-border bg-surface/95 pl-9 backdrop-blur"
+                className="elevate-float h-11 rounded-2xl border-border bg-surface/95 pl-9 backdrop-blur-xl"
               />
             </div>
             {search.length > 2 && (isSearching || (searchResults && searchResults.length > 0) || (venuesQuery.data && venuesQuery.data.length > 0)) && (
-              <div className="card-glow pointer-events-auto absolute inset-x-0 top-full z-500 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-border bg-surface/95 p-2 backdrop-blur">
+              <div className="elevate-float pointer-events-auto absolute inset-x-0 top-full z-500 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-border bg-surface/97 p-2 backdrop-blur-xl">
                 {isSearching && (
                   <div className="flex items-center justify-center p-4">
                     <Loader2 className="size-5 animate-spin text-primary" />
@@ -221,7 +221,7 @@ function MapPage() {
                       setCenter({ lat: Number(v.latitude), lng: Number(v.longitude) });
                       setSearch(v.name);
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-white/5"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-secondary"
                   >
                     <MapPin className="size-4 shrink-0 text-primary" />
                     <div className="min-w-0 flex-1">
@@ -241,7 +241,7 @@ function MapPage() {
                       setCenter({ lat: parseFloat(res.lat), lng: parseFloat(res.lon) });
                       setSearch(res.display_name);
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-white/5"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-secondary"
                   >
                     <Radar className="size-4 shrink-0 text-muted-foreground" />
                     <div className="min-w-0 flex-1">
@@ -258,7 +258,7 @@ function MapPage() {
             <Button
               type="submit"
               size="icon"
-              className="card-glow border-primary bg-primary text-primary-foreground shadow-lg"
+              className="press elevate-float size-11 rounded-2xl bg-primary text-primary-foreground"
             >
               <Search className="size-4" />
             </Button>
@@ -270,7 +270,7 @@ function MapPage() {
               onClick={() => {
                 void requestLocation();
               }}
-              className="card-glow border-border bg-surface/95 backdrop-blur"
+              className="press elevate-float size-11 rounded-2xl border border-border bg-surface/95 backdrop-blur-xl"
             >
               <Crosshair className="size-4" />
             </Button>
@@ -312,7 +312,7 @@ function MapPage() {
             variant="secondary"
             aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
             onClick={() => setLightMap(!lightMap)}
-            className="card-glow size-12 rounded-full border-border bg-surface/95 shadow-lg backdrop-blur"
+            className="press elevate-float size-11 rounded-full border border-border bg-surface/95 backdrop-blur-xl"
           >
             {lightMap ? <Moon className="size-5" /> : <Sun className="size-5" />}
           </Button>
@@ -321,10 +321,10 @@ function MapPage() {
         <div className="absolute right-4 bottom-6 z-400 flex flex-col gap-2">
           <Link
             to="/matches/new"
-            className="card-glow inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg active:scale-95 transition-transform"
+            className="press elevate-float inline-flex h-13 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground"
             aria-label="Criar nova partida"
           >
-            <Plus className="size-6" />
+            <Plus className="size-5" /> Criar partida
           </Link>
         </div>
       </div>
