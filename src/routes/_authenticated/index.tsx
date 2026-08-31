@@ -7,6 +7,8 @@ import { lazy, useMemo, useState, useEffect, useCallback } from "react";
 import { AppShell } from "@/components/app/app-shell";
 import { ClientOnly } from "@/components/app/client-only";
 import { MatchDrawer } from "@/components/app/match-drawer";
+import { MatchCard } from "@/components/app/match-card";
+
 import type { RadarPin } from "@/components/app/map-radar";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/app/states";
 import { Badge } from "@/components/ui/badge";
