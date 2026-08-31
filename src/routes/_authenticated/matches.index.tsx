@@ -41,49 +41,15 @@ function MatchList({
 }) {
   return (
     <ul className="space-y-3">
-      {matches.map((match) => (
+      {matches.map((match, i) => (
         <li key={match.id}>
-          <button
-            type="button"
-            onClick={() => onSelect(match.id)}
-            className="card-glow w-full rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/50"
-          >
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <p className="text-display truncate text-lg font-bold text-foreground">
-                  {match.venue?.name ?? "Quadra"}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(match.created_at).toLocaleString("pt-BR", {
-                    day: "2-digit",
-                    month: "short",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}{" "}
-                  · {match.match_type}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="text-display text-2xl font-extrabold text-foreground">
-                  {match.score_team_a}–{match.score_team_b}
-                </p>
-                <Badge
-                  className={
-                    match.status === "active"
-                      ? "bg-primary/20 text-primary"
-                      : "bg-surface-2 text-muted-foreground"
-                  }
-                >
-                  {match.status === "active" ? "AO VIVO" : "ENCERRADA"}
-                </Badge>
-              </div>
-            </div>
-          </button>
+          <MatchCard match={match} index={i} onSelect={onSelect} />
         </li>
       ))}
     </ul>
   );
 }
+
 
 function MatchesPage() {
   const { coords } = useGeolocation();
