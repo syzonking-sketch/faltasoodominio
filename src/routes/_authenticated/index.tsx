@@ -7,6 +7,8 @@ import { lazy, useMemo, useState, useEffect, useCallback } from "react";
 import { AppShell } from "@/components/app/app-shell";
 import { ClientOnly } from "@/components/app/client-only";
 import { MatchDrawer } from "@/components/app/match-drawer";
+import { MatchCard } from "@/components/app/match-card";
+
 import type { RadarPin } from "@/components/app/map-radar";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/app/states";
 import { Badge } from "@/components/ui/badge";
@@ -199,11 +201,11 @@ function MapPage() {
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar bairro, quadra ou rua"
                 aria-label="Buscar partidas"
-                className="card-glow border-border bg-surface/95 pl-9 backdrop-blur"
+                className="elevate-float h-11 rounded-2xl border-border bg-surface/95 pl-9 backdrop-blur-xl"
               />
             </div>
             {search.length > 2 && (isSearching || (searchResults && searchResults.length > 0) || (venuesQuery.data && venuesQuery.data.length > 0)) && (
-              <div className="card-glow pointer-events-auto absolute inset-x-0 top-full z-500 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-border bg-surface/95 p-2 backdrop-blur">
+              <div className="elevate-float pointer-events-auto absolute inset-x-0 top-full z-500 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-border bg-surface/97 p-2 backdrop-blur-xl">
                 {isSearching && (
                   <div className="flex items-center justify-center p-4">
                     <Loader2 className="size-5 animate-spin text-primary" />
@@ -219,7 +221,7 @@ function MapPage() {
                       setCenter({ lat: Number(v.latitude), lng: Number(v.longitude) });
                       setSearch(v.name);
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-white/5"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-secondary"
                   >
                     <MapPin className="size-4 shrink-0 text-primary" />
                     <div className="min-w-0 flex-1">
@@ -239,7 +241,7 @@ function MapPage() {
                       setCenter({ lat: parseFloat(res.lat), lng: parseFloat(res.lon) });
                       setSearch(res.display_name);
                     }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-white/5"
+                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-secondary"
                   >
                     <Radar className="size-4 shrink-0 text-muted-foreground" />
                     <div className="min-w-0 flex-1">
@@ -256,7 +258,7 @@ function MapPage() {
             <Button
               type="submit"
               size="icon"
-              className="card-glow border-primary bg-primary text-primary-foreground shadow-lg"
+              className="press elevate-float size-11 rounded-2xl bg-primary text-primary-foreground"
             >
               <Search className="size-4" />
             </Button>
@@ -268,13 +270,13 @@ function MapPage() {
               onClick={() => {
                 void requestLocation();
               }}
-              className="card-glow border-border bg-surface/95 backdrop-blur"
+              className="press elevate-float size-11 rounded-2xl border border-border bg-surface/95 backdrop-blur-xl"
             >
               <Crosshair className="size-4" />
             </Button>
           </form>
           {status === "checking" || status === "prompt" || status === "requesting" ? (
-            <div className="pointer-events-auto mx-auto mt-2 max-w-2xl animate-pulse rounded-xl border border-primary/20 bg-primary/10 px-3 py-2 text-[11px] text-primary">
+            <div className="elevate-soft rise-in pointer-events-auto mx-auto mt-2 max-w-2xl rounded-2xl border border-border bg-surface/95 px-3 py-2 text-[11px] text-foreground backdrop-blur-xl">
               <p className="font-bold flex items-center gap-2">
                 <MapPin className="size-3" /> 
                 {status === "requesting" ? "Solicitando localização..." : "Permitir localização?"}
@@ -289,9 +291,9 @@ function MapPage() {
               )}
             </div>
           ) : status === "denied" || status === "unavailable" || status === "error" ? (
-            <div className="pointer-events-auto mx-auto mt-2 max-w-2xl rounded-xl bg-accent/15 px-3 py-2 text-[11px] text-accent">
+            <div className="elevate-soft rise-in pointer-events-auto mx-auto mt-2 max-w-2xl rounded-2xl border border-border bg-surface/95 px-3 py-2 text-[11px] text-foreground backdrop-blur-xl">
               <p className="font-bold flex items-center gap-2">
-                <MapPin className="size-3" /> GPS BLOQUEADO NO NAVEGADOR
+                <MapPin className="size-3" /> Localização indisponível
               </p>
               <p className="mt-1 opacity-90">{error}</p>
               <p className="mt-1 opacity-90">
@@ -310,7 +312,7 @@ function MapPage() {
             variant="secondary"
             aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
             onClick={() => setLightMap(!lightMap)}
-            className="card-glow size-12 rounded-full border-border bg-surface/95 shadow-lg backdrop-blur"
+            className="press elevate-float size-11 rounded-full border border-border bg-surface/95 backdrop-blur-xl"
           >
             {lightMap ? <Moon className="size-5" /> : <Sun className="size-5" />}
           </Button>
@@ -319,21 +321,21 @@ function MapPage() {
         <div className="absolute right-4 bottom-6 z-400 flex flex-col gap-2">
           <Link
             to="/matches/new"
-            className="card-glow inline-flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg active:scale-95 transition-transform"
+            className="press elevate-float inline-flex h-13 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground"
             aria-label="Criar nova partida"
           >
-            <Plus className="size-6" />
+            <Plus className="size-5" /> Criar partida
           </Link>
         </div>
       </div>
 
-      <div className="mx-auto max-w-2xl px-4 py-4">
+      <div className="mx-auto max-w-2xl px-4 py-5">
         <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-display text-xl text-foreground">Partidas ao vivo</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">No Radar</span>
-            <Badge className="bg-primary/20 text-primary">{matches.length}</Badge>
+          <div>
+            <h2 className="text-display text-lg text-foreground">Acontecendo perto de você</h2>
+            <p className="text-xs text-muted-foreground">Toque em uma pelada para ver os detalhes</p>
           </div>
+          <Badge className="rounded-full bg-accent text-accent-foreground">{matches.length}</Badge>
         </div>
 
         {matchesQuery.isPending ? (
@@ -345,11 +347,11 @@ function MapPage() {
           />
         ) : matches.length === 0 ? (
           <EmptyState
-            icon={<Radar className="size-7" />}
+            icon={<Radar className="size-6" />}
             title="Radar silencioso"
             description="Nenhuma bola rolando por aqui agora. Seja o primeiro a abrir uma pelada na sua quadra."
             action={
-              <Button asChild>
+              <Button asChild className="press">
                 <Link to="/matches/new">
                   <Plus className="size-4" /> Criar partida
                 </Link>
@@ -358,53 +360,21 @@ function MapPage() {
           />
         ) : (
           <ul className="space-y-3">
-            {matches.map((match) => {
+            {matches.map((match, i) => {
               const venueCoords = match.venue
                 ? { lat: Number(match.venue.latitude), lng: Number(match.venue.longitude) }
                 : null;
               const dist = coords && venueCoords ? distanceMeters(coords, venueCoords) : null;
               return (
                 <li key={match.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelected(match.id)}
-                    className="card-glow w-full rounded-2xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/50"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-display truncate text-lg font-bold text-foreground">
-                          {match.venue?.name ?? "Quadra"}
-                        </p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          {match.venue?.address}
-                          {dist !== null ? ` · ${formatDistance(dist)}` : ""}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-display text-2xl font-extrabold text-primary">
-                          {match.score_team_a}–{match.score_team_b}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {match.participants.filter((p) => p.role === "player").length} J ·{" "}
-                          {match.participants.filter((p) => p.role === "spectator").length} T
-                        </p>
-                        {match.scheduled_at && (
-                          <div className="mt-0.5 flex flex-col items-end">
-                            <span className="text-[8px] font-bold uppercase tracking-widest text-muted-foreground opacity-50">Data</span>
-                            <span className="text-[10px] font-black text-primary">
-                              {new Date(match.scheduled_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })} às {new Date(match.scheduled_at).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </button>
+                  <MatchCard match={match} distance={dist} index={i} onSelect={setSelected} />
                 </li>
               );
             })}
           </ul>
         )}
       </div>
+
 
       <MatchDrawer
         matchId={selected}
