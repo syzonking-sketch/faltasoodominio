@@ -16,22 +16,27 @@ export interface RadarPin {
 }
 
 function pinIcon(pin: RadarPin) {
-  const color = pin.live ? "var(--primary)" : "var(--muted-foreground)";
-  const size = pin.live ? 48 : 40;
+  const size = pin.live ? 46 : 36;
+  const inner = pin.live ? 34 : 26;
+  const bg = pin.live ? "var(--primary)" : "var(--surface)";
+  const fg = pin.live ? "var(--primary-foreground)" : "var(--muted-foreground)";
   return L.divIcon({
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
     html: `
-      <div style="position:relative;display:grid;place-items:center;width:${size}px;height:${size}px;filter:drop-shadow(0 0 8px ${pin.live ? color : 'transparent'})">
+      <div style="position:relative;display:grid;place-items:center;width:${size}px;height:${size}px">
         ${
           pin.live
-            ? `<span class="radar-ping" style="position:absolute;inset:0;border-radius:9999px;background:${color};opacity:.4"></span>`
+            ? `<span class="radar-ping" style="position:absolute;inset:4px;border-radius:9999px;background:var(--primary)"></span>`
             : ""
         }
-        <div style="position:relative;display:grid;place-items:center;width:${size - 12}px;height:${size - 12}px;border-radius:9999px;background:${color};color:oklch(0.16 0.04 155);font-weight:900;font-family:'Barlow Condensed',sans-serif;font-size:16px;box-shadow:0 8px 20px -4px rgba(0,0,0,.9);border:2px solid rgba(255,255,255,.4);transition:transform 0.2s ease" class="hover:scale-110">
-          ${pin.live ? pin.players : ''}
-          ${!pin.live ? '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>' : ''}
+        <div style="position:relative;display:grid;place-items:center;width:${inner}px;height:${inner}px;border-radius:9999px;background:${bg};color:${fg};font-weight:700;font-family:var(--font-sans);font-size:13px;letter-spacing:-0.01em;box-shadow:var(--shadow-float);border:2px solid var(--surface)">
+          ${
+            pin.live
+              ? pin.players
+              : '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'
+          }
         </div>
       </div>`,
   });
@@ -42,9 +47,10 @@ function meIcon() {
     className: "",
     iconSize: [22, 22],
     iconAnchor: [11, 11],
-    html: `<span style="display:block;width:18px;height:18px;border-radius:9999px;background:oklch(0.78 0.19 78);border:3px solid rgba(255,255,255,.8);box-shadow:0 0 0 6px oklch(0.78 0.19 78 / .25)"></span>`,
+    html: `<span style="display:block;width:14px;height:14px;border-radius:9999px;background:oklch(0.55 0.16 250);border:3px solid var(--surface);box-shadow:0 0 0 5px oklch(0.55 0.16 250 / .18)"></span>`,
   });
 }
+
 
 function Recenter({ center }: { center: Coords }) {
   const map = useMap();
