@@ -8,7 +8,6 @@ import { MatchDrawer } from "@/components/app/match-drawer";
 import { MatchCard } from "@/components/app/match-card";
 
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/app/states";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchMatches } from "@/lib/api";
