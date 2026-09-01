@@ -12,32 +12,29 @@ export interface RadarPin {
   label: string;
   players: number;
   live: boolean;
+  distanceLabel?: string;
   matchId?: string;
 }
 
+const BALL_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="9.2"/><path d="M12 7.1 8.6 9.6l1.3 4h4.2l1.3-4Z"/><path d="M12 2.8v4.3M4.2 9.4l4.4.2M19.8 9.4l-4.4.2M7 20.3l2.9-6.7M17 20.3l-2.9-6.7"/></svg>`;
+
 function pinIcon(pin: RadarPin) {
-  const size = pin.live ? 46 : 36;
-  const inner = pin.live ? 34 : 26;
-  const bg = pin.live ? "var(--primary)" : "var(--surface)";
-  const fg = pin.live ? "var(--primary-foreground)" : "var(--muted-foreground)";
+  const label = pin.distanceLabel;
+  const height = label ? 62 : 44;
   return L.divIcon({
     className: "",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    iconSize: [64, height],
+    iconAnchor: [32, height],
     html: `
-      <div style="position:relative;display:grid;place-items:center;width:${size}px;height:${size}px">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:4px;width:64px">
+        <div style="position:relative;display:grid;place-items:center;width:38px;height:38px;border-radius:9999px;background:var(--surface);color:var(--foreground);border:2px solid ${pin.live ? "var(--primary)" : "var(--border)"};box-shadow:var(--shadow-float)">
+          ${BALL_SVG}
+        </div>
         ${
-          pin.live
-            ? `<span class="radar-ping" style="position:absolute;inset:4px;border-radius:9999px;background:var(--primary)"></span>`
+          label
+            ? `<span style="padding:2px 8px;border-radius:9999px;background:var(--primary);color:var(--primary-foreground);font-family:var(--font-sans);font-size:11px;font-weight:700;white-space:nowrap;box-shadow:var(--shadow-soft)">${label}</span>`
             : ""
         }
-        <div style="position:relative;display:grid;place-items:center;width:${inner}px;height:${inner}px;border-radius:9999px;background:${bg};color:${fg};font-weight:700;font-family:var(--font-sans);font-size:13px;letter-spacing:-0.01em;box-shadow:var(--shadow-float);border:2px solid var(--surface)">
-          ${
-            pin.live
-              ? pin.players
-              : '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>'
-          }
-        </div>
       </div>`,
   });
 }

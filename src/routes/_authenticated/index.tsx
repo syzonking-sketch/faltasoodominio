@@ -1,13 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Crosshair, Plus, Radar, Search, Sun, Moon, Loader2, MapPin } from "lucide-react";
+import { Bell, Crosshair, Plus, Radar, Search, Sun, Moon, Loader2, MapPin, User } from "lucide-react";
 import { lazy, useMemo, useState, useEffect, useCallback } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
 import { ClientOnly } from "@/components/app/client-only";
 import { MatchDrawer } from "@/components/app/match-drawer";
 import { MatchCard } from "@/components/app/match-card";
+import { PlayerAvatar } from "@/components/app/player-avatar";
+
 
 import type { RadarPin } from "@/components/app/map-radar";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/app/states";
@@ -130,18 +132,21 @@ function MapPage() {
   const pins: RadarPin[] = useMemo(() => {
     // Collect unique venues from matches
     const venuePins: Record<string, RadarPin> = {};
-    
+
     // Add venues from active matches
     matches.forEach(m => {
       if (m.venue && !venuePins[m.venue.id]) {
+        const venueCoords = { lat: Number(m.venue.latitude), lng: Number(m.venue.longitude) };
+        const d = coords ? distanceMeters(coords, venueCoords) : null;
         venuePins[m.venue.id] = {
           id: m.venue.id,
-          lat: Number(m.venue.latitude),
-          lng: Number(m.venue.longitude),
+          lat: venueCoords.lat,
+          lng: venueCoords.lng,
           label: m.venue.name,
           players: m.participants.filter((p) => p.role === "player").length,
           live: true,
-          matchId: m.id
+          matchId: m.id,
+          ...(d != null ? { distanceLabel: formatDistance(d) } : {}),
         };
       }
     });
@@ -163,179 +168,234 @@ function MapPage() {
     }
 
     return Object.values(venuePins);
-  }, [matches, venuesQuery.data]);
+  }, [matches, venuesQuery.data, coords]);
+
+  const greeting = (() => {
+    const h = new Date().getHours();
+    if (h < 12) return "Bom dia,";
+    if (h < 18) return "Boa tarde,";
+    return "Boa noite,";
+  })();
+  const displayName = profile?.nickname || profile?.full_name?.split(" ")[0] || "Jogador";
 
   return (
     <AppShell title="Radar" bare>
-      <div className="relative h-[65dvh] w-full border-b border-border/10">
-        <ClientOnly fallback={<Skeleton className="h-full w-full rounded-none" />}>
-          <MapRadar 
-            center={center} 
-            me={coords} 
-            pins={pins} 
-            onSelect={(id) => {
-              const pin = pins.find(p => p.id === id);
-              if (pin?.matchId) {
-                setSelected(pin.matchId);
-              } else {
-                // If it's a venue without an active match, maybe show a hint
-                toast.info(`Quadra: ${pin?.label}. Nenhuma partida ao vivo no momento.`);
-              }
-            }} 
-          />
-        </ClientOnly>
-
-        <div className="pt-safe pointer-events-none absolute inset-x-0 top-0 z-400 px-4">
-          <form 
-            onSubmit={handleSearchSubmit}
-            className="pointer-events-auto mx-auto flex max-w-2xl items-center gap-2"
-          >
-            <div className="relative flex-1">
-              {isSearching ? (
-                <Loader2 className="absolute top-1/2 left-3 size-4 -translate-y-1/2 animate-spin text-primary" />
-              ) : (
-                <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground" />
-              )}
-              <Input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar bairro, quadra ou rua"
-                aria-label="Buscar partidas"
-                className="elevate-float h-11 rounded-2xl border-border bg-surface/95 pl-9 backdrop-blur-xl"
-              />
+      <div className="mx-auto w-full max-w-2xl px-4">
+        <header className="pt-safe grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pb-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <PlayerAvatar
+              name={profile?.full_name ?? "Jogador"}
+              nickname={profile?.nickname}
+              photoUrl={profile?.avatar_url}
+              size="md"
+              className="border-0 shadow-[var(--shadow-soft)]"
+            />
+            <div className="min-w-0">
+              <p className="truncate text-sm text-muted-foreground">{greeting}</p>
+              <h1 className="truncate text-xl leading-tight font-extrabold text-foreground">
+                {displayName}
+              </h1>
             </div>
-            {search.length > 2 && (isSearching || (searchResults && searchResults.length > 0) || (venuesQuery.data && venuesQuery.data.length > 0)) && (
-              <div className="elevate-float pointer-events-auto absolute inset-x-0 top-full z-500 mt-2 max-h-60 overflow-y-auto rounded-2xl border border-border bg-surface/97 p-2 backdrop-blur-xl">
-                {isSearching && (
-                  <div className="flex items-center justify-center p-4">
-                    <Loader2 className="size-5 animate-spin text-primary" />
-                  </div>
-                )}
-                
-                {/* Local Venues */}
-                {venuesQuery.data?.map(v => (
-                  <button
-                    key={v.id}
-                    type="button"
-                    onClick={() => {
-                      setCenter({ lat: Number(v.latitude), lng: Number(v.longitude) });
-                      setSearch(v.name);
-                    }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-secondary"
-                  >
-                    <MapPin className="size-4 shrink-0 text-primary" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-foreground">{v.name}</p>
-                      <p className="truncate text-[10px] text-muted-foreground">{v.address}</p>
-                    </div>
-                    <Badge variant="outline" className="text-[9px] uppercase">Quadra</Badge>
-                  </button>
-                ))}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <Link
+              to="/matches"
+              aria-label="Suas partidas"
+              className="press elevate-soft grid size-11 place-items-center rounded-full border border-border/60 bg-surface"
+            >
+              <Bell className="size-5 text-foreground" />
+            </Link>
+            <Link
+              to="/profile"
+              aria-label="Seu perfil"
+              className="press elevate-soft grid size-11 place-items-center rounded-full border border-border/60 bg-surface"
+            >
+              <User className="size-5 text-foreground" />
+            </Link>
+          </div>
+        </header>
 
-                {/* Global Locations (Nominatim) */}
-                {searchResults?.map((res, i) => (
-                  <button
-                    key={`global-${i}`}
-                    type="button"
-                    onClick={() => {
-                      setCenter({ lat: parseFloat(res.lat), lng: parseFloat(res.lon) });
-                      setSearch(res.display_name);
-                    }}
-                    className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-secondary"
-                  >
-                    <Radar className="size-4 shrink-0 text-muted-foreground" />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm text-foreground">{res.display_name}</p>
-                    </div>
-                  </button>
-                ))}
-
-                {!isSearching && !venuesQuery.data?.length && !searchResults?.length && (
-                  <p className="p-4 text-center text-xs text-muted-foreground">Nenhum local encontrado</p>
-                )}
-              </div>
+        <form onSubmit={handleSearchSubmit} className="relative flex items-center gap-2 pb-4">
+          <div className="relative flex-1">
+            {isSearching ? (
+              <Loader2 className="absolute top-1/2 left-4 size-5 -translate-y-1/2 animate-spin text-primary" />
+            ) : (
+              <Search className="absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground" />
             )}
-            <Button
-              type="submit"
-              size="icon"
-              className="press elevate-float size-11 rounded-2xl bg-primary text-primary-foreground"
-            >
-              <Search className="size-4" />
-            </Button>
-            <Button
-              type="button"
-              size="icon"
-              variant="secondary"
-              aria-label="Centralizar no meu GPS"
-              onClick={() => {
-                void requestLocation();
-              }}
-              className="press elevate-float size-11 rounded-2xl border border-border bg-surface/95 backdrop-blur-xl"
-            >
-              <Crosshair className="size-4" />
-            </Button>
-          </form>
-          {status === "checking" || status === "prompt" || status === "requesting" ? (
-            <div className="elevate-soft rise-in pointer-events-auto mx-auto mt-2 max-w-2xl rounded-2xl border border-border bg-surface/95 px-3 py-2 text-[11px] text-foreground backdrop-blur-xl">
-              <p className="font-bold flex items-center gap-2">
-                <MapPin className="size-3" /> 
-                {status === "requesting" ? "Solicitando localização..." : "Permitir localização?"}
-              </p>
-              <p className="mt-1 opacity-90">
-                O iPhone/Navegador perguntará se você permite o uso do GPS. Aceite para ver as quadras próximas e entrar nas partidas. Se não aparecer, toque no ícone de mira ⌖.
-              </p>
-              {status === "prompt" && (
-                <Button type="button" size="sm" className="mt-2" onClick={() => void requestLocation()}>
-                  <Crosshair className="size-3" /> Usar minha localização
-                </Button>
-              )}
-            </div>
-          ) : status === "denied" || status === "unavailable" || status === "error" ? (
-            <div className="elevate-soft rise-in pointer-events-auto mx-auto mt-2 max-w-2xl rounded-2xl border border-border bg-surface/95 px-3 py-2 text-[11px] text-foreground backdrop-blur-xl">
-              <p className="font-bold flex items-center gap-2">
-                <MapPin className="size-3" /> Localização indisponível
-              </p>
-              <p className="mt-1 opacity-90">{error}</p>
-              <p className="mt-1 opacity-90">
-                1. No iPhone, vá em <b>Ajustes {"->"} Privacidade {"->"} Localização {"->"} Safari</b> e marque "Ao usar o App".<br />
-                2. No navegador, clique no ícone "AA" ou no cadeado na barra de endereço e selecione <b>Ajustes do Site {"->"} Localização {"->"} Permitir</b>.<br />
-                3. Recarregue a página após mudar as configurações.
-              </p>
-              <Button type="button" size="sm" variant="outline" className="mt-2" onClick={retry}>Tentar novamente</Button>
-            </div>
-          ) : null}
-        </div>
-
-        <div className="absolute right-4 bottom-24 z-400 flex flex-col gap-2">
+            <Input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar bairro, quadra ou rua"
+              aria-label="Buscar partidas"
+              className="elevate-soft h-14 rounded-full border-border/60 bg-surface pl-12 text-base"
+            />
+          </div>
           <Button
+            type="submit"
+            size="icon"
+            aria-label="Buscar"
+            className="press elevate-soft size-14 shrink-0 rounded-full bg-primary text-primary-foreground"
+          >
+            <Search className="size-5" />
+          </Button>
+          <Button
+            type="button"
             size="icon"
             variant="secondary"
-            aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
-            onClick={() => setLightMap(!lightMap)}
-            className="press elevate-float size-11 rounded-full border border-border bg-surface/95 backdrop-blur-xl"
+            aria-label="Centralizar no meu GPS"
+            onClick={() => {
+              void requestLocation();
+            }}
+            className="press elevate-soft size-14 shrink-0 rounded-full border border-border/60 bg-surface"
           >
-            {lightMap ? <Moon className="size-5" /> : <Sun className="size-5" />}
+            <Crosshair className="size-5" />
           </Button>
+
+          {search.length > 2 && (isSearching || (searchResults && searchResults.length > 0) || (venuesQuery.data && venuesQuery.data.length > 0)) && (
+            <div className="elevate-float absolute inset-x-0 top-full z-500 mt-2 max-h-60 overflow-y-auto rounded-3xl border border-border/60 bg-surface p-2">
+              {isSearching && (
+                <div className="flex items-center justify-center p-4">
+                  <Loader2 className="size-5 animate-spin text-primary" />
+                </div>
+              )}
+
+              {/* Local Venues */}
+              {venuesQuery.data?.map(v => (
+                <button
+                  key={v.id}
+                  type="button"
+                  onClick={() => {
+                    setCenter({ lat: Number(v.latitude), lng: Number(v.longitude) });
+                    setSearch(v.name);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors hover:bg-secondary"
+                >
+                  <MapPin className="size-4 shrink-0 text-primary" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold text-foreground">{v.name}</p>
+                    <p className="truncate text-[10px] text-muted-foreground">{v.address}</p>
+                  </div>
+                  <Badge variant="outline" className="text-[9px] uppercase">Quadra</Badge>
+                </button>
+              ))}
+
+              {/* Global Locations (Nominatim) */}
+              {searchResults?.map((res, i) => (
+                <button
+                  key={`global-${i}`}
+                  type="button"
+                  onClick={() => {
+                    setCenter({ lat: parseFloat(res.lat), lng: parseFloat(res.lon) });
+                    setSearch(res.display_name);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left transition-colors hover:bg-secondary"
+                >
+                  <Radar className="size-4 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm text-foreground">{res.display_name}</p>
+                  </div>
+                </button>
+              ))}
+
+              {!isSearching && !venuesQuery.data?.length && !searchResults?.length && (
+                <p className="p-4 text-center text-xs text-muted-foreground">Nenhum local encontrado</p>
+              )}
+            </div>
+          )}
+        </form>
+
+        <div className="elevate-soft relative h-[48dvh] min-h-[320px] w-full overflow-hidden rounded-[2rem] border border-border/50">
+          <ClientOnly fallback={<Skeleton className="h-full w-full rounded-none" />}>
+            <MapRadar
+              center={center}
+              me={coords}
+              pins={pins}
+              onSelect={(id) => {
+                const pin = pins.find(p => p.id === id);
+                if (pin?.matchId) {
+                  setSelected(pin.matchId);
+                } else {
+                  toast.info(`Quadra: ${pin?.label}. Nenhuma partida ao vivo no momento.`);
+                }
+              }}
+            />
+          </ClientOnly>
+
+          <div className="pointer-events-none absolute inset-x-4 bottom-4 z-400 flex items-end justify-between gap-3">
+            <div className="flex flex-col gap-2">
+              <Button
+                type="button"
+                size="icon"
+                variant="secondary"
+                aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
+                onClick={() => setLightMap(!lightMap)}
+                className="press elevate-float pointer-events-auto size-12 rounded-full border border-border/60 bg-surface"
+              >
+                {lightMap ? <Moon className="size-5" /> : <Sun className="size-5" />}
+              </Button>
+              <Button
+                type="button"
+                size="icon"
+                variant="secondary"
+                aria-label="Centralizar no meu GPS"
+                onClick={() => void requestLocation()}
+                className="press elevate-float pointer-events-auto size-12 rounded-full border border-border/60 bg-surface"
+              >
+                <Crosshair className="size-5 text-primary" />
+              </Button>
+            </div>
+            <Link
+              to="/matches/new"
+              className="press elevate-float pointer-events-auto inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-6 text-base font-bold text-primary-foreground"
+              aria-label="Criar nova partida"
+            >
+              <Plus className="size-5" /> Criar partida
+            </Link>
+          </div>
         </div>
 
-        <div className="absolute right-4 bottom-6 z-400 flex flex-col gap-2">
-          <Link
-            to="/matches/new"
-            className="press elevate-float inline-flex h-13 items-center justify-center gap-2 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground"
-            aria-label="Criar nova partida"
-          >
-            <Plus className="size-5" /> Criar partida
-          </Link>
-        </div>
+        {status === "checking" || status === "prompt" || status === "requesting" ? (
+          <div className="elevate-soft rise-in mt-3 rounded-3xl border border-border/60 bg-surface px-4 py-3 text-[11px] text-foreground">
+            <p className="flex items-center gap-2 font-bold">
+              <MapPin className="size-3" />
+              {status === "requesting" ? "Solicitando localização..." : "Permitir localização?"}
+            </p>
+            <p className="mt-1 opacity-90">
+              O iPhone/Navegador perguntará se você permite o uso do GPS. Aceite para ver as quadras próximas e entrar nas partidas. Se não aparecer, toque no ícone de mira ⌖.
+            </p>
+            {status === "prompt" && (
+              <Button type="button" size="sm" className="mt-2" onClick={() => void requestLocation()}>
+                <Crosshair className="size-3" /> Usar minha localização
+              </Button>
+            )}
+          </div>
+        ) : status === "denied" || status === "unavailable" || status === "error" ? (
+          <div className="elevate-soft rise-in mt-3 rounded-3xl border border-border/60 bg-surface px-4 py-3 text-[11px] text-foreground">
+            <p className="flex items-center gap-2 font-bold">
+              <MapPin className="size-3" /> Localização indisponível
+            </p>
+            <p className="mt-1 opacity-90">{error}</p>
+            <p className="mt-1 opacity-90">
+              1. No iPhone, vá em <b>Ajustes {"->"} Privacidade {"->"} Localização {"->"} Safari</b> e marque "Ao usar o App".<br />
+              2. No navegador, clique no ícone "AA" ou no cadeado na barra de endereço e selecione <b>Ajustes do Site {"->"} Localização {"->"} Permitir</b>.<br />
+              3. Recarregue a página após mudar as configurações.
+            </p>
+            <Button type="button" size="sm" variant="outline" className="mt-2" onClick={retry}>Tentar novamente</Button>
+          </div>
+        ) : null}
       </div>
 
-      <div className="mx-auto max-w-2xl px-4 py-5">
-        <div className="mb-3 flex items-center justify-between">
-          <div>
-            <h2 className="text-display text-lg text-foreground">Acontecendo perto de você</h2>
-            <p className="text-xs text-muted-foreground">Toque em uma pelada para ver os detalhes</p>
+      <div className="mx-auto max-w-2xl px-4 py-6">
+        <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="text-display text-lg font-bold text-foreground">Acontecendo perto de você</h2>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              Toque em uma partida para ver os detalhes
+            </p>
           </div>
-          <Badge className="rounded-full bg-accent text-accent-foreground">{matches.length}</Badge>
+          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-foreground tabular-nums">
+            {matches.length}
+          </span>
         </div>
 
         {matchesQuery.isPending ? (
@@ -351,7 +411,7 @@ function MapPage() {
             title="Radar silencioso"
             description="Nenhuma bola rolando por aqui agora. Seja o primeiro a abrir uma pelada na sua quadra."
             action={
-              <Button asChild className="press">
+              <Button asChild className="press rounded-full">
                 <Link to="/matches/new">
                   <Plus className="size-4" /> Criar partida
                 </Link>
@@ -374,7 +434,6 @@ function MapPage() {
           </ul>
         )}
       </div>
-
 
       <MatchDrawer
         matchId={selected}
