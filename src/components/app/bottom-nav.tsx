@@ -1,7 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { MapPin, Trophy, User, Users } from "lucide-react";
 
-function BallIcon({ className }: { className?: string }) {
+function BallIcon({ className, strokeWidth = 1.7 }: { className?: string; strokeWidth?: number }) {
   return (
     <svg
       viewBox="0 0 24 24"
