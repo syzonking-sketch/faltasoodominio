@@ -1,13 +1,13 @@
 import { Link } from "@tanstack/react-router";
 import { MapPin, Trophy, User, Users } from "lucide-react";
 
-function BallIcon({ className }: { className?: string }) {
+function BallIcon({ className, strokeWidth = 1.7 }: { className?: string; strokeWidth?: number }) {
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.7}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       className={className}
@@ -34,28 +34,30 @@ export function BottomNav() {
       aria-label="Navegação principal"
       className="fixed inset-x-0 bottom-0 z-500 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.6rem)]"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-5 items-center rounded-[2rem] bg-[oklch(0.17_0.005_150)] px-2 py-3 shadow-[0_10px_30px_-12px_oklch(0.2_0.02_150/0.55)]">
+      <ul className="mx-auto grid max-w-md grid-cols-5 items-center rounded-full bg-black px-3 py-3.5 shadow-[0_14px_34px_-12px_oklch(0.1_0.01_150/0.7)]">
         {tabs.map(({ to, label, icon: Icon }) => (
           <li key={to}>
             <Link
               to={to}
               activeOptions={{ exact: to === "/" }}
-              className="press group flex flex-col items-center gap-1.5 rounded-2xl px-1 py-1 outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              className="press group flex flex-col items-center gap-1.5 rounded-full px-1 py-0.5 outline-none focus-visible:ring-2 focus-visible:ring-white/60"
             >
               {({ isActive }) => (
                 <>
                   <span
-                    className={`flex size-11 items-center justify-center rounded-full transition-all duration-200 ease-out ${
-                      isActive ? "scale-105 bg-white text-[oklch(0.17_0.005_150)]" : "text-white/85"
+                    className={`flex size-12 items-center justify-center rounded-full transition-all duration-200 ease-out ${
+                      isActive
+                        ? "scale-110 bg-white text-black shadow-[0_0_0_4px_rgb(255_255_255/0.12)]"
+                        : "text-white"
                     }`}
                   >
-                    <Icon className="size-6" />
+                    <Icon className="size-7" strokeWidth={isActive ? 1.7 : 1.6} />
                   </span>
                   <span
-                    className={`text-display text-[10px] leading-none font-bold tracking-wider ${
+                    className={`text-display text-[11px] leading-none font-black tracking-wide ${
                       isActive
-                        ? "border-b-2 border-white pb-0.5 text-white"
-                        : "pb-[3px] text-white/70"
+                        ? "border-b-[2.5px] border-white pb-0.5 text-white"
+                        : "pb-[3.5px] text-white/80"
                     }`}
                   >
                     {label.toUpperCase()}
