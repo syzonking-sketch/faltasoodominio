@@ -83,6 +83,10 @@ export async function fetchMatch(id: string): Promise<MatchWithRelations | null>
   );
 }
 
+function isMissingColumn(error: { message?: string } | null, column: string): boolean {
+  return Boolean(error?.message && error.message.includes(column));
+}
+
 export async function createMatch(input: {
   venue_id: string;
   created_by: string;
@@ -93,6 +97,7 @@ export async function createMatch(input: {
   checked_in_gps: boolean;
   scheduled_at?: string | null;
   finished_at?: string | null;
+  max_players?: number | null;
 }): Promise<string> {
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!uuidPattern.test(input.venue_id)) {
