@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { effectiveStatus, isExpired, isFull, maxPlayers, playerCount } from "./match-utils";
 import type {
   Confronto,
   ConfrontoStatus,
