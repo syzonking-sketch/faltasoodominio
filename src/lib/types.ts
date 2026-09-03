@@ -38,6 +38,7 @@ export interface Match {
   match_type: MatchType;
   score_team_a: number;
   score_team_b: number;
+  max_players: number | null;
   scheduled_at: string | null;
   finished_at: string | null;
   created_at: string;
