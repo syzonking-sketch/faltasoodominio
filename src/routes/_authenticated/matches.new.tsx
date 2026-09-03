@@ -53,6 +53,7 @@ function NewMatchPage() {
   const [scheduledAt, setScheduledAt] = useState("");
   const [finishedAt, setFinishedAt] = useState("");
   const [duration, setDuration] = useState<number>(60);
+  const [maxPlayers, setMaxPlayers] = useState<number>(10);
   const [matchName, setMatchName] = useState("");
   const [error, setError] = useState<string | undefined>(undefined);
 
@@ -114,6 +115,7 @@ function NewMatchPage() {
         checked_in_gps: withinRadius,
         scheduled_at: start,
         finished_at: end,
+        max_players: maxPlayers,
       });
     },
     onSuccess: () => {
@@ -366,6 +368,28 @@ function NewMatchPage() {
               {mins}m
             </button>
           ))}
+        </div>
+
+        <div className="space-y-2">
+          <Label className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Capacidade (jogadores)
+          </Label>
+          <div className="flex flex-wrap gap-2">
+            {[10, 12, 14, 16, 22].map((n) => (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setMaxPlayers(n)}
+                className={`rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                  maxPlayers === n
+                    ? "border-primary bg-primary/20 text-primary"
+                    : "border-border bg-card text-muted-foreground hover:border-primary/50 hover:text-primary"
+                }`}
+              >
+                {n} jogadores
+              </button>
+            ))}
+          </div>
         </div>
 
         {scheduledAt && finishedAt && (
