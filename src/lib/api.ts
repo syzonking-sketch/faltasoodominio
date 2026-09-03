@@ -155,17 +155,42 @@ export async function createMatch(input: {
 }
 
 export async function joinMatch(input: {
-  match_id: string;
-  user_id: string;
+  match_id: string | null | undefined;
+  user_id: string | null | undefined;
   role: ParticipantRole;
   team_side: TeamSide | null;
   checked_in_gps: boolean;
 }): Promise<MatchParticipant> {
+  if (!input.match_id) {
+    throw new Error("Partida não carregada. Feche e abra a partida novamente.");
+  }
+  if (!input.user_id) {
+    throw new Error("Sua sessão não carregou. Entre novamente para participar.");
+  }
+
+  // Valida a partida no servidor antes de inserir o participante.
+  const match = await fetchMatch(input.match_id);
+  if (!match) throw new Error("Partida não encontrada ou removida.");
+
+  await autoFinishIfExpired(match);
+
+  if (effectiveStatus(match) !== "active") {
+    throw new Error("Esta partida já foi encerrada.");
+  }
+
+  if (match.participants.some((p) => p.user_id === input.user_id)) {
+    throw new Error("Você já está na súmula desta partida.");
+  }
+
+  if (input.role === "player" && isFull(match)) {
+    throw new Error(`Partida cheia (${playerCount(match)}/${maxPlayers(match)}).`);
+  }
+
   return unwrap<MatchParticipant>(
     await supabase
       .from("match_participants")
       .insert({
-        match_id: input.match_id,
+        match_id: match.id,
         user_id: input.user_id,
         role: input.role,
         team_side: input.role === "player" ? input.team_side : null,
@@ -173,6 +198,37 @@ export async function joinMatch(input: {
       })
       .select("*")
       .single(),
+  );
+}
+
+/**
+ * Encerramento automático: quando `finished_at` (início + duração) já passou,
+ * a partida é marcada como `finished` no banco na próxima leitura.
+ */
+export async function autoFinishIfExpired(match: MatchWithRelations): Promise<void> {
+  if (!isExpired(match)) return;
+  await supabase
+    .from("matches")
+    .update({ status: "finished", updated_at: new Date().toISOString() })
+    .eq("id", match.id)
+    .eq("status", "active");
+}
+
+/** Placar salvo no banco (colunas score_team_a / score_team_b da partida). */
+export async function updateMatchScore(input: {
+  match_id: string;
+  score_team_a: number;
+  score_team_b: number;
+}): Promise<void> {
+  unwrap<unknown>(
+    await supabase
+      .from("matches")
+      .update({
+        score_team_a: Math.max(0, Math.trunc(input.score_team_a)),
+        score_team_b: Math.max(0, Math.trunc(input.score_team_b)),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", input.match_id),
   );
 }
 
