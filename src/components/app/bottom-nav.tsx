@@ -20,6 +20,42 @@ function BallIcon({ className, strokeWidth = 1.7 }: { className?: string; stroke
   );
 }
 
+/** Mancha de tinta branca (spray / street art) atrás do ícone ativo. */
+function PaintSplat({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 120 120" className={className} aria-hidden="true">
+      <defs>
+        <filter id="nav-splat-rough" x="-50%" y="-50%" width="200%" height="200%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.055 0.07" numOctaves="4" seed="9" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="14" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+        <filter id="nav-splat-specks" x="-60%" y="-60%" width="220%" height="220%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n2" />
+          <feDisplacementMap in="SourceGraphic" in2="n2" scale="6" xChannelSelector="R" yChannelSelector="G" />
+        </filter>
+      </defs>
+      <g fill="currentColor">
+        <g filter="url(#nav-splat-rough)">
+          <circle cx="60" cy="60" r="40" />
+          <ellipse cx="30" cy="44" rx="12" ry="9" />
+          <ellipse cx="90" cy="76" rx="11" ry="8" />
+          <ellipse cx="66" cy="24" rx="9" ry="7" />
+        </g>
+        <g filter="url(#nav-splat-specks)" opacity="0.95">
+          <circle cx="14" cy="34" r="3.1" />
+          <circle cx="22" cy="86" r="2.4" />
+          <circle cx="104" cy="42" r="2.8" />
+          <circle cx="96" cy="18" r="2" />
+          <circle cx="60" cy="108" r="2.6" />
+          <circle cx="38" cy="14" r="1.9" />
+          <circle cx="110" cy="88" r="2.2" />
+          <circle cx="8" cy="62" r="1.7" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
 const tabs = [
   { to: "/", label: "Radar", icon: MapPin },
   { to: "/matches", label: "Partidas", icon: BallIcon },
@@ -32,32 +68,34 @@ export function BottomNav() {
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-500 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.6rem)]"
+      className="fixed inset-x-0 bottom-0 z-500 px-3 pb-[calc(env(safe-area-inset-bottom,0px)+0.55rem)]"
     >
-      <ul className="mx-auto grid max-w-md grid-cols-5 items-center rounded-full bg-black px-3 py-3.5 shadow-[0_14px_34px_-12px_oklch(0.1_0.01_150/0.7)]">
+      <ul className="mx-auto grid max-w-md grid-cols-5 items-end gap-1 rounded-[2.25rem] bg-black px-2 py-3 shadow-[0_18px_38px_-14px_oklch(0.1_0.01_150/0.75)]">
         {tabs.map(({ to, label, icon: Icon }) => (
-          <li key={to}>
+          <li key={to} className="min-w-0">
             <Link
               to={to}
               activeOptions={{ exact: to === "/" }}
-              className="press group flex flex-col items-center gap-1.5 rounded-full px-1 py-0.5 outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              className="press group flex flex-col items-center gap-1 rounded-2xl px-0.5 py-0.5 outline-none focus-visible:ring-2 focus-visible:ring-white/60"
             >
               {({ isActive }) => (
                 <>
-                  <span
-                    className={`flex size-12 items-center justify-center rounded-full transition-all duration-200 ease-out ${
-                      isActive
-                        ? "scale-110 bg-white text-black shadow-[0_0_0_4px_rgb(255_255_255/0.12)]"
-                        : "text-white"
-                    }`}
-                  >
-                    <Icon className="size-7" strokeWidth={isActive ? 1.7 : 1.6} />
+                  <span className="relative grid size-[3.1rem] place-items-center">
+                    <PaintSplat
+                      className={`pointer-events-none absolute inset-[-14%] text-white transition-all duration-300 ease-out ${
+                        isActive ? "scale-100 opacity-100" : "scale-75 opacity-0"
+                      }`}
+                    />
+                    <Icon
+                      className={`relative size-7 transition-colors duration-200 ${
+                        isActive ? "text-black" : "text-white"
+                      }`}
+                      strokeWidth={isActive ? 1.9 : 1.6}
+                    />
                   </span>
                   <span
-                    className={`text-display text-[11px] leading-none font-black tracking-wide ${
-                      isActive
-                        ? "border-b-[2.5px] border-white pb-0.5 text-white"
-                        : "pb-[3.5px] text-white/80"
+                    className={`text-display truncate text-[10.5px] leading-none font-black tracking-wide text-white transition-opacity duration-200 ${
+                      isActive ? "border-b-[2.5px] border-white pb-0.5 opacity-100" : "pb-[3.5px] opacity-70"
                     }`}
                   >
                     {label.toUpperCase()}

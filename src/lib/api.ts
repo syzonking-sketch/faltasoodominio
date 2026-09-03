@@ -1,4 +1,5 @@
 import { supabase } from "./supabase";
+import { effectiveStatus, isExpired, isFull, maxPlayers, playerCount } from "./match-utils";
 import type {
   Confronto,
   ConfrontoStatus,
@@ -55,7 +56,17 @@ export async function fetchMatches(status?: "active" | "finished", filter?: { ci
   let query = supabase.from("matches").select(MATCH_SELECT).order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
   
-  const results = unwrap<MatchWithRelations[]>(await query);
+  const raw = unwrap<MatchWithRelations[]>(await query);
+
+  // Encerramento automático: partidas cujo horário de término já passou.
+  const expired = raw.filter((m) => isExpired(m));
+  if (expired.length > 0) {
+    await Promise.allSettled(expired.map((m) => autoFinishIfExpired(m)));
+  }
+  const normalized = raw.map((m) =>
+    isExpired(m) ? { ...m, status: "finished" as const } : m,
+  );
+  const results = status ? normalized.filter((m) => m.status === status) : normalized;
 
   // Filtragem e ordenação por Bairro/Estado
   if (filter?.state) {
@@ -83,6 +94,10 @@ export async function fetchMatch(id: string): Promise<MatchWithRelations | null>
   );
 }
 
+function isMissingColumn(error: { message?: string } | null, column: string): boolean {
+  return Boolean(error?.message && error.message.includes(column));
+}
+
 export async function createMatch(input: {
   venue_id: string;
   created_by: string;
@@ -93,6 +108,7 @@ export async function createMatch(input: {
   checked_in_gps: boolean;
   scheduled_at?: string | null;
   finished_at?: string | null;
+  max_players?: number | null;
 }): Promise<string> {
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!uuidPattern.test(input.venue_id)) {
@@ -109,18 +125,30 @@ export async function createMatch(input: {
     throw new Error("Sua sessão não carregou corretamente. Entre novamente e tente criar a partida.");
   }
 
-  const matchResponse = await supabase
+  const startAt = input.scheduled_at || new Date().toISOString();
+  const endAt =
+    input.finished_at || new Date(new Date(startAt).getTime() + 60 * 60_000).toISOString();
+
+  const basePayload = {
+    venue_id: input.venue_id,
+    created_by: createdBy,
+    name: input.name || null,
+    match_type: input.match_type,
+    status: "active",
+    scheduled_at: startAt,
+    finished_at: endAt,
+  };
+
+  let matchResponse = await supabase
     .from("matches")
-    .insert({
-      venue_id: input.venue_id,
-      created_by: createdBy,
-      name: input.name || null,
-      match_type: input.match_type,
-      status: "active",
-      scheduled_at: input.scheduled_at || new Date().toISOString(),
-    })
+    .insert({ ...basePayload, max_players: input.max_players ?? 10 })
     .select("id")
     .single();
+
+  // Compatibilidade: bancos que ainda não têm a coluna max_players.
+  if (matchResponse.error && isMissingColumn(matchResponse.error, "max_players")) {
+    matchResponse = await supabase.from("matches").insert(basePayload).select("id").single();
+  }
 
   const match = unwrap<{ id: string }>(matchResponse);
 
@@ -138,17 +166,42 @@ export async function createMatch(input: {
 }
 
 export async function joinMatch(input: {
-  match_id: string;
-  user_id: string;
+  match_id: string | null | undefined;
+  user_id: string | null | undefined;
   role: ParticipantRole;
   team_side: TeamSide | null;
   checked_in_gps: boolean;
 }): Promise<MatchParticipant> {
+  if (!input.match_id) {
+    throw new Error("Partida não carregada. Feche e abra a partida novamente.");
+  }
+  if (!input.user_id) {
+    throw new Error("Sua sessão não carregou. Entre novamente para participar.");
+  }
+
+  // Valida a partida no servidor antes de inserir o participante.
+  const match = await fetchMatch(input.match_id);
+  if (!match) throw new Error("Partida não encontrada ou removida.");
+
+  await autoFinishIfExpired(match);
+
+  if (effectiveStatus(match) !== "active") {
+    throw new Error("Esta partida já foi encerrada.");
+  }
+
+  if (match.participants.some((p) => p.user_id === input.user_id)) {
+    throw new Error("Você já está na súmula desta partida.");
+  }
+
+  if (input.role === "player" && isFull(match)) {
+    throw new Error(`Partida cheia (${playerCount(match)}/${maxPlayers(match)}).`);
+  }
+
   return unwrap<MatchParticipant>(
     await supabase
       .from("match_participants")
       .insert({
-        match_id: input.match_id,
+        match_id: match.id,
         user_id: input.user_id,
         role: input.role,
         team_side: input.role === "player" ? input.team_side : null,
@@ -156,6 +209,37 @@ export async function joinMatch(input: {
       })
       .select("*")
       .single(),
+  );
+}
+
+/**
+ * Encerramento automático: quando `finished_at` (início + duração) já passou,
+ * a partida é marcada como `finished` no banco na próxima leitura.
+ */
+export async function autoFinishIfExpired(match: MatchWithRelations): Promise<void> {
+  if (!isExpired(match)) return;
+  await supabase
+    .from("matches")
+    .update({ status: "finished", updated_at: new Date().toISOString() })
+    .eq("id", match.id)
+    .eq("status", "active");
+}
+
+/** Placar salvo no banco (colunas score_team_a / score_team_b da partida). */
+export async function updateMatchScore(input: {
+  match_id: string;
+  score_team_a: number;
+  score_team_b: number;
+}): Promise<void> {
+  unwrap<unknown>(
+    await supabase
+      .from("matches")
+      .update({
+        score_team_a: Math.max(0, Math.trunc(input.score_team_a)),
+        score_team_b: Math.max(0, Math.trunc(input.score_team_b)),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", input.match_id),
   );
 }
 

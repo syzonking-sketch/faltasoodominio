@@ -25,7 +25,9 @@ import {
   finishMatch,
   joinMatch,
   submitRating,
+  updateMatchScore,
 } from "@/lib/api";
+import { effectiveStatus, isFull, maxPlayers, playerCount, sideCount } from "@/lib/match-utils";
 import { useAuth } from "@/lib/auth";
 import { distanceMeters, GPS_CHECKIN_RADIUS, type Coords } from "@/lib/geo";
 import { friendlyError } from "@/lib/supabase";
@@ -59,6 +61,10 @@ export function MatchDrawer({
   });
 
   const match = matchQuery.data ?? null;
+  const status = match ? effectiveStatus(match) : null;
+  const total = match ? playerCount(match) : 0;
+  const capacity = match ? maxPlayers(match) : 0;
+  const full = match ? isFull(match) : false;
   const participants = match?.participants ?? [];
   const players = participants.filter((p) => p.role === "player");
   const spectators = participants.filter((p) => p.role === "spectator");
@@ -80,8 +86,8 @@ export function MatchDrawer({
   const join = useMutation({
     mutationFn: (input: { role: "player" | "spectator"; team_side: TeamSide | null }) =>
       joinMatch({
-        match_id: matchId!,
-        user_id: user!.id,
+        match_id: match?.id ?? matchId,
+        user_id: user?.id,
         role: input.role,
         team_side: input.team_side,
         checked_in_gps: withinRadius,
@@ -90,6 +96,15 @@ export function MatchDrawer({
       toast.success(withinRadius ? "Check-in por GPS confirmado!" : "Entrou na súmula (sem GPS).");
       invalidate();
     },
+    onError: (error) => toast.error(friendlyError(error)),
+  });
+
+  const saveScore = useMutation({
+    mutationFn: (input: { score_team_a: number; score_team_b: number }) => {
+      if (!match?.id) throw new Error("Partida não carregada.");
+      return updateMatchScore({ match_id: match.id, ...input });
+    },
+    onSuccess: invalidate,
     onError: (error) => toast.error(friendlyError(error)),
   });
 
@@ -136,7 +151,7 @@ export function MatchDrawer({
     onError: (error) => toast.error(friendlyError(error)),
   });
 
-  const canRate = Boolean(match?.status === "finished" && mine?.checked_in_gps);
+  const canRate = Boolean(match && effectiveStatus(match) === "finished" && mine?.checked_in_gps);
   const alreadyRated = (targetId: string) =>
     (ratingsQuery.data ?? []).find((r) => r.match_id === matchId && r.evaluated_user_id === targetId);
 
@@ -230,9 +245,9 @@ export function MatchDrawer({
                 <div className="text-center">
                   <Badge
                     className={
-                      match.status === "active"
+                      status === "active"
                         ? "bg-primary/20 text-primary"
-                        : match.status === "finished"
+                        : status === "finished"
                           ? "bg-surface-2 text-muted-foreground"
                           : "bg-destructive/20 text-destructive"
                     }
@@ -267,7 +282,54 @@ export function MatchDrawer({
                 </div>
               </div>
 
-              {match.status === "active" ? (
+              {isOwner ? (
+                <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
+                  <p className="text-xs font-semibold text-foreground">Placar da partida</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {(["A", "B"] as const).map((side) => {
+                      const current = side === "A" ? match.score_team_a : match.score_team_b;
+                      const apply = (delta: number) =>
+                        saveScore.mutate({
+                          score_team_a: side === "A" ? Math.max(0, match.score_team_a + delta) : match.score_team_a,
+                          score_team_b: side === "B" ? Math.max(0, match.score_team_b + delta) : match.score_team_b,
+                        });
+                      return (
+                        <div key={side} className="rounded-2xl bg-surface-2 p-3 text-center">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                            Time {side}
+                          </p>
+                          <div className="mt-2 flex items-center justify-center gap-3">
+                            <Button
+                              type="button"
+                              size="icon"
+                              variant="outline"
+                              aria-label={`Remover gol do time ${side}`}
+                              disabled={saveScore.isPending || current <= 0}
+                              onClick={() => apply(-1)}
+                            >
+                              −
+                            </Button>
+                            <span className="text-display min-w-8 text-3xl font-extrabold tabular-nums text-foreground">
+                              {current}
+                            </span>
+                            <Button
+                              type="button"
+                              size="icon"
+                              aria-label={`Adicionar gol do time ${side}`}
+                              disabled={saveScore.isPending}
+                              onClick={() => apply(1)}
+                            >
+                              +
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : null}
+
+              {status === "active" ? (
                 <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
                   {mine ? (
                     <p className="flex items-center gap-2 text-sm text-primary">
@@ -283,20 +345,30 @@ export function MatchDrawer({
                             : "Você está longe da quadra: entra sem check-in de GPS e não poderá avaliar."
                           : "Ative o GPS para validar sua presença."}
                       </p>
+                      <p className="text-xs font-semibold text-foreground tabular-nums">
+                        Jogadores: {total}/{capacity}
+                        {full ? " — partida cheia" : ""}
+                      </p>
                       <div className="grid grid-cols-3 gap-2">
-                        <Button size="sm" onClick={() => join.mutate({ role: "player", team_side: "A" })}>
-                          Jogar no A
+                        <Button
+                          size="sm"
+                          disabled={full || join.isPending || !match.id}
+                          onClick={() => join.mutate({ role: "player", team_side: "A" })}
+                        >
+                          Time A ({sideCount(match, "A")})
                         </Button>
                         <Button
                           size="sm"
                           variant="secondary"
+                          disabled={full || join.isPending || !match.id}
                           onClick={() => join.mutate({ role: "player", team_side: "B" })}
                         >
-                          Jogar no B
+                          Time B ({sideCount(match, "B")})
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
+                          disabled={join.isPending || !match.id}
                           onClick={() => join.mutate({ role: "spectator", team_side: null })}
                         >
                           Assistir

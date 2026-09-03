@@ -1,6 +1,7 @@
 import { MapPin, Navigation } from "lucide-react";
 
 import { formatDistance } from "@/lib/geo";
+import { effectiveStatus, isFull, maxPlayers, playerCount } from "@/lib/match-utils";
 import type { MatchWithRelations } from "@/lib/types";
 
 function BallGlyph({ className }: { className?: string }) {
@@ -23,9 +24,10 @@ function BallGlyph({ className }: { className?: string }) {
 }
 
 function statusPill(match: MatchWithRelations) {
-  if (match.status !== "active") {
+  if (effectiveStatus(match) !== "active") {
     return { label: "Encerrada", tone: "muted" as const };
   }
+  if (isFull(match)) return { label: "Cheia", tone: "muted" as const };
   const start = match.scheduled_at ? new Date(match.scheduled_at).getTime() : null;
   if (start && start > Date.now()) return { label: "Vagas", tone: "green" as const };
   return { label: "Agora", tone: "green" as const };
@@ -43,6 +45,10 @@ export function MatchCard({
   onSelect: (id: string) => void;
 }) {
   const players = match.participants.filter((p) => p.role === "player");
+  const total = playerCount(match);
+  const capacity = maxPlayers(match);
+  const status = effectiveStatus(match);
+  const full = isFull(match);
   const when = match.scheduled_at ?? match.created_at;
   const date = new Date(when);
   const isToday = date.toDateString() === new Date().toDateString();
@@ -63,7 +69,7 @@ export function MatchCard({
             <BallGlyph className="size-8" />
           </div>
           <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground tabular-nums">
-            {players.length}
+            {total}/{capacity}
           </span>
         </div>
 
@@ -127,11 +133,21 @@ export function MatchCard({
                 </span>
               ) : null}
             </div>
-            {match.status === "active" ? (
-              <span className="rounded-2xl bg-accent px-4 py-2 text-sm font-bold text-accent-foreground">
-                Entrar
+            {status === "active" ? (
+              <span
+                className={`rounded-2xl px-4 py-2 text-sm font-bold ${
+                  full
+                    ? "bg-secondary text-muted-foreground"
+                    : "bg-accent text-accent-foreground"
+                }`}
+              >
+                {full ? "Cheia" : "Entrar"}
               </span>
-            ) : null}
+            ) : (
+              <span className="rounded-2xl bg-secondary px-4 py-2 text-sm font-bold text-muted-foreground tabular-nums">
+                {match.score_team_a} × {match.score_team_b}
+              </span>
+            )}
           </div>
         </div>
       </div>
