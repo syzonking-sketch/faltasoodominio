@@ -56,7 +56,17 @@ export async function fetchMatches(status?: "active" | "finished", filter?: { ci
   let query = supabase.from("matches").select(MATCH_SELECT).order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
   
-  const results = unwrap<MatchWithRelations[]>(await query);
+  const raw = unwrap<MatchWithRelations[]>(await query);
+
+  // Encerramento automático: partidas cujo horário de término já passou.
+  const expired = raw.filter((m) => isExpired(m));
+  if (expired.length > 0) {
+    await Promise.allSettled(expired.map((m) => autoFinishIfExpired(m)));
+  }
+  const normalized = raw.map((m) =>
+    isExpired(m) ? { ...m, status: "finished" as const } : m,
+  );
+  const results = status ? normalized.filter((m) => m.status === status) : normalized;
 
   // Filtragem e ordenação por Bairro/Estado
   if (filter?.state) {
