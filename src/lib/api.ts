@@ -114,18 +114,30 @@ export async function createMatch(input: {
     throw new Error("Sua sessão não carregou corretamente. Entre novamente e tente criar a partida.");
   }
 
-  const matchResponse = await supabase
+  const startAt = input.scheduled_at || new Date().toISOString();
+  const endAt =
+    input.finished_at || new Date(new Date(startAt).getTime() + 60 * 60_000).toISOString();
+
+  const basePayload = {
+    venue_id: input.venue_id,
+    created_by: createdBy,
+    name: input.name || null,
+    match_type: input.match_type,
+    status: "active",
+    scheduled_at: startAt,
+    finished_at: endAt,
+  };
+
+  let matchResponse = await supabase
     .from("matches")
-    .insert({
-      venue_id: input.venue_id,
-      created_by: createdBy,
-      name: input.name || null,
-      match_type: input.match_type,
-      status: "active",
-      scheduled_at: input.scheduled_at || new Date().toISOString(),
-    })
+    .insert({ ...basePayload, max_players: input.max_players ?? 10 })
     .select("id")
     .single();
+
+  // Compatibilidade: bancos que ainda não têm a coluna max_players.
+  if (matchResponse.error && isMissingColumn(matchResponse.error, "max_players")) {
+    matchResponse = await supabase.from("matches").insert(basePayload).select("id").single();
+  }
 
   const match = unwrap<{ id: string }>(matchResponse);
 
