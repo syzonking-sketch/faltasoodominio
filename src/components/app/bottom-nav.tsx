@@ -20,36 +20,48 @@ function BallIcon({ className, strokeWidth = 1.7 }: { className?: string; stroke
   );
 }
 
-/** Mancha de tinta branca (spray / street art) atrás do ícone ativo. */
+/** Mancha de tinta branca (spray / street art) centralizada atrás do ícone ativo. */
 function PaintSplat({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 120 120" className={className} aria-hidden="true">
+    <svg
+      viewBox="0 0 120 120"
+      preserveAspectRatio="xMidYMid meet"
+      className={className}
+      aria-hidden="true"
+    >
       <defs>
         <filter id="nav-splat-rough" x="-50%" y="-50%" width="200%" height="200%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.055 0.07" numOctaves="4" seed="9" result="noise" />
-          <feDisplacementMap in="SourceGraphic" in2="noise" scale="14" xChannelSelector="R" yChannelSelector="G" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="3" seed="6" result="noise" />
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="9" xChannelSelector="R" yChannelSelector="G" />
         </filter>
         <filter id="nav-splat-specks" x="-60%" y="-60%" width="220%" height="220%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" result="n2" />
-          <feDisplacementMap in="SourceGraphic" in2="n2" scale="6" xChannelSelector="R" yChannelSelector="G" />
+          <feTurbulence type="fractalNoise" baseFrequency="0.85" numOctaves="2" seed="4" result="n2" />
+          <feDisplacementMap in="SourceGraphic" in2="n2" scale="5" xChannelSelector="R" yChannelSelector="G" />
         </filter>
       </defs>
       <g fill="currentColor">
+        {/* Blob principal simétrico em torno do centro (60,60) */}
         <g filter="url(#nav-splat-rough)">
-          <circle cx="60" cy="60" r="40" />
-          <ellipse cx="30" cy="44" rx="12" ry="9" />
-          <ellipse cx="90" cy="76" rx="11" ry="8" />
-          <ellipse cx="66" cy="24" rx="9" ry="7" />
+          <circle cx="60" cy="60" r="36" />
+          <ellipse cx="60" cy="26" rx="13" ry="9" />
+          <ellipse cx="60" cy="94" rx="13" ry="9" />
+          <ellipse cx="26" cy="60" rx="9" ry="13" />
+          <ellipse cx="94" cy="60" rx="9" ry="13" />
+          <ellipse cx="36" cy="36" rx="7" ry="6" />
+          <ellipse cx="84" cy="84" rx="7" ry="6" />
+          <ellipse cx="84" cy="36" rx="6" ry="7" />
+          <ellipse cx="36" cy="84" rx="6" ry="7" />
         </g>
-        <g filter="url(#nav-splat-specks)" opacity="0.95">
-          <circle cx="14" cy="34" r="3.1" />
-          <circle cx="22" cy="86" r="2.4" />
-          <circle cx="104" cy="42" r="2.8" />
-          <circle cx="96" cy="18" r="2" />
-          <circle cx="60" cy="108" r="2.6" />
-          <circle cx="38" cy="14" r="1.9" />
-          <circle cx="110" cy="88" r="2.2" />
-          <circle cx="8" cy="62" r="1.7" />
+        {/* Respingos simétricos */}
+        <g filter="url(#nav-splat-specks)" opacity="0.92">
+          <circle cx="18" cy="30" r="2.8" />
+          <circle cx="102" cy="90" r="2.8" />
+          <circle cx="102" cy="30" r="2.4" />
+          <circle cx="18" cy="90" r="2.4" />
+          <circle cx="60" cy="10" r="2.2" />
+          <circle cx="60" cy="110" r="2.2" />
+          <circle cx="10" cy="60" r="1.9" />
+          <circle cx="110" cy="60" r="1.9" />
         </g>
       </g>
     </svg>
@@ -80,21 +92,22 @@ export function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  <span className="relative grid size-[3.1rem] shrink-0 place-items-center">
+                  {/* Container do ícone: flex center garante centralização real em qualquer tela */}
+                  <span className="relative flex h-11 w-11 shrink-0 items-center justify-center sm:h-12 sm:w-12">
                     <PaintSplat
-                      className={`pointer-events-none absolute top-1/2 left-1/2 h-[4.4rem] w-[4.4rem] -translate-x-1/2 -translate-y-1/2 text-white transition-all duration-300 ease-out ${
+                      className={`pointer-events-none absolute inset-0 m-auto h-[3.8rem] w-[3.8rem] text-white transition-all duration-300 ease-out sm:h-[4.4rem] sm:w-[4.4rem] ${
                         isActive ? "scale-100 opacity-100" : "scale-75 opacity-0"
                       }`}
                     />
                     <Icon
-                      className={`relative size-7 transition-colors duration-200 ${
+                      className={`relative size-6 transition-colors duration-200 sm:size-7 ${
                         isActive ? "text-black" : "text-white"
                       }`}
                       strokeWidth={isActive ? 1.9 : 1.6}
                     />
                   </span>
                   <span
-                    className={`text-display truncate text-[10.5px] leading-none font-black tracking-wide text-white transition-opacity duration-200 ${
+                    className={`text-display truncate text-[10px] leading-none font-black tracking-wide text-white transition-opacity duration-200 sm:text-[10.5px] ${
                       isActive ? "border-b-[2.5px] border-white pb-0.5 opacity-100" : "pb-[3.5px] opacity-70"
                     }`}
                   >
