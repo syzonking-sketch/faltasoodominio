@@ -80,9 +80,9 @@ export function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  <span className="relative grid size-[3.1rem] place-items-center">
+                  <span className="relative grid size-[3.1rem] shrink-0 place-items-center">
                     <PaintSplat
-                      className={`pointer-events-none absolute inset-[-14%] text-white transition-all duration-300 ease-out ${
+                      className={`pointer-events-none absolute top-1/2 left-1/2 h-[4.4rem] w-[4.4rem] -translate-x-1/2 -translate-y-1/2 text-white transition-all duration-300 ease-out ${
                         isActive ? "scale-100 opacity-100" : "scale-75 opacity-0"
                       }`}
                     />
