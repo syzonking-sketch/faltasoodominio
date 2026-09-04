@@ -175,7 +175,13 @@ export async function joinMatch(input: {
   if (!input.match_id) {
     throw new Error("Partida não carregada. Feche e abra a partida novamente.");
   }
-  if (!input.user_id) {
+  let userId = input.user_id;
+  if (!userId) {
+    // Fallback: pega a sessão direto do Supabase quando o contexto ainda não hidratou.
+    const { data } = await supabase.auth.getUser();
+    userId = data.user?.id ?? null;
+  }
+  if (!userId) {
     throw new Error("Sua sessão não carregou. Entre novamente para participar.");
   }
 
@@ -189,7 +195,7 @@ export async function joinMatch(input: {
     throw new Error("Esta partida já foi encerrada.");
   }
 
-  if (match.participants.some((p) => p.user_id === input.user_id)) {
+  if (match.participants.some((p) => p.user_id === userId)) {
     throw new Error("Você já está na súmula desta partida.");
   }
 
@@ -202,7 +208,7 @@ export async function joinMatch(input: {
       .from("match_participants")
       .insert({
         match_id: match.id,
-        user_id: input.user_id,
+        user_id: userId,
         role: input.role,
         team_side: input.role === "player" ? input.team_side : null,
         checked_in_gps: input.checked_in_gps,

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export interface Coords {
   lat: number;
@@ -78,81 +78,175 @@ export async function checkGeolocationPermission(): Promise<GeoPermission> {
   }
 }
 
-export function useGeolocation() {
-  const [coords, setCoords] = useState<Coords | null>(null);
-  const [center, setCenter] = useState<Coords>(FALLBACK_CENTER);
-  const [status, setStatus] = useState<GeoStatus>("idle");
-  const [permission, setPermission] = useState<GeoPermission>("unknown");
-  const [error, setError] = useState<string | null>(null);
-  const [errorCode, setErrorCode] = useState<number | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const requestInFlight = useRef(false);
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+/* -------------------------------------------------------------------------- */
+/*  Cache global de localização — pedida uma única vez por sessão do app.      */
+/* -------------------------------------------------------------------------- */
 
-  const request = useCallback(async () => {
-    if (requestInFlight.current) return;
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      setPermission("unsupported");
-      setStatus("unavailable");
-      setError("Este navegador não oferece suporte à localização.");
-      return;
-    }
-    if (!window.isSecureContext && location.hostname !== "localhost") {
-      setStatus("error");
-      setError("A localização exige uma conexão segura (HTTPS).");
-      return;
-    }
-    requestInFlight.current = true;
-    setStatus("requesting");
-    setError(null);
-    setErrorCode(null);
-    setErrorMessage(null);
+interface GeoStore {
+  coords: Coords | null;
+  center: Coords;
+  status: GeoStatus;
+  permission: GeoPermission;
+  error: string | null;
+  errorCode: number | null;
+  errorMessage: string | null;
+}
+
+const STORAGE_KEY = "the-match:last-coords";
+
+function readStoredCoords(): Coords | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Coords;
+    return typeof parsed?.lat === "number" && typeof parsed?.lng === "number" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+const stored = readStoredCoords();
+
+const store: GeoStore = {
+  coords: stored,
+  center: stored ?? FALLBACK_CENTER,
+  status: stored ? "granted" : "idle",
+  permission: stored ? "granted" : "unknown",
+  error: null,
+  errorCode: null,
+  errorMessage: null,
+};
+
+const listeners = new Set<() => void>();
+let requestInFlight = false;
+let bootstrapped = false;
+
+function emit() {
+  listeners.forEach((fn) => fn());
+}
+
+function patch(next: Partial<GeoStore>) {
+  Object.assign(store, next);
+  emit();
+}
+
+function persist(coords: Coords) {
+  try {
+    window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(coords));
+  } catch {
+    /* ignore */
+  }
+}
+
+function requestPosition(): Promise<Coords | null> {
+  if (requestInFlight) return Promise.resolve(store.coords);
+  if (typeof window === "undefined" || !navigator.geolocation) {
+    patch({ permission: "unsupported", status: "unavailable", error: "Este navegador não oferece suporte à localização." });
+    return Promise.resolve(null);
+  }
+  if (!window.isSecureContext && location.hostname !== "localhost") {
+    patch({ status: "error", error: "A localização exige uma conexão segura (HTTPS)." });
+    return Promise.resolve(null);
+  }
+
+  requestInFlight = true;
+  patch({ status: "requesting", error: null, errorCode: null, errorMessage: null });
+
+  return new Promise((resolve) => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const newCoords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        setCoords(newCoords);
-        setCenter(newCoords);
-        setPermission("granted");
-        setStatus("granted");
-        requestInFlight.current = false;
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        persist(coords);
+        requestInFlight = false;
+        patch({ coords, center: coords, permission: "granted", status: "granted", error: null });
+        resolve(coords);
       },
       (err) => {
         console.warn("Geolocation error:", err.code, err.message);
-        setErrorCode(err.code);
-        setErrorMessage(err.message || null);
-        setPermission(err.code === 1 ? "denied" : "unknown");
-        setStatus(err.code === 1 ? "denied" : err.code === 2 ? "unavailable" : err.code === 3 ? "error" : "error");
-        setError(err.code === 1 ? "Não foi possível acessar sua localização. O navegador não concedeu permissão para este site." : err.code === 2 ? "Seu dispositivo não conseguiu determinar sua localização. Verifique se a localização está ativada e tente novamente." : err.code === 3 ? "O dispositivo demorou para obter sua localização. Tente novamente em um local com melhor sinal." : "Não foi possível obter sua localização. Tente novamente.");
-        requestInFlight.current = false;
+        requestInFlight = false;
+        patch({
+          errorCode: err.code,
+          errorMessage: err.message || null,
+          permission: err.code === 1 ? "denied" : "unknown",
+          status: err.code === 1 ? "denied" : err.code === 2 ? "unavailable" : "error",
+          error:
+            err.code === 1
+              ? "Não foi possível acessar sua localização. O navegador não concedeu permissão para este site."
+              : err.code === 2
+                ? "Seu dispositivo não conseguiu determinar sua localização. Verifique se a localização está ativada e tente novamente."
+                : "O dispositivo demorou para obter sua localização. Tente novamente em um local com melhor sinal.",
+        });
+        resolve(null);
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5 * 60_000 },
     );
+  });
+}
+
+/** Roda uma única vez por carregamento do app. */
+function bootstrap() {
+  if (bootstrapped || typeof window === "undefined") return;
+  bootstrapped = true;
+
+  // Já temos coordenadas em cache nesta sessão: não pergunta de novo.
+  if (store.coords) return;
+
+  patch({ status: "checking" });
+  void checkGeolocationPermission().then((state) => {
+    patch({
+      permission: state,
+      status: state === "unsupported" ? "unavailable" : "prompt",
+    });
+    // Permissão já concedida antes: busca em silêncio, sem novo prompt.
+    if (state === "granted") void requestPosition();
+  });
+}
+
+export function useGeolocation() {
+  const [, force] = useState(0);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+
+  useEffect(() => {
+    const listener = () => force((n) => n + 1);
+    listeners.add(listener);
+    bootstrap();
+    return () => {
+      listeners.delete(listener);
+    };
   }, []);
 
-  const retry = useCallback(() => void request(), [request]);
+  const request = useCallback(async () => {
+    // Se já temos posição nesta sessão, reaproveita sem novo prompt.
+    if (store.coords) {
+      patch({ center: store.coords, status: "granted", permission: "granted" });
+      return store.coords;
+    }
+    return requestPosition();
+  }, []);
+
+  const retry = useCallback(() => void requestPosition(), []);
+
+  const setCenter = useCallback((next: Coords) => patch({ center: next }), []);
 
   const searchLocation = useCallback(async (query: string) => {
     if (!query.trim()) {
       setSearchResults([]);
-      return;
+      return null;
     }
     setIsSearching(true);
     try {
-      // Nominatim search with more details
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5&addressdetails=1`,
-        { headers: { 'Accept-Language': 'pt-BR', 'User-Agent': 'TheMatchApp/1.0' } }
+        { headers: { "Accept-Language": "pt-BR" } },
       );
       const data = await response.json();
       setSearchResults(data || []);
-      
+
       if (data && data.length > 0) {
-        const result = {
-          lat: parseFloat(data[0].lat),
-          lng: parseFloat(data[0].lon),
-        };
-        setCenter(result);
+        const result = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+        patch({ center: result });
         return result;
       }
       return null;
@@ -164,21 +258,24 @@ export function useGeolocation() {
     }
   }, []);
 
-  useEffect(() => {
-    let active = true;
-    setStatus("checking");
-    void checkGeolocationPermission().then((state) => {
-      if (!active) return;
-      setPermission(state);
-      // Permissions API is advisory on iOS; only a real geolocation error
-      // should turn the request flow into a confirmed denial.
-      setStatus(state === "unsupported" ? "unavailable" : "prompt");
-    });
-    return () => { active = false; };
-  }, []);
-
-  return { coords, status, permission, error, request, requestCurrentLocation: request, requestLocation: request, retry, center, setCenter, searchLocation, isSearching, searchResults, diagnostics: browserDiagnostics(permission, errorCode, errorMessage) };
+  return {
+    coords: store.coords,
+    status: store.status,
+    permission: store.permission,
+    error: store.error,
+    request,
+    requestCurrentLocation: request,
+    requestLocation: request,
+    retry,
+    center: store.center,
+    setCenter,
+    searchLocation,
+    isSearching,
+    searchResults,
+    diagnostics: browserDiagnostics(store.permission, store.errorCode, store.errorMessage),
+  };
 }
+
 
 export async function reverseGeocode(lat: number, lng: number): Promise<{ address: string; city: string; state: string }> {
   try {
