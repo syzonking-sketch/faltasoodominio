@@ -89,9 +89,14 @@ export async function fetchMatches(status?: "active" | "finished", filter?: { ci
 }
 
 export async function fetchMatch(id: string): Promise<MatchWithRelations | null> {
-  return unwrap<MatchWithRelations | null>(
+  const match = unwrap<MatchWithRelations | null>(
     await supabase.from("matches").select(MATCH_SELECT).eq("id", id).maybeSingle(),
   );
+  if (match && isExpired(match)) {
+    await autoFinishIfExpired(match);
+    return { ...match, status: "finished" as const };
+  }
+  return match;
 }
 
 function isMissingColumn(error: { message?: string } | null, column: string): boolean {
