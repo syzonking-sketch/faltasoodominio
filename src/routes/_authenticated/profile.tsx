@@ -76,7 +76,7 @@ function ProfilePage() {
     void navigate({ to: "/auth", replace: true });
   }
 
-  const stats = statsQuery.data;
+  const stats = statsQuery.data ?? { avg_score: 0, matches_played: 0, ratings_count: 0 };
 
   return (
     <AppShell title="Perfil" subtitle="Sua carteira de boleiro">
@@ -164,7 +164,7 @@ function ProfilePage() {
             onRetry={() => void statsQuery.refetch()}
           />
         </div>
-      ) : stats ? (
+      ) : (
         <>
           <div className="mt-4 grid grid-cols-3 gap-2">
             <div className="rounded-2xl border border-border bg-card p-3 text-center">
@@ -194,7 +194,7 @@ function ProfilePage() {
             <StarRating value={Math.round(stats.avg_score)} size={24} />
           </div>
         </>
-      ) : null}
+      )}
 
       <div className="mt-6 rounded-2xl border border-border bg-card p-4">
         {editing ? (
