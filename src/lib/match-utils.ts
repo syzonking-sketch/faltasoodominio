@@ -36,7 +36,9 @@ export function isExpired(
 
 
 /** Status considerando o encerramento automático por horário. */
-export function effectiveStatus(match: Pick<Match, "finished_at" | "status">): MatchStatus {
+export function effectiveStatus(
+  match: Pick<Match, "finished_at" | "status" | "scheduled_at" | "created_at">,
+): MatchStatus {
   return isExpired(match) ? "finished" : match.status;
 }
 
