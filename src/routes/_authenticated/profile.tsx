@@ -55,7 +55,7 @@ function ProfilePage() {
   const statsQuery = useQuery({
     queryKey: ["player-stats", user?.id],
     queryFn: () => fetchPlayerStats(user!.id),
-    enabled: Boolean(user?.id && profile),
+    enabled: Boolean(user?.id),
   });
 
   const save = useMutation({
@@ -140,7 +140,7 @@ function ProfilePage() {
         )}
       </div>
 
-      {statsQuery.isPending || authLoading ? (
+      {(statsQuery.isPending && statsQuery.isFetching) || authLoading ? (
         <div className="mt-4">
           <div className="space-y-3">
             {[1, 2].map((i) => (

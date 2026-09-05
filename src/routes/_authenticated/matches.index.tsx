@@ -56,10 +56,15 @@ function MatchesPage() {
   const { coords } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
 
-  const activeQuery = useQuery({ queryKey: ["matches", "active"], queryFn: () => fetchMatches("active") });
+  const activeQuery = useQuery({
+    queryKey: ["matches", "active"],
+    queryFn: () => fetchMatches("active"),
+    refetchInterval: 30000,
+  });
   const finishedQuery = useQuery({
     queryKey: ["matches", "finished"],
     queryFn: () => fetchMatches("finished"),
+    refetchInterval: 60000,
   });
 
   return (
