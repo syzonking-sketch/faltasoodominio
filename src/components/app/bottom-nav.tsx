@@ -92,10 +92,10 @@ export function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  {/* Container do ícone: flex center garante centralização real em qualquer tela */}
+                  {/* Container do ícone: centralização real via translate, funciona em qualquer tela */}
                   <span className="relative flex h-11 w-11 shrink-0 items-center justify-center sm:h-12 sm:w-12">
                     <PaintSplat
-                      className={`pointer-events-none absolute inset-0 m-auto h-[3.8rem] w-[3.8rem] text-white transition-all duration-300 ease-out sm:h-[4.4rem] sm:w-[4.4rem] ${
+                      className={`pointer-events-none absolute left-1/2 top-1/2 h-[3.8rem] w-[3.8rem] -translate-x-1/2 -translate-y-1/2 text-white transition-all duration-300 ease-out sm:h-[4.4rem] sm:w-[4.4rem] ${
                         isActive ? "scale-100 opacity-100" : "scale-75 opacity-0"
                       }`}
                     />
