@@ -21,6 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import {
   cancelMatch,
   fetchMatch,
+  autoFinishIfExpired,
   fetchRatingsByEvaluator,
   finishMatch,
   joinMatch,
@@ -50,7 +51,12 @@ export function MatchDrawer({
   const matchQuery = useQuery({
     queryKey: ["match", matchId],
     enabled: Boolean(matchId),
-    queryFn: () => fetchMatch(matchId!),
+    queryFn: async () => {
+      const data = await fetchMatch(matchId!);
+      // Encerramento automático quando o horário de término já passou.
+      if (data) await autoFinishIfExpired(data);
+      return data;
+    },
     refetchInterval: 15000,
   });
 
@@ -151,7 +157,8 @@ export function MatchDrawer({
     onError: (error) => toast.error(friendlyError(error)),
   });
 
-  const canRate = Boolean(match && effectiveStatus(match) === "finished" && mine?.checked_in_gps);
+  // Qualquer participante da súmula pode avaliar depois que a partida encerra.
+  const canRate = Boolean(match && effectiveStatus(match) === "finished" && mine);
   const alreadyRated = (targetId: string) =>
     (ratingsQuery.data ?? []).find((r) => r.match_id === matchId && r.evaluated_user_id === targetId);
 
@@ -201,7 +208,7 @@ export function MatchDrawer({
             )}
             {!canRate ? (
               <p className="mt-1 text-[10px] text-muted-foreground">
-                Avalia após o fim, com GPS
+                Avalie quando a partida encerrar
               </p>
             ) : null}
           </div>
@@ -252,9 +259,9 @@ export function MatchDrawer({
                           : "bg-destructive/20 text-destructive"
                     }
                   >
-                    {match.status === "active"
+                    {status === "active"
                       ? "AO VIVO"
-                      : match.status === "finished"
+                      : status === "finished"
                         ? "ENCERRADA"
                         : "CANCELADA"}
                   </Badge>
