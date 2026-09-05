@@ -103,7 +103,9 @@ function NewMatchPage() {
       // Use current date if scheduledAt is not set, to ensure ball starts rolling immediately
       const start = scheduledAt ? new Date(scheduledAt).toISOString() : new Date().toISOString();
       // Ensure finished_at is after start, even if not explicitly set by user yet
-      const end = finishedAt ? new Date(finishedAt).toISOString() : new Date(new Date(start).getTime() + 60 * 60000).toISOString();
+      const end = finishedAt
+        ? new Date(finishedAt).toISOString()
+        : new Date(new Date(start).getTime() + duration * 60000).toISOString();
 
       return createMatch({
         venue_id: venueId,
