@@ -54,7 +54,11 @@ export async function createVenue(input: {
 
 export async function fetchMatches(status?: "active" | "finished", filter?: { city?: string | null | undefined, state?: string | null | undefined }): Promise<MatchWithRelations[]> {
   let query = supabase.from("matches").select(MATCH_SELECT).order("created_at", { ascending: false });
-  if (status) query = query.eq("status", status);
+  // Para "encerradas" também trazemos as ativas cujo tempo já acabou: elas são
+  // normalizadas para `finished` abaixo e aparecem no histórico na hora.
+  if (status === "finished") query = query.in("status", ["active", "finished"]);
+  else if (status) query = query.eq("status", status);
+
   
   const raw = unwrap<MatchWithRelations[]>(await query);
 
