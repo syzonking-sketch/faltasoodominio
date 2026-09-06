@@ -7,12 +7,11 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/app/app-shell";
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { StarRating } from "@/components/app/star-rating";
-import { ErrorState, ListSkeleton } from "@/components/app/states";
-import { Skeleton } from "@/components/ui/skeleton";
+import { ErrorState } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { fetchPlayerStats, updateProfile } from "@/lib/api";
+import { ensureCurrentProfile, fetchPlayerStats, updateProfile } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { friendlyError, supabase } from "@/lib/supabase";
 
@@ -44,23 +43,47 @@ function ProfilePage() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
 
+  const metadata = user?.user_metadata;
+  const accountFullName =
+    profile?.full_name ||
+    (typeof metadata?.full_name === "string" ? metadata.full_name : "") ||
+    user?.email?.split("@")[0] ||
+    "Boleiro";
+  const accountNickname =
+    profile?.nickname ||
+    (typeof metadata?.nickname === "string" ? metadata.nickname : "") ||
+    accountFullName.split(" ")[0];
+  const accountCity =
+    profile?.city || (typeof metadata?.city === "string" ? metadata.city : "");
+  const accountState =
+    profile?.state || (typeof metadata?.state === "string" ? metadata.state : "");
+  const accountAvatar =
+    profile?.avatar_url ||
+    (typeof metadata?.avatar_url === "string" ? metadata.avatar_url : null);
+
   useEffect(() => {
-    if (profile) {
-      setNickname(profile.nickname ?? "");
-      setCity(profile.city ?? "");
-      setState(profile.state ?? "");
-    }
-  }, [profile]);
+    if (!user) return;
+    setNickname(accountNickname);
+    setCity(accountCity);
+    setState(accountState);
+  }, [user, accountNickname, accountCity, accountState]);
 
   const statsQuery = useQuery({
     queryKey: ["player-stats", user?.id],
-    queryFn: () => fetchPlayerStats(user!.id),
+    queryFn: () => {
+      if (!user?.id) return Promise.resolve({ avg_score: 0, matches_played: 0, ratings_count: 0 });
+      return fetchPlayerStats(user.id);
+    },
     enabled: Boolean(user?.id),
+    placeholderData: { avg_score: 0, matches_played: 0, ratings_count: 0 },
   });
 
   const save = useMutation({
-    mutationFn: () =>
-      updateProfile(user!.id, { nickname, city, state: state.toUpperCase() }),
+    mutationFn: async () => {
+      if (!user?.id) throw new Error("Sua conta ainda não carregou.");
+      await ensureCurrentProfile();
+      await updateProfile(user.id, { nickname, city, state: state.toUpperCase() });
+    },
     onSuccess: () => {
       toast.success("Perfil atualizado.");
       setEditing(false);
@@ -81,19 +104,18 @@ function ProfilePage() {
   return (
     <AppShell title="Perfil" subtitle="Sua carteira de boleiro">
       <div className="card-glow rounded-2xl border border-border bg-card p-5 text-center">
-        {profileLoading || authLoading ? (
+        {authLoading && !user ? (
           <div className="flex flex-col items-center gap-3">
             <div className="animate-pulse bg-primary/10 size-28 rounded-full" />
             <div className="animate-pulse rounded-md bg-primary/10 h-8 w-32" />
             <div className="animate-pulse rounded-md bg-primary/10 h-4 w-48" />
           </div>
-        ) : !profile ? (
+        ) : !user ? (
           <div className="py-8 text-center">
             <div className="bg-destructive/10 text-destructive p-4 rounded-xl mb-6">
               <p className="font-bold mb-1 text-sm uppercase">Perfil Não Sincronizado</p>
               <p className="text-[10px] leading-tight opacity-80">
-                Seu usuário existe no Auth, mas o perfil não foi criado automaticamente na tabela Profiles. 
-                Clique no botão abaixo para tentar criar seu perfil agora.
+                Não foi possível carregar sua conta agora. Tente sincronizar novamente.
               </p>
             </div>
             
@@ -124,23 +146,23 @@ function ProfilePage() {
           <>
             <div className="flex justify-center">
               <PlayerAvatar
-                name={profile?.full_name ?? "Boleiro"}
-                nickname={profile?.nickname ?? null}
-                photoUrl={profile?.avatar_url ?? null}
+                name={accountFullName}
+                nickname={accountNickname}
+                photoUrl={accountAvatar}
                 size="xl"
               />
             </div>
             <h2 className="text-display mt-3 text-2xl font-extrabold text-foreground">
-              {profile?.nickname || profile?.full_name || "Boleiro"}
+              {accountNickname}
             </h2>
             <p className="text-xs text-muted-foreground uppercase tracking-widest">
-              {profile?.full_name || "Boleiro"} · {profile?.city ?? "Cidade"} / {profile?.state ?? "UF"}
+              {accountFullName} · {accountCity || "Cidade"} / {accountState || "UF"}
             </p>
           </>
         )}
       </div>
 
-      {(statsQuery.isPending && statsQuery.isFetching) || authLoading ? (
+      {authLoading && !user ? (
         <div className="mt-4">
           <div className="space-y-3">
             {[1, 2].map((i) => (
