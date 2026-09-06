@@ -33,9 +33,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const { data: sub } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, nextSession) => {
       if (!mounted) return;
       setSession(nextSession);
+      setLoading(false);
       
       if (event === "SIGNED_OUT") {
         queryClient.clear();
@@ -43,12 +44,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       
       if (event === "SIGNED_IN" || event === "USER_UPDATED" || event === "INITIAL_SESSION") {
         if (nextSession?.user.id) {
-          // Garante que o perfil existe para o usuário logado
-          void ensureCurrentProfile().then(() => {
-            if (mounted) {
-              void queryClient.invalidateQueries({ queryKey: ["profile", nextSession.user.id] });
-            }
-          });
+          // O callback de autenticação precisa terminar antes de fazer outra
+          // chamada ao cliente; caso contrário, o bloqueio interno da sessão
+          // pode deixar a página de perfil carregando indefinidamente.
+          window.setTimeout(() => {
+            void ensureCurrentProfile().then(() => {
+              if (mounted) {
+                void queryClient.invalidateQueries({ queryKey: ["profile", nextSession.user.id] });
+              }
+            });
+          }, 0);
         }
       }
     });
