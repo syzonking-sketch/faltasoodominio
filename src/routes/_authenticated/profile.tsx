@@ -46,20 +46,21 @@ function ProfilePage() {
   const metadata = user?.user_metadata;
   const accountFullName =
     profile?.full_name ||
-    (typeof metadata?.full_name === "string" ? metadata.full_name : "") ||
+    (typeof metadata?.['full_name'] === "string" ? metadata['full_name'] : "") ||
     user?.email?.split("@")[0] ||
     "Boleiro";
   const accountNickname =
     profile?.nickname ||
-    (typeof metadata?.nickname === "string" ? metadata.nickname : "") ||
-    accountFullName.split(" ")[0];
+    (typeof metadata?.['nickname'] === "string" ? metadata['nickname'] : "") ||
+    accountFullName.split(" ")[0] ||
+    "Boleiro";
   const accountCity =
-    profile?.city || (typeof metadata?.city === "string" ? metadata.city : "");
+    profile?.city || (typeof metadata?.['city'] === "string" ? metadata['city'] : "");
   const accountState =
-    profile?.state || (typeof metadata?.state === "string" ? metadata.state : "");
+    profile?.state || (typeof metadata?.['state'] === "string" ? metadata['state'] : "");
   const accountAvatar =
     profile?.avatar_url ||
-    (typeof metadata?.avatar_url === "string" ? metadata.avatar_url : null);
+    (typeof metadata?.['avatar_url'] === "string" ? metadata['avatar_url'] : null);
 
   useEffect(() => {
     if (!user) return;
@@ -138,9 +139,6 @@ function ProfilePage() {
               CRIAR MEU PERFIL AGORA
             </Button>
             
-            <p className="text-[9px] text-muted-foreground uppercase tracking-widest break-all">
-              ID: {user?.id}
-            </p>
           </div>
         ) : (
           <>
