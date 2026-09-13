@@ -27,6 +27,30 @@ BEGIN
   END LOOP;
 END $$;
 
+-- Garante que uma partida nova pertença à sessão e que o responsável inicial,
+-- quando informado, seja o próprio criador (que entra na súmula logo depois).
+DO $$
+DECLARE
+  policy_row RECORD;
+BEGIN
+  FOR policy_row IN
+    SELECT policyname
+    FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'matches' AND cmd = 'INSERT'
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.matches', policy_row.policyname);
+  END LOOP;
+END $$;
+
+CREATE POLICY "Users create their own matches"
+ON public.matches
+FOR INSERT
+TO authenticated
+WITH CHECK (
+  created_by = auth.uid()
+  AND (scorekeeper_id IS NULL OR scorekeeper_id = auth.uid())
+);
+
 CREATE OR REPLACE FUNCTION public.assign_match_scorekeeper(
   _match_id UUID,
   _scorekeeper_id UUID
