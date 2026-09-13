@@ -235,11 +235,7 @@ export async function joinMatch(input: {
  */
 export async function autoFinishIfExpired(match: MatchWithRelations): Promise<void> {
   if (!isExpired(match)) return;
-  await supabase
-    .from("matches")
-    .update({ status: "finished", updated_at: new Date().toISOString() })
-    .eq("id", match.id)
-    .eq("status", "active");
+  await supabase.rpc("auto_finish_match", { _match_id: match.id });
 }
 
 /** Placar salvo no banco (colunas score_team_a / score_team_b da partida). */
