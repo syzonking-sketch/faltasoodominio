@@ -12,6 +12,21 @@ ALTER TABLE public.matches ENABLE ROW LEVEL SECURITY;
 -- passam por funções que validam usuário, participação, status e campos.
 REVOKE UPDATE ON public.matches FROM authenticated;
 
+-- Remove políticas UPDATE antigas e permissivas. As funções abaixo substituem
+-- essas políticas sem permitir a alteração de outros campos da partida.
+DO $$
+DECLARE
+  policy_row RECORD;
+BEGIN
+  FOR policy_row IN
+    SELECT policyname
+    FROM pg_policies
+    WHERE schemaname = 'public' AND tablename = 'matches' AND cmd = 'UPDATE'
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON public.matches', policy_row.policyname);
+  END LOOP;
+END $$;
+
 CREATE OR REPLACE FUNCTION public.assign_match_scorekeeper(
   _match_id UUID,
   _scorekeeper_id UUID
