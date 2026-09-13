@@ -86,8 +86,8 @@ function TeamsPage() {
     queryClient.setQueryData<Team[]>(["teams"], (current) =>
       current?.map((team) => ({
         ...team,
-        members: team.members
-          ?.map((member) =>
+        members: (team.members ?? [])
+          .map((member) =>
             member.id === memberId && action === "approve"
               ? { ...member, status: "active" as const }
               : member,
