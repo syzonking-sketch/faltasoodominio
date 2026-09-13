@@ -4,6 +4,7 @@ export type ParticipantRole = "player" | "spectator";
 export type TeamSide = "A" | "B";
 export type MemberStatus = "invited" | "pending_approval" | "active";
 export type ConfrontoStatus = "pending" | "confirmed" | "conflict_nullified";
+export type MatchEventType = "goal" | "yellow_card" | "red_card";
 
 export interface Profile {
   id: string;
@@ -63,6 +64,18 @@ export interface MatchWithRelations extends Match {
   participants: MatchParticipant[];
 }
 
+export interface MatchEvent {
+  id: string;
+  match_id: string;
+  player_id: string;
+  team_side: TeamSide;
+  event_type: MatchEventType;
+  minute: number | null;
+  created_by: string;
+  created_at: string;
+  player?: Profile | null;
+}
+
 export interface Rating {
   id: string;
   match_id: string;
@@ -97,7 +110,9 @@ export interface TeamMember {
 
 export interface Confronto {
   id: string;
+  match_id: string | null;
   venue_id: string | null;
+  referee_id: string | null;
   team_a_id: string;
   team_b_id: string;
   scheduled_at: string | null;
@@ -111,6 +126,7 @@ export interface Confronto {
   team_a?: Team | null;
   team_b?: Team | null;
   venue?: Venue | null;
+  referee?: Profile | null;
 }
 
 export interface RankingRow {

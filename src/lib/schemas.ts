@@ -53,10 +53,18 @@ export type TeamValues = z.infer<typeof teamSchema>;
 export const confrontoSchema = z.object({
   team_a_id: z.string().uuid("Selecione seu time"),
   team_b_id: z.string().uuid("Selecione o adversário"),
-  venue_id: z.string().uuid("Selecione a quadra").optional(),
+  venue_id: z.string().uuid("Selecione a quadra"),
+  referee_id: z.string().uuid("Selecione o juiz"),
   scheduled_at: z.string().min(1, "Escolha data e hora"),
 });
 export type ConfrontoValues = z.infer<typeof confrontoSchema>;
+
+export const matchEventSchema = z.object({
+  player_id: z.string().uuid("Selecione o jogador"),
+  team_side: z.enum(["A", "B"]),
+  event_type: z.enum(["goal", "yellow_card", "red_card"]),
+  minute: z.coerce.number().int().min(0).max(180).optional(),
+});
 
 export const scoreSchema = z.object({
   score_a: z.coerce.number().int().min(0, "Placar inválido").max(99),
