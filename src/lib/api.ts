@@ -118,6 +118,7 @@ export async function createMatch(input: {
   scheduled_at?: string | null;
   finished_at?: string | null;
   max_players?: number | null;
+  creator_is_scorekeeper: boolean;
 }): Promise<string> {
   const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
   if (!uuidPattern.test(input.venue_id)) {
@@ -146,6 +147,7 @@ export async function createMatch(input: {
     status: "active",
     scheduled_at: startAt,
     finished_at: endAt,
+    scorekeeper_id: input.creator_is_scorekeeper ? createdBy : null,
   };
 
   let matchResponse = await supabase
@@ -246,16 +248,21 @@ export async function updateMatchScore(input: {
   score_team_a: number;
   score_team_b: number;
 }): Promise<void> {
-  unwrap<unknown>(
-    await supabase
-      .from("matches")
-      .update({
-        score_team_a: Math.max(0, Math.trunc(input.score_team_a)),
-        score_team_b: Math.max(0, Math.trunc(input.score_team_b)),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", input.match_id),
-  );
+  unwrap<unknown>(await supabase.rpc("update_match_score", {
+    _match_id: input.match_id,
+    _score_team_a: Math.max(0, Math.trunc(input.score_team_a)),
+    _score_team_b: Math.max(0, Math.trunc(input.score_team_b)),
+  }));
+}
+
+export async function assignMatchScorekeeper(input: {
+  match_id: string;
+  scorekeeper_id: string | null;
+}): Promise<void> {
+  unwrap<unknown>(await supabase.rpc("assign_match_scorekeeper", {
+    _match_id: input.match_id,
+    _scorekeeper_id: input.scorekeeper_id,
+  }));
 }
 
 export async function leaveMatch(participantId: string): Promise<void> {
@@ -264,29 +271,12 @@ export async function leaveMatch(participantId: string): Promise<void> {
 
 export async function finishMatch(input: {
   match_id: string;
-  score_team_a: number;
-  score_team_b: number;
 }): Promise<void> {
-  unwrap<unknown>(
-    await supabase
-      .from("matches")
-      .update({
-        status: "finished",
-        score_team_a: input.score_team_a,
-        score_team_b: input.score_team_b,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", input.match_id),
-  );
+  unwrap<unknown>(await supabase.rpc("finish_match", { _match_id: input.match_id }));
 }
 
 export async function cancelMatch(matchId: string): Promise<void> {
-  unwrap<unknown>(
-    await supabase
-      .from("matches")
-      .update({ status: "cancelled", updated_at: new Date().toISOString() })
-      .eq("id", matchId),
-  );
+  unwrap<unknown>(await supabase.rpc("cancel_match", { _match_id: matchId }));
 }
 
 /* --------------------------------- Ratings --------------------------------- */
