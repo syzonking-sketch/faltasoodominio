@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Flag, Loader2, MapPin, Users, Eye, Ban } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle2, Flag, Loader2, MapPin, Users, Eye, Ban, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import { PlayerAvatar } from "@/components/app/player-avatar";
@@ -15,11 +14,17 @@ import {
   DrawerHeader,
   DrawerTitle,
 } from "@/components/ui/drawer";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   cancelMatch,
+  assignMatchScorekeeper,
   fetchMatch,
   autoFinishIfExpired,
   fetchRatingsByEvaluator,
@@ -45,8 +50,6 @@ export function MatchDrawer({
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [scoreA, setScoreA] = useState("0");
-  const [scoreB, setScoreB] = useState("0");
 
   const matchQuery = useQuery({
     queryKey: ["match", matchId],
@@ -76,6 +79,8 @@ export function MatchDrawer({
   const spectators = participants.filter((p) => p.role === "spectator");
   const mine = participants.find((p) => p.user_id === user?.id) ?? null;
   const isOwner = Boolean(match && user && match.created_by === user.id);
+  const canEditScore = Boolean(match && user && match.scorekeeper_id === user.id && status === "active");
+  const scorekeeper = participants.find((participant) => participant.user_id === match?.scorekeeper_id) ?? null;
 
   const venueCoords: Coords | null = match?.venue
     ? { lat: Number(match.venue.latitude), lng: Number(match.venue.longitude) }
@@ -110,7 +115,22 @@ export function MatchDrawer({
       if (!match?.id) throw new Error("Partida não carregada.");
       return updateMatchScore({ match_id: match.id, ...input });
     },
-    onSuccess: invalidate,
+    onSuccess: () => {
+      toast.success("Placar atualizado!");
+      invalidate();
+    },
+    onError: (error) => toast.error(friendlyError(error)),
+  });
+
+  const assignScorekeeper = useMutation({
+    mutationFn: (scorekeeperId: string | null) => {
+      if (!match?.id) throw new Error("Partida não carregada.");
+      return assignMatchScorekeeper({ match_id: match.id, scorekeeper_id: scorekeeperId });
+    },
+    onSuccess: () => {
+      toast.success("Responsável pelo placar atualizado!");
+      invalidate();
+    },
     onError: (error) => toast.error(friendlyError(error)),
   });
 
@@ -118,8 +138,6 @@ export function MatchDrawer({
     mutationFn: () =>
       finishMatch({
         match_id: matchId!,
-        score_team_a: Number(scoreA) || 0,
-        score_team_b: Number(scoreB) || 0,
       }),
     onSuccess: () => {
       toast.success("Partida encerrada. Hora de avaliar!");
@@ -289,7 +307,39 @@ export function MatchDrawer({
                 </div>
               </div>
 
-              {isOwner ? (
+              <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="size-4 text-primary" />
+                  <div>
+                    <p className="text-xs font-semibold text-foreground">Responsável pelo placar</p>
+                    <p className="text-xs text-muted-foreground">
+                      {scorekeeper?.profile?.nickname ?? scorekeeper?.profile?.full_name ?? (match.scorekeeper_id ? "Participante" : "Ainda não definido")}
+                    </p>
+                  </div>
+                </div>
+                {isOwner && status === "active" ? (
+                  <Select
+                    value={match.scorekeeper_id ?? "none"}
+                    disabled={assignScorekeeper.isPending}
+                    onValueChange={(value) => assignScorekeeper.mutate(value === "none" ? null : value)}
+                  >
+                    <SelectTrigger aria-label="Escolher responsável pelo placar">
+                      <SelectValue placeholder="Escolher participante" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Escolher depois</SelectItem>
+                      {participants.map((participant) => (
+                        <SelectItem key={participant.id} value={participant.user_id}>
+                          {participant.profile?.nickname ?? participant.profile?.full_name ?? "Boleiro"}
+                          {participant.user_id === user?.id ? " (você)" : ""}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : null}
+              </div>
+
+              {canEditScore ? (
                 <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
                   <p className="text-xs font-semibold text-foreground">Placar da partida</p>
                   <div className="grid grid-cols-2 gap-3">
@@ -334,6 +384,10 @@ export function MatchDrawer({
                     })}
                   </div>
                 </div>
+              ) : status === "active" && !match.scorekeeper_id ? (
+                <p className="rounded-2xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+                  O criador ainda não escolheu o responsável pelo placar.
+                </p>
               ) : null}
 
               {status === "active" ? (
@@ -387,32 +441,8 @@ export function MatchDrawer({
                   {isOwner ? (
                     <>
                       <Separator />
-                      <p className="text-xs font-semibold text-foreground">
-                        Encerrar partida (só o criador pode)
-                      </p>
-                      <div className="flex items-end gap-2">
-                        <div className="flex-1">
-                          <Label htmlFor="score-a" className="text-xs">
-                            Time A
-                          </Label>
-                          <Input
-                            id="score-a"
-                            inputMode="numeric"
-                            value={scoreA}
-                            onChange={(e) => setScoreA(e.target.value)}
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <Label htmlFor="score-b" className="text-xs">
-                            Time B
-                          </Label>
-                          <Input
-                            id="score-b"
-                            inputMode="numeric"
-                            value={scoreB}
-                            onChange={(e) => setScoreB(e.target.value)}
-                          />
-                        </div>
+                      <p className="text-xs font-semibold text-foreground">Encerrar partida (só o criador pode)</p>
+                      <div>
                         <Button onClick={() => finish.mutate()} disabled={finish.isPending}>
                           {finish.isPending ? (
                             <Loader2 className="size-4 animate-spin" />

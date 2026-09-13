@@ -34,6 +34,7 @@ export interface Match {
   name: string | null;
   venue_id: string;
   created_by: string;
+  scorekeeper_id: string | null;
   status: MatchStatus;
   match_type: MatchType;
   score_team_a: number;

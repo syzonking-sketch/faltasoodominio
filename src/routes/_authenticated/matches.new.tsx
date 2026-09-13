@@ -55,6 +55,7 @@ function NewMatchPage() {
   const [duration, setDuration] = useState<number>(60);
   const [maxPlayers, setMaxPlayers] = useState<number>(10);
   const [matchName, setMatchName] = useState("");
+  const [creatorIsScorekeeper, setCreatorIsScorekeeper] = useState(true);
   const [error, setError] = useState<string | undefined>(undefined);
 
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
@@ -118,6 +119,7 @@ function NewMatchPage() {
         scheduled_at: start,
         finished_at: end,
         max_players: maxPlayers,
+        creator_is_scorekeeper: creatorIsScorekeeper,
       });
     },
     onSuccess: () => {
@@ -291,6 +293,31 @@ function NewMatchPage() {
               onClick={() => setRole("spectator")}
             >
               Telespectador
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
+          <div>
+            <Label className="text-sm font-semibold text-foreground">Você será o responsável pelo placar?</Label>
+            <p className="mt-1 text-xs text-muted-foreground">
+              O responsável poderá adicionar e remover gols durante a partida.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              type="button"
+              variant={creatorIsScorekeeper ? "default" : "secondary"}
+              onClick={() => setCreatorIsScorekeeper(true)}
+            >
+              Sim, eu serei
+            </Button>
+            <Button
+              type="button"
+              variant={!creatorIsScorekeeper ? "default" : "secondary"}
+              onClick={() => setCreatorIsScorekeeper(false)}
+            >
+              Não, escolher depois
             </Button>
           </div>
         </div>
