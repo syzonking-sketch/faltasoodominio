@@ -362,11 +362,25 @@ export async function inviteToTeam(teamId: string, userId: string): Promise<void
 }
 
 export async function setMemberStatus(memberId: string, status: "active"): Promise<void> {
-  unwrap<unknown>(await supabase.from("team_members").update({ status }).eq("id", memberId));
+  unwrap<unknown>(
+    await supabase.rpc("manage_team_request", {
+      _member_id: memberId,
+      _action: status === "active" ? "approve" : status,
+    }),
+  );
 }
 
 export async function removeMember(memberId: string): Promise<void> {
-  unwrap<unknown>(await supabase.from("team_members").delete().eq("id", memberId));
+  unwrap<unknown>(
+    await supabase.rpc("manage_team_request", {
+      _member_id: memberId,
+      _action: "reject",
+    }),
+  );
+}
+
+export async function deleteTeam(teamId: string): Promise<void> {
+  unwrap<unknown>(await supabase.rpc("delete_team", { _team_id: teamId }));
 }
 
 export async function fetchMyMemberships(userId: string): Promise<TeamMember[]> {
