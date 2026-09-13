@@ -147,18 +147,45 @@ export async function createMatch(input: {
     status: "active",
     scheduled_at: startAt,
     finished_at: endAt,
-    scorekeeper_id: input.creator_is_scorekeeper ? createdBy : null,
   };
 
   let matchResponse = await supabase
     .from("matches")
-    .insert({ ...basePayload, max_players: input.max_players ?? 10 })
+    .insert({
+      ...basePayload,
+      max_players: input.max_players ?? 10,
+      scorekeeper_id: input.creator_is_scorekeeper ? createdBy : null,
+    })
     .select("id")
     .single();
 
-  // Compatibilidade: bancos que ainda não têm a coluna max_players.
-  if (matchResponse.error && isMissingColumn(matchResponse.error, "max_players")) {
-    matchResponse = await supabase.from("matches").insert(basePayload).select("id").single();
+  // Compatibilidade temporária enquanto o schema externo ainda não recebeu
+  // max_players e/ou scorekeeper_id. Cada tentativa remove somente as colunas
+  // ausentes, evitando bloquear a criação da partida pelo cache do PostgREST.
+  if (matchResponse.error && (
+    isMissingColumn(matchResponse.error, "max_players") ||
+    isMissingColumn(matchResponse.error, "scorekeeper_id")
+  )) {
+    const compatiblePayload: typeof basePayload & {
+      max_players?: number;
+      scorekeeper_id?: string | null;
+    } = { ...basePayload };
+
+    if (!isMissingColumn(matchResponse.error, "max_players")) {
+      compatiblePayload.max_players = input.max_players ?? 10;
+    }
+    if (!isMissingColumn(matchResponse.error, "scorekeeper_id")) {
+      compatiblePayload.scorekeeper_id = input.creator_is_scorekeeper ? createdBy : null;
+    }
+
+    matchResponse = await supabase.from("matches").insert(compatiblePayload).select("id").single();
+
+    if (matchResponse.error && (
+      isMissingColumn(matchResponse.error, "max_players") ||
+      isMissingColumn(matchResponse.error, "scorekeeper_id")
+    )) {
+      matchResponse = await supabase.from("matches").insert(basePayload).select("id").single();
+    }
   }
 
   const match = unwrap<{ id: string }>(matchResponse);
