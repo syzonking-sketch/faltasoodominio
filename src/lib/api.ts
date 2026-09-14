@@ -4,7 +4,6 @@ import type {
   Confronto,
   ConfrontoStatus,
   MatchParticipant,
-  MatchEvent,
   MatchEventType,
   MatchWithRelations,
   ParticipantRole,

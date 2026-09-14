@@ -352,10 +352,6 @@ function ConfrontosPage() {
       ) : (
         <ul className="space-y-3">
           {(confrontosQuery.data ?? []).map((confronto) => {
-            const isCaptainA = confronto.team_a?.captain_id === user?.id;
-            const isCaptainB = confronto.team_b?.captain_id === user?.id;
-            const reportedByA = confronto.reported_score_a_by_a !== null;
-            const reportedByB = confronto.reported_score_a_by_b !== null;
             const status = statusLabel[confronto.status];
 
             return (
