@@ -62,6 +62,7 @@ export interface MatchWithRelations extends Match {
   venue: Venue | null;
   creator: Profile | null;
   participants: MatchParticipant[];
+  events?: MatchEvent[];
 }
 
 export interface MatchEvent {
