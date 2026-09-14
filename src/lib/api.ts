@@ -4,6 +4,8 @@ import type {
   Confronto,
   ConfrontoStatus,
   MatchParticipant,
+  MatchEvent,
+  MatchEventType,
   MatchWithRelations,
   ParticipantRole,
   Profile,
@@ -24,7 +26,8 @@ const MATCH_SELECT = `
   *,
   venue:venues(*),
   creator:profiles!matches_created_by_fkey(*),
-  participants:match_participants(*, profile:profiles(*))
+  participants:match_participants(*, profile:profiles(*)),
+  events:match_events(*, player:profiles!match_events_player_id_fkey(*))
 `;
 
 /* ---------------------------------- Venues --------------------------------- */
@@ -302,6 +305,30 @@ export async function cancelMatch(matchId: string): Promise<void> {
   unwrap<unknown>(await supabase.rpc("cancel_match", { _match_id: matchId }));
 }
 
+export async function addMatchEvent(input: {
+  match_id: string;
+  player_id: string;
+  team_side: TeamSide;
+  event_type: MatchEventType;
+  minute?: number | null;
+}): Promise<string> {
+  return unwrap<string>(await supabase.rpc("add_match_event", {
+    _match_id: input.match_id,
+    _player_id: input.player_id,
+    _team_side: input.team_side,
+    _event_type: input.event_type,
+    _minute: input.minute ?? null,
+  }));
+}
+
+export async function removeMatchEvent(eventId: string): Promise<void> {
+  unwrap<unknown>(await supabase.rpc("remove_match_event", { _event_id: eventId }));
+}
+
+export async function finishRefereedMatch(matchId: string): Promise<void> {
+  unwrap<unknown>(await supabase.rpc("finish_refereed_match", { _match_id: matchId }));
+}
+
 /* --------------------------------- Ratings --------------------------------- */
 
 export async function fetchRatingsByEvaluator(evaluatorId: string): Promise<Rating[]> {
@@ -422,7 +449,8 @@ const CONFRONTO_SELECT = `
   *,
   team_a:teams!match_confrontos_team_a_id_fkey(*),
   team_b:teams!match_confrontos_team_b_id_fkey(*),
-  venue:venues(*)
+  venue:venues(*),
+  referee:profiles!match_confrontos_referee_id_fkey(*)
 `;
 
 export async function fetchConfrontos(): Promise<Confronto[]> {
@@ -437,10 +465,17 @@ export async function fetchConfrontos(): Promise<Confronto[]> {
 export async function createConfronto(input: {
   team_a_id: string;
   team_b_id: string;
-  venue_id: string | null;
+  venue_id: string;
   scheduled_at: string;
-}): Promise<void> {
-  unwrap<unknown>(await supabase.from("match_confrontos").insert({ ...input, status: "pending" }));
+  referee_id: string;
+}): Promise<string> {
+  return unwrap<string>(await supabase.rpc("create_team_confronto", {
+    _team_a_id: input.team_a_id,
+    _team_b_id: input.team_b_id,
+    _venue_id: input.venue_id,
+    _scheduled_at: input.scheduled_at,
+    _referee_id: input.referee_id,
+  }));
 }
 
 /**
