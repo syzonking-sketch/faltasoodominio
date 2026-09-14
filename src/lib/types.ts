@@ -128,6 +128,7 @@ export interface Confronto {
   team_b?: Team | null;
   venue?: Venue | null;
   referee?: Profile | null;
+  match?: Match | null;
 }
 
 export interface RankingRow {

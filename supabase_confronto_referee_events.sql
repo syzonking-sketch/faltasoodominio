@@ -75,7 +75,7 @@ BEGIN
   ) VALUES (
     _venue_id, auth.uid(), _referee_id, team_a_name || ' x ' || team_b_name,
     'campeonato', 'active', 0, 0, _scheduled_at, _scheduled_at + INTERVAL '60 minutes',
-    (SELECT count(*) FROM team_members WHERE team_id IN (_team_a_id, _team_b_id) AND status = 'active')
+    GREATEST(2, (SELECT count(*) FROM team_members WHERE team_id IN (_team_a_id, _team_b_id) AND status = 'active'))
   ) RETURNING id INTO new_match_id;
 
   INSERT INTO match_participants (match_id, user_id, role, team_side, checked_in_gps)

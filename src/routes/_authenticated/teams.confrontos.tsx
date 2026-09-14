@@ -400,7 +400,7 @@ function ConfrontosPage() {
 
                 {confronto.status === "confirmed" ? (
                   <p className="text-display mt-3 text-center text-3xl font-extrabold text-primary">
-                    {confronto.reported_score_a_by_a}–{confronto.reported_score_b_by_a}
+                    {confronto.match?.score_team_a ?? confronto.reported_score_a_by_a ?? 0}–{confronto.match?.score_team_b ?? confronto.reported_score_b_by_a ?? 0}
                   </p>
                 ) : null}
 

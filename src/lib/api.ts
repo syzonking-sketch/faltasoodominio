@@ -460,7 +460,8 @@ const CONFRONTO_SELECT = `
   team_a:teams!match_confrontos_team_a_id_fkey(*),
   team_b:teams!match_confrontos_team_b_id_fkey(*),
   venue:venues(*),
-  referee:profiles!match_confrontos_referee_id_fkey(*)
+  referee:profiles!match_confrontos_referee_id_fkey(*),
+  match:matches(*)
 `;
 
 export async function fetchConfrontos(): Promise<Confronto[]> {
