@@ -62,6 +62,7 @@ export interface MatchWithRelations extends Match {
   venue: Venue | null;
   creator: Profile | null;
   participants: MatchParticipant[];
+  events?: MatchEvent[];
 }
 
 export interface MatchEvent {
@@ -127,6 +128,7 @@ export interface Confronto {
   team_b?: Team | null;
   venue?: Venue | null;
   referee?: Profile | null;
+  match?: Match | null;
 }
 
 export interface RankingRow {

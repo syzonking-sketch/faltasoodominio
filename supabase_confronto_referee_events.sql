@@ -1,6 +1,10 @@
 -- Execute uma vez no SQL Editor do projeto externo.
 -- Integra Contras ao fluxo de Partidas e protege a súmula pelo juiz escolhido.
 
+ALTER TABLE public.matches
+  ADD COLUMN IF NOT EXISTS scorekeeper_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS max_players INTEGER NOT NULL DEFAULT 10 CHECK (max_players BETWEEN 2 AND 100);
+
 ALTER TABLE public.match_confrontos
   ADD COLUMN IF NOT EXISTS match_id UUID REFERENCES public.matches(id) ON DELETE CASCADE,
   ADD COLUMN IF NOT EXISTS referee_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL;
@@ -54,6 +58,10 @@ BEGIN
   IF NOT EXISTS (SELECT 1 FROM profiles WHERE id = _referee_id) THEN
     RAISE EXCEPTION 'Juiz não encontrado';
   END IF;
+  IF _referee_id = auth.uid() OR EXISTS (
+    SELECT 1 FROM team_members
+    WHERE user_id = _referee_id AND team_id IN (_team_a_id, _team_b_id) AND status = 'active'
+  ) THEN RAISE EXCEPTION 'O juiz deve ser um usuário fora dos dois times'; END IF;
   IF NOT EXISTS (SELECT 1 FROM venues WHERE id = _venue_id) THEN
     RAISE EXCEPTION 'Quadra não encontrada';
   END IF;
@@ -67,7 +75,7 @@ BEGIN
   ) VALUES (
     _venue_id, auth.uid(), _referee_id, team_a_name || ' x ' || team_b_name,
     'campeonato', 'active', 0, 0, _scheduled_at, _scheduled_at + INTERVAL '60 minutes',
-    (SELECT count(*) FROM team_members WHERE team_id IN (_team_a_id, _team_b_id) AND status = 'active')
+    GREATEST(2, (SELECT count(*) FROM team_members WHERE team_id IN (_team_a_id, _team_b_id) AND status = 'active'))
   ) RETURNING id INTO new_match_id;
 
   INSERT INTO match_participants (match_id, user_id, role, team_side, checked_in_gps)

@@ -1,7 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Loader2, ShieldAlert, Swords } from "lucide-react";
+import { ArrowLeft, Flag, Goal, Loader2, Shield, Swords, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -21,11 +21,22 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { createConfronto, fetchConfrontos, fetchTeams, fetchVenues, reportConfrontoScore } from "@/lib/api";
+import {
+  addMatchEvent,
+  createConfronto,
+  fetchConfrontos,
+  fetchMatch,
+  fetchMatchEvents,
+  fetchProfiles,
+  fetchTeams,
+  fetchVenues,
+  finishRefereedMatch,
+  removeMatchEvent,
+} from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { confrontoSchema, type ConfrontoValues } from "@/lib/schemas";
 import { friendlyError } from "@/lib/supabase";
-import type { Confronto } from "@/lib/types";
+import type { Confronto, MatchEventType, TeamSide } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/teams/confrontos")({
   head: () => ({
@@ -47,50 +58,149 @@ export const Route = createFileRoute("/_authenticated/teams/confrontos")({
 });
 
 const statusLabel: Record<Confronto["status"], { text: string; className: string }> = {
-  pending: { text: "AGUARDANDO VALIDAÇÃO", className: "bg-accent/20 text-accent" },
-  confirmed: { text: "PLACAR CONFIRMADO", className: "bg-primary/20 text-primary" },
-  conflict_nullified: { text: "ANULADA POR CONFLITO", className: "bg-destructive/20 text-destructive" },
+  pending: { text: "PARTIDA MARCADA", className: "bg-accent/20 text-accent-foreground" },
+  confirmed: { text: "PARTIDA ENCERRADA", className: "bg-primary/20 text-primary" },
+  conflict_nullified: { text: "PARTIDA ANULADA", className: "bg-destructive/20 text-destructive" },
 };
 
-function ScoreForm({
+function MatchEvents({
   confronto,
-  side,
   onDone,
 }: {
   confronto: Confronto;
-  side: "A" | "B";
   onDone: () => void;
 }) {
-  const [a, setA] = useState("0");
-  const [b, setB] = useState("0");
+  const { user } = useAuth();
+  const [eventType, setEventType] = useState<MatchEventType>("goal");
+  const [teamSide, setTeamSide] = useState<TeamSide>("A");
+  const [playerId, setPlayerId] = useState("");
+  const [minute, setMinute] = useState("");
+  const matchQuery = useQuery({
+    queryKey: ["match", confronto.match_id],
+    queryFn: () => fetchMatch(confronto.match_id ?? ""),
+    enabled: Boolean(confronto.match_id),
+  });
+  const match = matchQuery.data;
+  const eventsQuery = useQuery({
+    queryKey: ["match-events", confronto.match_id],
+    queryFn: () => fetchMatchEvents(confronto.match_id ?? ""),
+    enabled: Boolean(confronto.match_id),
+  });
+  const isReferee = confronto.referee_id === user?.id;
+  const players = (match?.participants ?? []).filter((participant) => participant.role === "player");
+  const visiblePlayers = players.filter((participant) => participant.team_side === teamSide);
 
-  const report = useMutation({
-    mutationFn: () =>
-      reportConfrontoScore({ confronto, side, score_a: Number(a) || 0, score_b: Number(b) || 0 }),
-    onSuccess: (status) => {
-      if (status === "confirmed") toast.success("Placar batido pelos dois capitães. Confirmado!");
-      else if (status === "conflict_nullified")
-        toast.error("Placares divergentes sem consenso: confronto anulado automaticamente.");
-      else toast.success("Placar enviado. Aguardando o outro capitão.");
+  const addEvent = useMutation({
+    mutationFn: () => {
+      if (!confronto.match_id || !playerId) throw new Error("Selecione o jogador.");
+      return addMatchEvent({
+        match_id: confronto.match_id,
+        player_id: playerId,
+        team_side: teamSide,
+        event_type: eventType,
+        minute: minute ? Number(minute) : null,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Evento registrado na súmula.");
+      setPlayerId("");
+      setMinute("");
+      void matchQuery.refetch();
+      void eventsQuery.refetch();
+      onDone();
+    },
+    onError: (error) => toast.error(friendlyError(error)),
+  });
+  const removeEvent = useMutation({
+    mutationFn: removeMatchEvent,
+    onSuccess: () => {
+      toast.success("Evento removido.");
+      void matchQuery.refetch();
+      void eventsQuery.refetch();
+      onDone();
+    },
+    onError: (error) => toast.error(friendlyError(error)),
+  });
+  const finish = useMutation({
+    mutationFn: () => {
+      if (!confronto.match_id) throw new Error("Partida não vinculada.");
+      return finishRefereedMatch(confronto.match_id);
+    },
+    onSuccess: () => {
+      toast.success("Fim de jogo. Súmula encerrada!");
       onDone();
     },
     onError: (error) => toast.error(friendlyError(error)),
   });
 
+  const eventLabel: Record<MatchEventType, string> = {
+    goal: "Gol",
+    yellow_card: "Cartão amarelo",
+    red_card: "Cartão vermelho",
+  };
+
   return (
-    <div className="mt-3 flex items-end gap-2 rounded-xl bg-surface-2 p-3">
-      <div className="flex-1">
-        <Label className="text-xs">{confronto.team_a?.name ?? "Time A"}</Label>
-        <Input inputMode="numeric" value={a} onChange={(e) => setA(e.target.value)} />
+    <div className="space-y-4">
+      <div className="grid grid-cols-3 items-center rounded-2xl bg-surface-2 p-4 text-center">
+        <p className="truncate text-sm font-bold">{confronto.team_a?.name ?? "Time A"}</p>
+        <p className="text-display text-3xl font-extrabold text-primary">
+          {match?.score_team_a ?? 0} × {match?.score_team_b ?? 0}
+        </p>
+        <p className="truncate text-sm font-bold">{confronto.team_b?.name ?? "Time B"}</p>
       </div>
-      <div className="flex-1">
-        <Label className="text-xs">{confronto.team_b?.name ?? "Time B"}</Label>
-        <Input inputMode="numeric" value={b} onChange={(e) => setB(e.target.value)} />
+
+      <div>
+        <h4 className="mb-2 text-sm font-bold text-foreground">Súmula</h4>
+        {(eventsQuery.data ?? []).length === 0 ? (
+          <p className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+            Nenhum gol ou cartão registrado.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {(eventsQuery.data ?? []).map((event) => (
+              <li key={event.id} className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
+                <span className={event.event_type === "yellow_card" ? "size-4 rounded-sm bg-warning" : event.event_type === "red_card" ? "size-4 rounded-sm bg-destructive" : "text-primary"}>
+                  {event.event_type === "goal" ? <Goal className="size-4" /> : null}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{event.player?.nickname ?? event.player?.full_name ?? "Jogador"}</p>
+                  <p className="text-xs text-muted-foreground">{eventLabel[event.event_type]} · Time {event.team_side}{event.minute != null ? ` · ${event.minute}'` : ""}</p>
+                </div>
+                {isReferee && confronto.status === "pending" ? (
+                  <Button size="icon" variant="ghost" aria-label="Remover evento" disabled={removeEvent.isPending} onClick={() => removeEvent.mutate(event.id)}>
+                    <Trash2 className="size-4" />
+                  </Button>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-      <Button onClick={() => report.mutate()} disabled={report.isPending}>
-        {report.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-        Enviar
-      </Button>
+
+      {isReferee && confronto.status === "pending" ? (
+        <div className="space-y-3 rounded-2xl border border-border p-3">
+          <p className="flex items-center gap-2 text-sm font-bold"><Shield className="size-4 text-primary" /> Registrar evento</p>
+          <div className="grid grid-cols-2 gap-2">
+            <select className="h-10 rounded-md border border-input bg-surface-2 px-3 text-sm" value={eventType} onChange={(e) => setEventType(e.target.value as MatchEventType)}>
+              <option value="goal">Gol</option><option value="yellow_card">Cartão amarelo</option><option value="red_card">Cartão vermelho</option>
+            </select>
+            <select className="h-10 rounded-md border border-input bg-surface-2 px-3 text-sm" value={teamSide} onChange={(e) => { setTeamSide(e.target.value as TeamSide); setPlayerId(""); }}>
+              <option value="A">Time A</option><option value="B">Time B</option>
+            </select>
+          </div>
+          <div className="grid grid-cols-[1fr_5rem] gap-2">
+            <select className="h-10 min-w-0 rounded-md border border-input bg-surface-2 px-3 text-sm" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>
+              <option value="">Jogador</option>
+              {visiblePlayers.map((participant) => <option key={participant.id} value={participant.user_id}>{participant.profile?.nickname ?? participant.profile?.full_name ?? "Jogador"}</option>)}
+            </select>
+            <Input inputMode="numeric" placeholder="Min." value={minute} onChange={(e) => setMinute(e.target.value)} />
+          </div>
+          <div className="flex gap-2">
+            <Button className="flex-1" disabled={addEvent.isPending || !playerId} onClick={() => addEvent.mutate()}>{addEvent.isPending ? <Loader2 className="size-4 animate-spin" /> : null} Registrar</Button>
+            <Button variant="outline" disabled={finish.isPending} onClick={() => finish.mutate()}><Flag className="size-4" /> Fim de jogo</Button>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -99,10 +209,12 @@ function ConfrontosPage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const confrontosQuery = useQuery({ queryKey: ["confrontos"], queryFn: fetchConfrontos });
   const teamsQuery = useQuery({ queryKey: ["teams"], queryFn: fetchTeams });
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
+  const profilesQuery = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
 
   const teams = teamsQuery.data ?? [];
   const venues = venuesQuery.data ?? [];
@@ -110,7 +222,7 @@ function ConfrontosPage() {
 
   const form = useForm<ConfrontoValues>({
     resolver: zodResolver(confrontoSchema),
-    defaultValues: { team_a_id: "", team_b_id: "", scheduled_at: "" },
+    defaultValues: { team_a_id: "", team_b_id: "", venue_id: "", referee_id: "", scheduled_at: "" },
   });
 
   const create = useMutation({
@@ -118,19 +230,22 @@ function ConfrontosPage() {
       createConfronto({
         team_a_id: values.team_a_id,
         team_b_id: values.team_b_id,
-        venue_id: values.venue_id ?? null,
+        venue_id: values.venue_id,
         scheduled_at: new Date(values.scheduled_at).toISOString(),
+        referee_id: values.referee_id,
       }),
     onSuccess: () => {
       toast.success("Contra marcado! Agora é só aparecer.");
       setOpen(false);
       form.reset();
       void queryClient.invalidateQueries({ queryKey: ["confrontos"] });
+      void queryClient.invalidateQueries({ queryKey: ["matches"] });
     },
     onError: (error) => toast.error(friendlyError(error)),
   });
 
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ["confrontos"] });
+  const selectedConfronto = (confrontosQuery.data ?? []).find((item) => item.id === selectedId) ?? null;
 
   return (
     <AppShell
@@ -195,13 +310,22 @@ function ConfrontosPage() {
                     className="h-10 w-full rounded-md border border-input bg-surface-2 px-3 text-sm text-foreground"
                     {...form.register("venue_id")}
                   >
-                    <option value="">A definir</option>
+                    <option value="">Selecione</option>
                     {venues.map((v) => (
                       <option key={v.id} value={v.id}>
                         {v.name}
                       </option>
                     ))}
                   </select>
+                  <FieldError message={form.formState.errors.venue_id?.message} />
+                </div>
+                <div>
+                  <Label htmlFor="referee">Juiz</Label>
+                  <select id="referee" className="h-10 w-full rounded-md border border-input bg-surface-2 px-3 text-sm text-foreground" {...form.register("referee_id")}>
+                    <option value="">Buscar e selecionar usuário</option>
+                    {(profilesQuery.data ?? []).map((profile) => <option key={profile.id} value={profile.id}>{profile.nickname || profile.full_name}</option>)}
+                  </select>
+                  <FieldError message={form.formState.errors.referee_id?.message} />
                 </div>
                 <div>
                   <Label htmlFor="date">Data e hora</Label>
@@ -236,14 +360,10 @@ function ConfrontosPage() {
       ) : (
         <ul className="space-y-3">
           {(confrontosQuery.data ?? []).map((confronto) => {
-            const isCaptainA = confronto.team_a?.captain_id === user?.id;
-            const isCaptainB = confronto.team_b?.captain_id === user?.id;
-            const reportedByA = confronto.reported_score_a_by_a !== null;
-            const reportedByB = confronto.reported_score_a_by_b !== null;
             const status = statusLabel[confronto.status];
 
             return (
-              <li key={confronto.id} className="card-glow rounded-2xl border border-border bg-card p-4">
+              <li key={confronto.id} role="button" tabIndex={0} onClick={() => setSelectedId(confronto.id)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setSelectedId(confronto.id); }} className="card-glow cursor-pointer rounded-2xl border border-border bg-card p-4 outline-none focus-visible:ring-2 focus-visible:ring-primary">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex min-w-0 flex-1 items-center gap-2">
                     <PlayerAvatar name={confronto.team_a?.name ?? "A"} photoUrl={confronto.team_a?.shield_url ?? null} size="sm" />
@@ -275,42 +395,29 @@ function ConfrontosPage() {
                   {confronto.venue?.name ? (
                     <span className="text-xs text-muted-foreground">· {confronto.venue.name}</span>
                   ) : null}
+                  <span className="text-xs text-muted-foreground">· Juiz: {confronto.referee?.nickname ?? confronto.referee?.full_name ?? "Não definido"}</span>
                 </div>
 
                 {confronto.status === "confirmed" ? (
                   <p className="text-display mt-3 text-center text-3xl font-extrabold text-primary">
-                    {confronto.reported_score_a_by_a}–{confronto.reported_score_b_by_a}
+                    {confronto.match?.score_team_a ?? confronto.reported_score_a_by_a ?? 0}–{confronto.match?.score_team_b ?? confronto.reported_score_b_by_a ?? 0}
                   </p>
                 ) : null}
 
-                {confronto.status === "conflict_nullified" ? (
-                  <p className="mt-3 flex items-center gap-2 rounded-xl bg-destructive/10 p-3 text-xs text-destructive">
-                    <ShieldAlert className="size-4 shrink-0" />
-                    Capitães informaram placares diferentes ({confronto.reported_score_a_by_a}–
-                    {confronto.reported_score_b_by_a} vs {confronto.reported_score_a_by_b}–
-                    {confronto.reported_score_b_by_b}). Sem consenso da torcida, o resultado foi anulado.
-                  </p>
-                ) : null}
-
-                {confronto.status === "pending" ? (
-                  <>
-                    <p className="mt-3 text-xs text-muted-foreground">
-                      {reportedByA ? "Capitão A já enviou." : "Capitão A ainda não enviou."}{" "}
-                      {reportedByB ? "Capitão B já enviou." : "Capitão B ainda não enviou."}
-                    </p>
-                    {isCaptainA && !reportedByA ? (
-                      <ScoreForm confronto={confronto} side="A" onDone={refresh} />
-                    ) : null}
-                    {isCaptainB && !reportedByB ? (
-                      <ScoreForm confronto={confronto} side="B" onDone={refresh} />
-                    ) : null}
-                  </>
-                ) : null}
+                <p className="mt-3 text-xs text-muted-foreground">Toque para abrir a súmula, ver gols e cartões.</p>
               </li>
             );
           })}
         </ul>
       )}
+      <Dialog open={Boolean(selectedConfronto)} onOpenChange={(value) => { if (!value) setSelectedId(null); }}>
+        <DialogContent className="max-h-[88dvh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-display text-xl">{selectedConfronto?.team_a?.name ?? "Time A"} × {selectedConfronto?.team_b?.name ?? "Time B"}</DialogTitle>
+          </DialogHeader>
+          {selectedConfronto ? <MatchEvents confronto={selectedConfronto} onDone={() => { refresh(); void queryClient.invalidateQueries({ queryKey: ["matches"] }); }} /> : null}
+        </DialogContent>
+      </Dialog>
     </AppShell>
   );
 }
