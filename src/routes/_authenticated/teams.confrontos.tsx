@@ -26,6 +26,7 @@ import {
   createConfronto,
   fetchConfrontos,
   fetchMatch,
+  fetchMatchEvents,
   fetchProfiles,
   fetchTeams,
   fetchVenues,
@@ -80,6 +81,11 @@ function MatchEvents({
     enabled: Boolean(confronto.match_id),
   });
   const match = matchQuery.data;
+  const eventsQuery = useQuery({
+    queryKey: ["match-events", confronto.match_id],
+    queryFn: () => fetchMatchEvents(confronto.match_id ?? ""),
+    enabled: Boolean(confronto.match_id),
+  });
   const isReferee = confronto.referee_id === user?.id;
   const players = (match?.participants ?? []).filter((participant) => participant.role === "player");
   const visiblePlayers = players.filter((participant) => participant.team_side === teamSide);
@@ -100,6 +106,7 @@ function MatchEvents({
       setPlayerId("");
       setMinute("");
       void matchQuery.refetch();
+      void eventsQuery.refetch();
       onDone();
     },
     onError: (error) => toast.error(friendlyError(error)),
@@ -109,6 +116,7 @@ function MatchEvents({
     onSuccess: () => {
       toast.success("Evento removido.");
       void matchQuery.refetch();
+      void eventsQuery.refetch();
       onDone();
     },
     onError: (error) => toast.error(friendlyError(error)),
@@ -143,13 +151,13 @@ function MatchEvents({
 
       <div>
         <h4 className="mb-2 text-sm font-bold text-foreground">Súmula</h4>
-        {(match?.events ?? []).length === 0 ? (
+        {(eventsQuery.data ?? []).length === 0 ? (
           <p className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
             Nenhum gol ou cartão registrado.
           </p>
         ) : (
           <ul className="space-y-2">
-            {(match?.events ?? []).map((event) => (
+            {(eventsQuery.data ?? []).map((event) => (
               <li key={event.id} className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
                 <span className={event.event_type === "yellow_card" ? "size-4 rounded-sm bg-warning" : event.event_type === "red_card" ? "size-4 rounded-sm bg-destructive" : "text-primary"}>
                   {event.event_type === "goal" ? <Goal className="size-4" /> : null}

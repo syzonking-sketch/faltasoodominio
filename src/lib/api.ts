@@ -3,6 +3,7 @@ import { effectiveStatus, isExpired, isFull, maxPlayers, playerCount } from "./m
 import type {
   Confronto,
   ConfrontoStatus,
+  MatchEvent,
   MatchParticipant,
   MatchEventType,
   MatchWithRelations,
@@ -25,8 +26,7 @@ const MATCH_SELECT = `
   *,
   venue:venues(*),
   creator:profiles!matches_created_by_fkey(*),
-  participants:match_participants(*, profile:profiles(*)),
-  events:match_events(*, player:profiles!match_events_player_id_fkey(*))
+  participants:match_participants(*, profile:profiles(*))
 `;
 
 /* ---------------------------------- Venues --------------------------------- */
@@ -322,6 +322,17 @@ export async function addMatchEvent(input: {
 
 export async function removeMatchEvent(eventId: string): Promise<void> {
   unwrap<unknown>(await supabase.rpc("remove_match_event", { _event_id: eventId }));
+}
+
+export async function fetchMatchEvents(matchId: string): Promise<MatchEvent[]> {
+  return unwrap<MatchEvent[]>(
+    await supabase
+      .from("match_events")
+      .select("*, player:profiles!match_events_player_id_fkey(*)")
+      .eq("match_id", matchId)
+      .order("minute", { ascending: true, nullsFirst: false })
+      .order("created_at", { ascending: true }),
+  );
 }
 
 export async function finishRefereedMatch(matchId: string): Promise<void> {

@@ -5,5 +5,6 @@
 - [x] Atualizar elenco e solicitações imediatamente ao aceitar ou recusar.
 - [ ] Aplicar `supabase_teams_management_fix.sql` no projeto externo (aguarda execução no painel).
 - [ ] Aplicar `supabase_match_scorekeeper.sql` no projeto externo para ativar o responsável pelo placar.
-- [ ] Integrar Contras com juiz, eventos e detalhes finais
-- [ ] Exibir Contras em Partidas e no Radar conforme proximidade
+- [x] Integrar Contras com juiz, eventos e detalhes finais.
+- [x] Exibir novos Contras em Partidas e no Radar conforme proximidade.
+- [ ] Aplicar `supabase_confronto_referee_events.sql` no projeto externo para ativar Contras completos.
