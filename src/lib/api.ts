@@ -464,11 +464,28 @@ const CONFRONTO_SELECT = `
   match:matches(*)
 `;
 
+const LEGACY_CONFRONTO_SELECT = `
+  *,
+  team_a:teams!match_confrontos_team_a_id_fkey(*),
+  team_b:teams!match_confrontos_team_b_id_fkey(*),
+  venue:venues(*)
+`;
+
 export async function fetchConfrontos(): Promise<Confronto[]> {
+  const response = await supabase
+    .from("match_confrontos")
+    .select(CONFRONTO_SELECT)
+    .order("created_at", { ascending: false });
+
+  if (!response.error) return response.data as Confronto[];
+  if (!isMissingColumn(response.error, "referee_id") && !isMissingColumn(response.error, "match_id")) {
+    throw new Error(response.error.message);
+  }
+
   return unwrap<Confronto[]>(
     await supabase
       .from("match_confrontos")
-      .select(CONFRONTO_SELECT)
+      .select(LEGACY_CONFRONTO_SELECT)
       .order("created_at", { ascending: false }),
   );
 }
