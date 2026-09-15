@@ -65,17 +65,61 @@ function MapPage() {
   }, [lightMap]);
 
   const matchesQuery = useQuery({
-    queryKey: ["matches", "active", profile?.city, profile?.state],
-    queryFn: () => fetchMatches("active", { city: profile?.city, state: profile?.state }),
+    queryKey: ["matches", "active", "radar"],
+    queryFn: () => fetchMatches("active"),
     refetchInterval: 20000,
-    enabled: !!profile?.state, // Aguarda carregar o estado do perfil para filtrar
   });
 
   const venuesQuery = useQuery({
-    queryKey: ["venues", search],
-    queryFn: () => fetchVenues(search),
-    enabled: search.length > 2,
+    queryKey: ["venues", "radar"],
+    queryFn: () => fetchVenues(),
+    staleTime: 5 * 60_000,
   });
+
+  const activeMatches = matchesQuery.data ?? [];
+
+  const nearbyMatches = useMemo(() => {
+    const normalized = (value?: string | null) =>
+      (value ?? "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toLowerCase();
+    const stateAliases: Record<string, string> = {
+      "sao paulo": "sp", "rio de janeiro": "rj", "minas gerais": "mg",
+      parana: "pr", "santa catarina": "sc", "rio grande do sul": "rs",
+      bahia: "ba", pernambuco: "pe", ceara: "ce", goias: "go",
+      maranhao: "ma", para: "pa", amazonas: "am", espirito_santo: "es",
+    };
+    const stateKey = (value?: string | null) => {
+      const key = normalized(value).replace(/\s+/g, "_");
+      return stateAliases[key.replaceAll("_", " ")] ?? key;
+    };
+    const withValidVenue = activeMatches.filter((match) => {
+      const lat = Number(match.venue?.latitude);
+      const lng = Number(match.venue?.longitude);
+      return match.venue && Number.isFinite(lat) && Number.isFinite(lng);
+    });
+
+    if (coords) {
+      return [...withValidVenue].sort((a, b) => {
+        const distanceA = distanceMeters(coords, { lat: Number(a.venue?.latitude), lng: Number(a.venue?.longitude) });
+        const distanceB = distanceMeters(coords, { lat: Number(b.venue?.latitude), lng: Number(b.venue?.longitude) });
+        return distanceA - distanceB;
+      });
+    }
+
+    const profileState = stateKey(profile?.state);
+    const profileCity = normalized(profile?.city);
+    const sameState = profileState
+      ? withValidVenue.filter((match) => stateKey(match.venue?.state) === profileState)
+      : withValidVenue;
+    const sameArea = profileCity
+      ? sameState.filter((match) => {
+          const venueCity = normalized(match.venue?.city);
+          const venueAddress = normalized(match.venue?.address);
+          return venueCity === profileCity || venueAddress.includes(profileCity);
+        })
+      : sameState;
+
+    return sameArea.length > 0 ? sameArea : sameState.length > 0 ? sameState : withValidVenue;
+  }, [activeMatches, coords, profile?.city, profile?.state]);
 
   const matches = useMemo(() => {
     const list = matchesQuery.data ?? [];
@@ -83,36 +127,29 @@ function MapPage() {
     
     if (!term) return list;
 
-    const filtered = list.filter((m) => {
+    return list.filter((m) => {
       const venueName = m.venue?.name?.toLowerCase() ?? "";
       const venueAddress = m.venue?.address?.toLowerCase() ?? "";
+      const venueCity = m.venue?.city?.toLowerCase() ?? "";
       const creatorNickname = m.creator?.nickname?.toLowerCase() ?? "";
       
       return (
         venueName.includes(term) ||
         venueAddress.includes(term) ||
+        venueCity.includes(term) ||
         creatorNickname.includes(term)
       );
     });
+  }, [matchesQuery.data, search]);
 
-    // If there's a match and we have coordinates for the first result, move the map
-    const firstMatch = filtered[0];
-    if (firstMatch?.venue) {
-      setCenter({ 
-        lat: Number(firstMatch.venue.latitude), 
-        lng: Number(firstMatch.venue.longitude) 
-      });
-    }
-
-    return filtered;
-  }, [matchesQuery.data, search]); // Removed setCenter from dependencies to avoid loop
+  const visibleMatches = search.trim() ? matches : nearbyMatches;
 
   const handleSearchSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!search.trim()) return;
 
     // First, try to find in local matches (venues)
-    const localMatch = matches.find(m => 
+    const localMatch = activeMatches.find(m => 
       m.venue?.name.toLowerCase().includes(search.toLowerCase()) ||
       m.venue?.address?.toLowerCase().includes(search.toLowerCase())
     );
@@ -127,16 +164,17 @@ function MapPage() {
 
     // If not found in active matches, use global geocoding
     await searchLocation(search);
-  }, [search, matches, searchLocation, setCenter]);
+  }, [search, activeMatches, searchLocation, setCenter]);
 
   const pins: RadarPin[] = useMemo(() => {
     // Collect unique venues from matches
     const venuePins: Record<string, RadarPin> = {};
 
     // Add venues from active matches
-    matches.forEach(m => {
+    activeMatches.forEach(m => {
       if (m.venue && !venuePins[m.venue.id]) {
         const venueCoords = { lat: Number(m.venue.latitude), lng: Number(m.venue.longitude) };
+        if (!Number.isFinite(venueCoords.lat) || !Number.isFinite(venueCoords.lng)) return;
         const d = coords ? distanceMeters(coords, venueCoords) : null;
         venuePins[m.venue.id] = {
           id: m.venue.id,
@@ -155,10 +193,13 @@ function MapPage() {
     if (venuesQuery.data) {
       venuesQuery.data.forEach(v => {
         if (!venuePins[v.id]) {
+          const lat = Number(v.latitude);
+          const lng = Number(v.longitude);
+          if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
           venuePins[v.id] = {
             id: v.id,
-            lat: Number(v.latitude),
-            lng: Number(v.longitude),
+            lat,
+            lng,
             label: v.name,
             players: 0,
             live: false
@@ -168,7 +209,7 @@ function MapPage() {
     }
 
     return Object.values(venuePins);
-  }, [matches, venuesQuery.data, coords]);
+  }, [activeMatches, venuesQuery.data, coords]);
 
   const greeting = (() => {
     const h = new Date().getHours();
@@ -260,7 +301,10 @@ function MapPage() {
               )}
 
               {/* Local Venues */}
-              {venuesQuery.data?.map(v => (
+              {venuesQuery.data?.filter((v) => {
+                const term = search.trim().toLowerCase();
+                return term.length > 2 && (`${v.name} ${v.address ?? ""} ${v.city ?? ""}`).toLowerCase().includes(term);
+              }).map(v => (
                 <button
                   key={v.id}
                   type="button"
@@ -394,7 +438,7 @@ function MapPage() {
             </p>
           </div>
           <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-foreground tabular-nums">
-            {matches.length}
+            {visibleMatches.length}
           </span>
         </div>
 
@@ -405,7 +449,7 @@ function MapPage() {
             message={friendlyError(matchesQuery.error)}
             onRetry={() => void matchesQuery.refetch()}
           />
-        ) : matches.length === 0 ? (
+        ) : visibleMatches.length === 0 ? (
           <EmptyState
             icon={<Radar className="size-6" />}
             title="Radar silencioso"
@@ -420,7 +464,7 @@ function MapPage() {
           />
         ) : (
           <ul className="space-y-3">
-            {matches.map((match, i) => {
+            {visibleMatches.map((match, i) => {
               const venueCoords = match.venue
                 ? { lat: Number(match.venue.latitude), lng: Number(match.venue.longitude) }
                 : null;

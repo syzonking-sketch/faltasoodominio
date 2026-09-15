@@ -57,6 +57,26 @@ function Recenter({ center }: { center: Coords }) {
   return null;
 }
 
+function KeepMapSized() {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    const refresh = () => map.invalidateSize({ animate: false });
+    const observer = new ResizeObserver(refresh);
+    observer.observe(container);
+    const frame = window.requestAnimationFrame(refresh);
+    window.addEventListener("orientationchange", refresh);
+    window.addEventListener("resize", refresh);
+    return () => {
+      observer.disconnect();
+      window.cancelAnimationFrame(frame);
+      window.removeEventListener("orientationchange", refresh);
+      window.removeEventListener("resize", refresh);
+    };
+  }, [map]);
+  return null;
+}
+
 export default function MapRadar({
   center,
   me,
@@ -89,6 +109,7 @@ export default function MapRadar({
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
+      <KeepMapSized />
       <Recenter center={center} />
       {me ? (
         <Marker 
