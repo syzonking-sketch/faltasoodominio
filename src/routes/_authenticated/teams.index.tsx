@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, ChevronRight, Loader2, MapPin, Shield, Swords, Trash2, UserPlus, Users, X } from "lucide-react";
+import { Check, ChevronRight, CircleDot, Loader2, MapPin, Shield, Star, Swords, Trash2, Trophy, UserPlus, Users, X } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 
@@ -34,6 +34,7 @@ import { Label } from "@/components/ui/label";
 import {
   createTeam,
   deleteTeam,
+  fetchPlayerPublicStats,
   fetchTeams,
   removeMember,
   requestToJoinTeam,
@@ -42,7 +43,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { friendlyError } from "@/lib/supabase";
 import { teamSchema, type TeamValues } from "@/lib/schemas";
-import type { Team } from "@/lib/types";
+import type { Profile, Team } from "@/lib/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
@@ -71,10 +72,16 @@ function TeamsPage() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<Profile | null>(null);
 
   const teamsQuery = useQuery({ queryKey: ["teams"], queryFn: fetchTeams });
   const teams = teamsQuery.data ?? [];
   const selectedTeam = teams.find((team) => team.id === selectedTeamId) ?? null;
+  const playerStatsQuery = useQuery({
+    queryKey: ["player-public-stats", selectedPlayer?.id],
+    queryFn: () => fetchPlayerPublicStats(selectedPlayer?.id ?? ""),
+    enabled: Boolean(selectedPlayer?.id),
+  });
 
   const form = useForm<TeamValues>({
     resolver: zodResolver(teamSchema),
@@ -286,9 +293,15 @@ function TeamsPage() {
                 {active.length > 0 ? (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {active.map((member) => (
-                      <div
+                      <Button
                         key={member.id}
-                        className="flex items-center gap-2 rounded-full bg-surface-2 py-1 pr-3 pl-1"
+                        type="button"
+                        variant="ghost"
+                        className="h-auto rounded-full bg-surface-2 py-1 pr-3 pl-1"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          if (member.profile) setSelectedPlayer(member.profile);
+                        }}
                       >
                         <PlayerAvatar
                           name={member.profile?.full_name ?? "Boleiro"}
@@ -299,7 +312,7 @@ function TeamsPage() {
                         <span className="text-xs font-semibold text-foreground">
                           {member.profile?.nickname ?? "Boleiro"}
                         </span>
-                      </div>
+                      </Button>
                     ))}
                   </div>
                 ) : null}
@@ -398,7 +411,15 @@ function TeamsPage() {
                     {active.length ? (
                       <div className="space-y-2">
                         {active.map((member) => (
-                          <div key={member.id} className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
+                          <Button
+                            key={member.id}
+                            type="button"
+                            variant="ghost"
+                            className="h-auto w-full justify-start gap-3 rounded-xl bg-surface-2 p-3 text-left"
+                            onClick={() => {
+                              if (member.profile) setSelectedPlayer(member.profile);
+                            }}
+                          >
                             <PlayerAvatar
                               name={member.profile?.full_name ?? "Boleiro"}
                               nickname={member.profile?.nickname ?? null}
@@ -408,7 +429,8 @@ function TeamsPage() {
                             <span className="font-medium text-foreground">
                               {member.profile?.nickname ?? member.profile?.full_name ?? "Boleiro"}
                             </span>
-                          </div>
+                            <ChevronRight className="ml-auto size-4 shrink-0 text-muted-foreground" />
+                          </Button>
                         ))}
                       </div>
                     ) : (
@@ -481,6 +503,62 @@ function TeamsPage() {
               </>
             );
           })() : null}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={Boolean(selectedPlayer)} onOpenChange={(value) => !value && setSelectedPlayer(null)}>
+        <DialogContent className="max-w-[92vw] rounded-2xl sm:max-w-sm">
+          {selectedPlayer ? (
+            <>
+              <DialogHeader className="items-center text-center">
+                <PlayerAvatar
+                  name={selectedPlayer.full_name}
+                  nickname={selectedPlayer.nickname}
+                  photoUrl={selectedPlayer.avatar_url}
+                  size="xl"
+                />
+                <div>
+                  <DialogTitle className="text-display mt-2 text-2xl">
+                    {selectedPlayer.nickname || selectedPlayer.full_name}
+                  </DialogTitle>
+                  <DialogDescription>{selectedPlayer.full_name}</DialogDescription>
+                </div>
+              </DialogHeader>
+
+              <div className="flex items-center justify-center gap-1.5 text-sm text-muted-foreground">
+                <MapPin className="size-4 text-primary" />
+                <span>{selectedPlayer.city || "Bairro não informado"}{selectedPlayer.state ? ` · ${selectedPlayer.state}` : ""}</span>
+              </div>
+
+              {playerStatsQuery.isPending ? (
+                <div className="grid grid-cols-2 gap-2" aria-label="Carregando informações do jogador">
+                  {[1, 2, 3, 4].map((item) => (
+                    <div key={item} className="h-20 animate-pulse rounded-xl bg-surface-2" />
+                  ))}
+                </div>
+              ) : playerStatsQuery.isError ? (
+                <ErrorState
+                  message={friendlyError(playerStatsQuery.error)}
+                  onRetry={() => void playerStatsQuery.refetch()}
+                />
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { label: "Jogos", value: playerStatsQuery.data?.matches_played ?? 0, icon: Swords },
+                    { label: "Gols", value: playerStatsQuery.data?.goals ?? 0, icon: CircleDot },
+                    { label: "Campeonatos", value: playerStatsQuery.data?.championships ?? 0, icon: Trophy },
+                    { label: "Nota", value: (playerStatsQuery.data?.avg_score ?? 0).toFixed(2), icon: Star },
+                  ].map(({ label, value, icon: Icon }) => (
+                    <div key={label} className="rounded-xl border border-border bg-surface-2 p-3 text-center">
+                      <Icon className="mx-auto size-4 text-primary" />
+                      <p className="text-display mt-1 text-xl font-bold text-foreground">{value}</p>
+                      <p className="text-[11px] text-muted-foreground">{label}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : null}
         </DialogContent>
       </Dialog>
     </AppShell>

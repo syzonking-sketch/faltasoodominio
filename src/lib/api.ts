@@ -586,6 +586,11 @@ export interface PlayerStats {
   matches_played: number;
 }
 
+export interface PlayerPublicStats extends PlayerStats {
+  goals: number;
+  championships: number;
+}
+
 export async function fetchPlayerStats(userId: string): Promise<PlayerStats> {
   if (!userId) {
     return { avg_score: 0, ratings_count: 0, matches_played: 0 };
@@ -604,6 +609,53 @@ export async function fetchPlayerStats(userId: string): Promise<PlayerStats> {
     avg_score: ratings.length > 0 ? total / ratings.length : 0,
     ratings_count: ratings.length,
     matches_played: new Set(participations.map((p) => p.match_id)).size,
+  };
+}
+
+export async function fetchPlayerPublicStats(userId: string): Promise<PlayerPublicStats> {
+  if (!userId) {
+    return { avg_score: 0, ratings_count: 0, matches_played: 0, goals: 0, championships: 0 };
+  }
+
+  const [ratingsResult, participationsResult, goalsResult] = await Promise.all([
+    supabase.from("ratings").select("score").eq("evaluated_user_id", userId),
+    supabase
+      .from("match_participants")
+      .select("match_id, match:matches(match_type)")
+      .eq("user_id", userId)
+      .eq("role", "player"),
+    supabase
+      .from("match_events")
+      .select("id")
+      .eq("player_id", userId)
+      .eq("event_type", "goal"),
+  ]);
+
+  if (ratingsResult.error) throw new Error(ratingsResult.error.message);
+  if (participationsResult.error) throw new Error(participationsResult.error.message);
+  if (goalsResult.error) throw new Error(goalsResult.error.message);
+
+  const ratings = (ratingsResult.data ?? []) as { score: number }[];
+  const participations = (participationsResult.data ?? []) as Array<{
+    match_id: string;
+    match: { match_type: string } | { match_type: string }[] | null;
+  }>;
+  const totalScore = ratings.reduce((sum, rating) => sum + rating.score, 0);
+  const championshipMatches = new Set(
+    participations
+      .filter((participation) => {
+        const match = Array.isArray(participation.match) ? participation.match[0] : participation.match;
+        return match?.match_type === "campeonato";
+      })
+      .map((participation) => participation.match_id),
+  );
+
+  return {
+    avg_score: ratings.length ? totalScore / ratings.length : 0,
+    ratings_count: ratings.length,
+    matches_played: new Set(participations.map((participation) => participation.match_id)).size,
+    goals: goalsResult.data?.length ?? 0,
+    championships: championshipMatches.size,
   };
 }
 
