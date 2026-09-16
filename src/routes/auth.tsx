@@ -18,6 +18,7 @@ import { friendlyError, isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Entrar no The Match — Futebol de várzea ao vivo" },

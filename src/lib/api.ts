@@ -589,6 +589,9 @@ export interface PlayerStats {
 export interface PlayerPublicStats extends PlayerStats {
   goals: number;
   championships: number;
+  yellow_cards: number;
+  red_cards: number;
+  teams: Array<{ id: string; name: string }>;
 }
 
 export async function fetchPlayerStats(userId: string): Promise<PlayerStats> {
@@ -614,26 +617,28 @@ export async function fetchPlayerStats(userId: string): Promise<PlayerStats> {
 
 export async function fetchPlayerPublicStats(userId: string): Promise<PlayerPublicStats> {
   if (!userId) {
-    return { avg_score: 0, ratings_count: 0, matches_played: 0, goals: 0, championships: 0 };
+    return { avg_score: 0, ratings_count: 0, matches_played: 0, goals: 0, championships: 0, yellow_cards: 0, red_cards: 0, teams: [] };
   }
 
-  const [ratingsResult, participationsResult, goalsResult] = await Promise.all([
+  const [ratingsResult, participationsResult, eventsResult, teamsResult] = await Promise.all([
     supabase.from("ratings").select("score").eq("evaluated_user_id", userId),
     supabase
       .from("match_participants")
       .select("match_id, match:matches(match_type)")
       .eq("user_id", userId)
       .eq("role", "player"),
+    supabase.from("match_events").select("event_type").eq("player_id", userId),
     supabase
-      .from("match_events")
-      .select("id")
-      .eq("player_id", userId)
-      .eq("event_type", "goal"),
+      .from("team_members")
+      .select("team:teams(id, name)")
+      .eq("user_id", userId)
+      .eq("status", "active"),
   ]);
 
   if (ratingsResult.error) throw new Error(ratingsResult.error.message);
   if (participationsResult.error) throw new Error(participationsResult.error.message);
-  if (goalsResult.error) throw new Error(goalsResult.error.message);
+  if (eventsResult.error) throw new Error(eventsResult.error.message);
+  if (teamsResult.error) throw new Error(teamsResult.error.message);
 
   const ratings = (ratingsResult.data ?? []) as { score: number }[];
   const participations = (participationsResult.data ?? []) as Array<{
@@ -641,6 +646,10 @@ export async function fetchPlayerPublicStats(userId: string): Promise<PlayerPubl
     match: { match_type: string } | { match_type: string }[] | null;
   }>;
   const totalScore = ratings.reduce((sum, rating) => sum + rating.score, 0);
+  const events = (eventsResult.data ?? []) as { event_type: MatchEventType }[];
+  const teamMemberships = (teamsResult.data ?? []) as Array<{
+    team: { id: string; name: string } | { id: string; name: string }[] | null;
+  }>;
   const championshipMatches = new Set(
     participations
       .filter((participation) => {
@@ -654,8 +663,14 @@ export async function fetchPlayerPublicStats(userId: string): Promise<PlayerPubl
     avg_score: ratings.length ? totalScore / ratings.length : 0,
     ratings_count: ratings.length,
     matches_played: new Set(participations.map((participation) => participation.match_id)).size,
-    goals: goalsResult.data?.length ?? 0,
+    goals: events.filter((event) => event.event_type === "goal").length,
     championships: championshipMatches.size,
+    yellow_cards: events.filter((event) => event.event_type === "yellow_card").length,
+    red_cards: events.filter((event) => event.event_type === "red_card").length,
+    teams: teamMemberships.flatMap((membership) => {
+      if (!membership.team) return [];
+      return Array.isArray(membership.team) ? membership.team : [membership.team];
+    }),
   };
 }
 
