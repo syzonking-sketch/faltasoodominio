@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Flag, Loader2, MapPin, Users, Eye, Ban, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
+import { useState } from "react";
 
 import { PlayerAvatar } from "@/components/app/player-avatar";
+import { PlayerProfileDialog } from "@/components/app/player-profile-dialog";
 import { StarRating } from "@/components/app/star-rating";
 import { ErrorState, ListSkeleton } from "@/components/app/states";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +39,7 @@ import { effectiveStatus, isFull, maxPlayers, playerCount, sideCount } from "@/l
 import { useAuth } from "@/lib/auth";
 import { distanceMeters, GPS_CHECKIN_RADIUS, type Coords } from "@/lib/geo";
 import { friendlyError } from "@/lib/supabase";
-import type { MatchParticipant, TeamSide } from "@/lib/types";
+import type { MatchParticipant, Profile, TeamSide } from "@/lib/types";
 
 export function MatchDrawer({
   matchId,
@@ -50,6 +52,7 @@ export function MatchDrawer({
 }) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
+  const [selectedPlayer, setSelectedPlayer] = useState<Profile | null>(null);
 
   const matchQuery = useQuery({
     queryKey: ["match", matchId],
@@ -185,12 +188,19 @@ export function MatchDrawer({
     const existing = alreadyRated(participant.user_id);
     return (
       <div key={participant.id} className="flex items-center gap-3 rounded-2xl bg-surface-2 p-3">
-        <PlayerAvatar
-          name={participant.profile?.full_name ?? "Boleiro"}
-          nickname={participant.profile?.nickname ?? null}
-          photoUrl={participant.profile?.avatar_url ?? null}
-        />
-        <div className="min-w-0 flex-1">
+        <Button
+          type="button"
+          variant="ghost"
+          className="h-auto min-w-0 flex-1 justify-start gap-3 p-0 text-left hover:bg-transparent"
+          disabled={!participant.profile}
+          onClick={() => setSelectedPlayer(participant.profile ?? null)}
+        >
+          <PlayerAvatar
+            name={participant.profile?.full_name ?? "Boleiro"}
+            nickname={participant.profile?.nickname ?? null}
+            photoUrl={participant.profile?.avatar_url ?? null}
+          />
+          <div className="min-w-0 flex-1">
           <p className="text-display truncate text-base font-bold text-foreground">
             {participant.profile?.nickname ?? "Boleiro"}
           </p>
@@ -211,7 +221,8 @@ export function MatchDrawer({
               </Badge>
             )}
           </div>
-        </div>
+          </div>
+        </Button>
         {!isMe && participant.role === "player" ? (
           <div className="text-right">
             {existing ? (
@@ -494,6 +505,7 @@ export function MatchDrawer({
           )}
         </div>
       </DrawerContent>
+      <PlayerProfileDialog player={selectedPlayer} onOpenChange={(open) => !open && setSelectedPlayer(null)} />
     </Drawer>
   );
 }
