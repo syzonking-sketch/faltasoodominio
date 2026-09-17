@@ -23,7 +23,7 @@ export function PlayerProfileDialog({
 
   return (
     <Dialog open={Boolean(player)} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85dvh] max-w-[92vw] overflow-y-auto rounded-2xl sm:max-w-sm">
+      <DialogContent className="max-h-[calc(100dvh-env(safe-area-inset-top,0px)-env(safe-area-inset-bottom,0px)-1.5rem)] max-w-[92vw] touch-pan-y overflow-y-auto overscroll-contain rounded-2xl pb-[calc(1.5rem+env(safe-area-inset-bottom,0px))] sm:max-h-[85dvh] sm:max-w-sm">
         {player ? (
           <>
             <DialogHeader className="items-center text-center">
