@@ -248,8 +248,8 @@ export function MatchDrawer({
 
   return (
     <Drawer open={Boolean(matchId)} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[88dvh]">
-        <div className="mx-auto w-full max-w-2xl overflow-y-auto px-4 pb-8">
+      <DrawerContent className="max-h-[calc(100dvh-env(safe-area-inset-top,0px)-0.75rem)]">
+        <div className="mx-auto min-h-0 w-full max-w-2xl flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
           <DrawerHeader className="px-0">
             <DrawerTitle className="text-display text-2xl">
               {match?.venue?.name ?? "Súmula digital"}
