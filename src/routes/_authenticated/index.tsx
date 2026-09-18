@@ -1,14 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Crosshair, Plus, Radar, Search, Sun, Moon, Loader2, MapPin, User } from "lucide-react";
+import { Bell, Crosshair, Plus, Radar, Search, Sun, Moon, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
 import { lazy, useMemo, useState, useEffect, useCallback } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
 import { ClientOnly } from "@/components/app/client-only";
 import { MatchDrawer } from "@/components/app/match-drawer";
-import { MatchCard } from "@/components/app/match-card";
-import { PlayerAvatar } from "@/components/app/player-avatar";
+import { RadarMatchCard } from "@/components/app/radar-match-card";
+import logoAsset from "@/assets/logo.jpg.asset.json";
 
 
 import type { RadarPin } from "@/components/app/map-radar";
@@ -21,6 +21,7 @@ import { fetchMatches, fetchVenues } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { distanceMeters, formatDistance, useGeolocation } from "@/lib/geo";
 import { friendlyError } from "@/lib/supabase";
+import { isFull } from "@/lib/match-utils";
 
 const MapRadar = lazy(() => import("@/components/app/map-radar"));
 
@@ -49,6 +50,7 @@ function MapPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [lightMap, setLightMap] = useState(false);
+  const [onlyAvailable, setOnlyAvailable] = useState(false);
 
   useEffect(() => {
     const isLight = localStorage.getItem("light-map") === "true";
@@ -142,7 +144,8 @@ function MapPage() {
     });
   }, [matchesQuery.data, search]);
 
-  const visibleMatches = search.trim() ? matches : nearbyMatches;
+  const visibleMatches = (search.trim() ? matches : nearbyMatches).filter((match) => !onlyAvailable || !isFull(match));
+  const selectedMatch = activeMatches.find((match) => match.id === selected) ?? null;
 
   const handleSearchSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,39 +224,19 @@ function MapPage() {
 
   return (
     <AppShell title="Radar" bare>
-      <div className="mx-auto w-full max-w-2xl px-4">
-        <header className="pt-safe grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pb-4">
-          <div className="flex min-w-0 items-center gap-3">
-            <PlayerAvatar
-              name={profile?.full_name ?? "Jogador"}
-              nickname={profile?.nickname}
-              photoUrl={profile?.avatar_url}
-              size="md"
-              className="border-0 shadow-[var(--shadow-soft)]"
-            />
-            <div className="min-w-0">
-              <p className="truncate text-sm text-muted-foreground">{greeting}</p>
-              <h1 className="truncate text-xl leading-tight font-extrabold text-foreground">
-                {displayName}
-              </h1>
+      <div className="mx-auto w-full max-w-2xl overflow-x-clip px-4">
+        <header className="pt-safe pb-5">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <img src={logoAsset.url} alt="The Match" className="size-9 shrink-0 rounded-xl object-cover shadow-[var(--shadow-soft)]" />
+              <span className="text-display truncate text-lg font-extrabold text-foreground">The Match</span>
             </div>
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <Link
-              to="/matches"
-              aria-label="Suas partidas"
-              className="press elevate-soft grid size-11 place-items-center rounded-full border border-border/60 bg-surface"
-            >
+            <Link to="/matches" aria-label="Notificações" className="press elevate-soft grid size-11 shrink-0 place-items-center rounded-full border border-border/60 bg-surface/90 backdrop-blur-xl">
               <Bell className="size-5 text-foreground" />
             </Link>
-            <Link
-              to="/profile"
-              aria-label="Seu perfil"
-              className="press elevate-soft grid size-11 place-items-center rounded-full border border-border/60 bg-surface"
-            >
-              <User className="size-5 text-foreground" />
-            </Link>
           </div>
+          <p className="mt-5 text-sm font-semibold text-primary">{greeting} {displayName}.</p>
+          <h1 className="mt-1 max-w-sm text-3xl leading-[1.02] font-extrabold text-foreground">O que está rolando perto de você?</h1>
         </header>
 
         <form onSubmit={handleSearchSubmit} className="relative flex items-center gap-2 pb-4">
@@ -266,30 +249,19 @@ function MapPage() {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Buscar bairro, quadra ou rua"
+              placeholder="Buscar partidas ou locais..."
               aria-label="Buscar partidas"
               className="elevate-soft h-14 rounded-full border-border/60 bg-surface pl-12 text-base"
             />
           </div>
           <Button
-            type="submit"
-            size="icon"
-            aria-label="Buscar"
-            className="press elevate-soft size-14 shrink-0 rounded-full bg-primary text-primary-foreground"
-          >
-            <Search className="size-5" />
-          </Button>
-          <Button
             type="button"
             size="icon"
-            variant="secondary"
-            aria-label="Centralizar no meu GPS"
-            onClick={() => {
-              void requestLocation();
-            }}
-            className="press elevate-soft size-14 shrink-0 rounded-full border border-border/60 bg-surface"
+             aria-label={onlyAvailable ? "Mostrar todas as partidas" : "Mostrar apenas partidas com vagas"}
+             onClick={() => setOnlyAvailable((current) => !current)}
+             className={`press elevate-soft size-14 shrink-0 rounded-full ${onlyAvailable ? "bg-primary text-primary-foreground" : "bg-foreground text-background"}`}
           >
-            <Crosshair className="size-5" />
+             <SlidersHorizontal className="size-5" />
           </Button>
 
           {search.length > 2 && (isSearching || (searchResults && searchResults.length > 0) || (venuesQuery.data && venuesQuery.data.length > 0)) && (
@@ -348,12 +320,13 @@ function MapPage() {
           )}
         </form>
 
-        <div className="elevate-soft relative h-[48dvh] min-h-[320px] w-full overflow-hidden rounded-[2rem] border border-border/50">
+        <div className="elevate-soft relative h-[64dvh] min-h-[470px] max-h-[650px] w-full overflow-hidden rounded-[2rem] border border-border/50">
           <ClientOnly fallback={<Skeleton className="h-full w-full rounded-none" />}>
             <MapRadar
               center={center}
               me={coords}
               pins={pins}
+              selectedMatchId={selected}
               onSelect={(id) => {
                 const pin = pins.find(p => p.id === id);
                 if (pin?.matchId) {
@@ -365,7 +338,7 @@ function MapPage() {
             />
           </ClientOnly>
 
-          <div className="pointer-events-none absolute inset-x-4 bottom-4 z-400 flex items-end justify-between gap-3">
+          <div className={`pointer-events-none absolute inset-x-4 z-400 flex items-end justify-between gap-3 transition-all duration-300 ${selectedMatch ? "bottom-[13.75rem]" : "bottom-4"}`}>
             <div className="flex flex-col gap-2">
               <Button
                 type="button"
@@ -388,14 +361,18 @@ function MapPage() {
                 <Crosshair className="size-5 text-primary" />
               </Button>
             </div>
-            <Link
-              to="/matches/new"
-              className="press elevate-float pointer-events-auto inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-6 text-base font-bold text-primary-foreground"
-              aria-label="Criar nova partida"
-            >
-              <Plus className="size-5" /> Criar partida
-            </Link>
+            {!selectedMatch ? <Link to="/matches/new" className="press elevate-float pointer-events-auto inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-6 text-base font-bold text-primary-foreground" aria-label="Criar nova partida"><Plus className="size-5" /> Criar partida</Link> : null}
           </div>
+          {selectedMatch ? (
+            <div className="absolute inset-x-3 bottom-3 z-410">
+              <Button type="button" size="icon" variant="secondary" onClick={() => setSelected(null)} aria-label="Fechar partida selecionada" className="elevate-float absolute top-3 right-3 z-10 size-9 rounded-full bg-surface/90 backdrop-blur"><X className="size-4" /></Button>
+              <RadarMatchCard
+                match={selectedMatch}
+                distance={coords && selectedMatch.venue ? distanceMeters(coords, { lat: Number(selectedMatch.venue.latitude), lng: Number(selectedMatch.venue.longitude) }) : null}
+                onSelect={setSelected}
+              />
+            </div>
+          ) : null}
         </div>
 
         {status === "checking" || status === "prompt" || status === "requesting" ? (
@@ -429,10 +406,10 @@ function MapPage() {
         ) : null}
       </div>
 
-      <div className="mx-auto max-w-2xl px-4 py-6">
+      <div className="mx-auto max-w-2xl px-4 pt-7 pb-36">
         <div className="mb-4 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-display text-lg font-bold text-foreground">Acontecendo perto de você</h2>
+            <h2 className="text-display text-xl font-bold text-foreground">Acontecendo perto de você</h2>
             <p className="mt-0.5 text-xs text-muted-foreground">
               Toque em uma partida para ver os detalhes
             </p>
@@ -463,7 +440,7 @@ function MapPage() {
             }
           />
         ) : (
-          <ul className="space-y-3">
+          <ul className="grid gap-4 sm:grid-cols-2">
             {visibleMatches.map((match, i) => {
               const venueCoords = match.venue
                 ? { lat: Number(match.venue.latitude), lng: Number(match.venue.longitude) }
@@ -471,7 +448,7 @@ function MapPage() {
               const dist = coords && venueCoords ? distanceMeters(coords, venueCoords) : null;
               return (
                 <li key={match.id}>
-                  <MatchCard match={match} distance={dist} index={i} onSelect={setSelected} />
+                  <RadarMatchCard match={match} distance={dist} compact onSelect={setSelected} />
                 </li>
               );
             })}

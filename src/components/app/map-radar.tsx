@@ -18,7 +18,7 @@ export interface RadarPin {
 
 const BALL_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" width="20" height="20"><circle cx="12" cy="12" r="9.2"/><path d="M12 7.1 8.6 9.6l1.3 4h4.2l1.3-4Z"/><path d="M12 2.8v4.3M4.2 9.4l4.4.2M19.8 9.4l-4.4.2M7 20.3l2.9-6.7M17 20.3l-2.9-6.7"/></svg>`;
 
-function pinIcon(pin: RadarPin) {
+function pinIcon(pin: RadarPin, selected: boolean) {
   const label = pin.distanceLabel;
   const height = label ? 62 : 44;
   return L.divIcon({
@@ -27,7 +27,7 @@ function pinIcon(pin: RadarPin) {
     iconAnchor: [32, height],
     html: `
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;width:64px">
-        <div style="position:relative;display:grid;place-items:center;width:38px;height:38px;border-radius:9999px;background:var(--surface);color:var(--foreground);border:2px solid ${pin.live ? "var(--primary)" : "var(--border)"};box-shadow:var(--shadow-float)">
+        <div style="position:relative;display:grid;place-items:center;width:${selected ? "46px" : "40px"};height:${selected ? "46px" : "40px"};border-radius:9999px;background:${pin.live ? "var(--primary)" : "var(--surface)"};color:${pin.live ? "var(--primary-foreground)" : "var(--foreground)"};border:3px solid var(--surface);box-shadow:${selected ? "0 0 0 5px color-mix(in oklab, var(--primary) 24%, transparent), var(--shadow-float)" : "var(--shadow-float)"};transition:width .2s ease,height .2s ease,box-shadow .2s ease">
           ${BALL_SVG}
         </div>
         ${
@@ -83,6 +83,7 @@ export default function MapRadar({
   pins,
   onSelect,
   onMapClick,
+  selectedMatchId,
   className,
 }: {
   center: Coords;
@@ -90,6 +91,7 @@ export default function MapRadar({
   pins: RadarPin[];
   onSelect?: (id: string) => void;
   onMapClick?: (coords: Coords) => void;
+  selectedMatchId?: string | null;
   className?: string;
 }) {
   return (
@@ -122,7 +124,7 @@ export default function MapRadar({
         <Marker
           key={pin.id}
           position={[pin.lat, pin.lng]}
-          icon={pinIcon(pin)}
+          icon={pinIcon(pin, pin.matchId === selectedMatchId)}
           eventHandlers={{ click: () => onSelect?.(pin.id) }}
           zIndexOffset={pin.live ? 500 : 0}
         />
