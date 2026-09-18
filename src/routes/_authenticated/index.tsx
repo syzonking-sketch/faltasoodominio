@@ -48,6 +48,7 @@ function MapPage() {
   const { user, profile } = useAuth();
   const { coords, center, status, error, requestLocation, retry, setCenter, searchLocation, isSearching, searchResults } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
+  const [detailMatch, setDetailMatch] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [lightMap, setLightMap] = useState(false);
   const [onlyAvailable, setOnlyAvailable] = useState(false);
@@ -369,7 +370,7 @@ function MapPage() {
               <RadarMatchCard
                 match={selectedMatch}
                 distance={coords && selectedMatch.venue ? distanceMeters(coords, { lat: Number(selectedMatch.venue.latitude), lng: Number(selectedMatch.venue.longitude) }) : null}
-                onSelect={setSelected}
+                onSelect={setDetailMatch}
               />
             </div>
           ) : null}
@@ -441,14 +442,14 @@ function MapPage() {
           />
         ) : (
           <ul className="grid gap-4 sm:grid-cols-2">
-            {visibleMatches.map((match, i) => {
+            {visibleMatches.map((match) => {
               const venueCoords = match.venue
                 ? { lat: Number(match.venue.latitude), lng: Number(match.venue.longitude) }
                 : null;
               const dist = coords && venueCoords ? distanceMeters(coords, venueCoords) : null;
               return (
                 <li key={match.id}>
-                  <RadarMatchCard match={match} distance={dist} compact onSelect={setSelected} />
+                  <RadarMatchCard match={match} distance={dist} compact onSelect={setDetailMatch} />
                 </li>
               );
             })}
@@ -457,9 +458,9 @@ function MapPage() {
       </div>
 
       <MatchDrawer
-        matchId={selected}
+        matchId={detailMatch}
         myCoords={coords}
-        onOpenChange={(open) => setSelected(open ? selected : null)}
+        onOpenChange={(open) => setDetailMatch(open ? detailMatch : null)}
       />
     </AppShell>
   );
