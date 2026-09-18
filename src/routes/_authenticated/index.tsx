@@ -35,10 +35,12 @@ export const Route = createFileRoute("/_authenticated/")({
           "Mapa ao vivo das quadras e campos com partidas acontecendo agora perto de você. Entre como jogador ou telespectador.",
       },
       { property: "og:title", content: "Radar de Peladas — The Match" },
+      { property: "og:type", content: "website" },
       {
         property: "og:description",
         content: "Veja partidas ao vivo no mapa e entre na súmula digital em segundos.",
       },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MapPage,
