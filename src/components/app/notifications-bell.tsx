@@ -76,6 +76,7 @@ export function NotificationsBell({ className }: { className?: string }) {
   }, [matches, coords, profile?.city, user?.id]);
 
   const unread = nearby.filter(({ match }) => new Date(match.created_at).getTime() > seenAt).length;
+  const notificationCount = nearby.length;
 
   const markSeen = useCallback(() => {
     const now = Date.now();
@@ -100,13 +101,17 @@ export function NotificationsBell({ className }: { className?: string }) {
           type="button"
           variant="secondary"
           size="icon"
-          aria-label={unread > 0 ? `Notificações (${unread} novas)` : "Notificações"}
+          aria-label={
+            notificationCount > 0
+              ? `Notificações (${notificationCount}${unread > 0 ? `, ${unread} novas` : ""})`
+              : "Notificações"
+          }
           className={cn("relative size-12 rounded-full border border-border/70 bg-secondary/80 backdrop-blur-xl", className)}
         >
           <Bell className="size-5" />
-          {unread > 0 ? (
+          {notificationCount > 0 ? (
             <span className="absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-primary px-1.5 py-0.5 text-[0.625rem] leading-none font-bold text-primary-foreground">
-              {unread > 9 ? "9+" : unread}
+              {notificationCount > 9 ? "9+" : notificationCount}
             </span>
           ) : null}
         </Button>
