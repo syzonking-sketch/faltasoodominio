@@ -3,6 +3,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
   Bell,
   CalendarDays,
+  Camera,
   ChevronRight,
   CircleDot,
   Clock3,
@@ -15,7 +16,7 @@ import {
   Trophy,
   Users,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import heroImage from "@/assets/matches-hero.jpg";
@@ -41,6 +42,7 @@ import {
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { effectiveStatus, playerCount } from "@/lib/match-utils";
+import { compressProfileImage } from "@/lib/profile-image";
 import { friendlyError, supabase } from "@/lib/supabase";
 import type { MatchWithRelations } from "@/lib/types";
 
@@ -216,6 +218,10 @@ function ProfilePage() {
   const [nickname, setNickname] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
+  const [avatarBlob, setAvatarBlob] = useState<Blob | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [compressingAvatar, setCompressingAvatar] = useState(false);
+  const avatarInputRef = useRef<HTMLInputElement>(null);
 
   const metadata = user?.user_metadata;
   const accountFullName = profile?.full_name || (typeof metadata?.["full_name"] === "string" ? metadata["full_name"] : "") || user?.email?.split("@")[0] || "Boleiro";
@@ -230,6 +236,27 @@ function ProfilePage() {
     setCity(accountCity);
     setState(accountState);
   }, [user, accountNickname, accountCity, accountState]);
+
+  useEffect(() => () => {
+    if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+  }, [avatarPreview]);
+
+  async function selectAvatar(file: File | undefined) {
+    if (!file) return;
+    setCompressingAvatar(true);
+    try {
+      const compressed = await compressProfileImage(file);
+      const preview = URL.createObjectURL(compressed);
+      setAvatarPreview(preview);
+      setAvatarBlob(compressed);
+      setEditing(true);
+    } catch (error) {
+      toast.error(friendlyError(error));
+    } finally {
+      setCompressingAvatar(false);
+      if (avatarInputRef.current) avatarInputRef.current.value = "";
+    }
+  }
 
   const matchesQuery = useQuery({
     queryKey: ["profile-matches", user?.id],
@@ -252,11 +279,23 @@ function ProfilePage() {
     mutationFn: async () => {
       if (!user?.id) throw new Error("Sua conta ainda não carregou.");
       await ensureCurrentProfile();
-      await updateProfile(user.id, { nickname, city, state: state.toUpperCase() });
+      let avatarUrl = accountAvatar;
+      if (avatarBlob) {
+        const avatarPath = `${user.id}/profile.webp`;
+        const { error: uploadError } = await supabase.storage
+          .from("avatars")
+          .upload(avatarPath, avatarBlob, { contentType: "image/webp", cacheControl: "31536000", upsert: true });
+        if (uploadError) throw uploadError;
+        const { data } = supabase.storage.from("avatars").getPublicUrl(avatarPath);
+        avatarUrl = `${data.publicUrl}?v=${Date.now()}`;
+      }
+      await updateProfile(user.id, { nickname, city, state: state.toUpperCase(), avatar_url: avatarUrl });
     },
     onSuccess: async () => {
       toast.success("Perfil atualizado.");
       setEditing(false);
+      setAvatarBlob(null);
+      setAvatarPreview(null);
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
       await refetchProfile();
     },
@@ -304,7 +343,13 @@ function ProfilePage() {
             <>
               <header className="px-4 pt-safe">
                 <div className="flex items-start justify-between pt-4">
-                  <PlayerAvatar name={accountFullName} nickname={accountNickname} photoUrl={accountAvatar} size="lg" className="elevate-float border-primary/70" />
+                  <div className="relative shrink-0">
+                    <PlayerAvatar name={accountFullName} nickname={accountNickname} photoUrl={avatarPreview ?? accountAvatar} size="lg" className="elevate-float border-primary/70" />
+                    <Button type="button" size="icon" aria-label="Alterar foto do perfil" disabled={compressingAvatar} onClick={() => avatarInputRef.current?.click()} className="absolute -right-1 -bottom-1 size-8 rounded-full border-2 border-background shadow-raised">
+                      <Camera className="size-4" />
+                    </Button>
+                    <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" className="sr-only" onChange={(event) => void selectAvatar(event.target.files?.[0])} />
+                  </div>
                   <Button type="button" variant="secondary" size="icon" aria-label="Notificações" className="size-12 rounded-full border border-border/70 bg-secondary/80 backdrop-blur-xl">
                     <Bell className="size-5" />
                   </Button>
@@ -428,6 +473,16 @@ function ProfilePage() {
             <DialogDescription>Atualize somente os dados públicos do seu jogador.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+             <div className="flex items-center gap-4 rounded-2xl bg-surface-2 p-3">
+               <PlayerAvatar name={accountFullName} nickname={nickname || accountNickname} photoUrl={avatarPreview ?? accountAvatar} size="md" />
+               <div className="min-w-0 flex-1">
+                 <p className="text-sm font-bold text-foreground">Foto do jogador</p>
+                 <p className="text-xs text-muted-foreground">Otimizada automaticamente antes do envio.</p>
+               </div>
+               <Button type="button" variant="secondary" size="icon" aria-label="Escolher foto" disabled={compressingAvatar} onClick={() => avatarInputRef.current?.click()} className="size-10 shrink-0 rounded-full">
+                 <Camera className="size-4" />
+               </Button>
+             </div>
             <div><Label htmlFor="nick">Apelido</Label><Input id="nick" className="mt-1 h-12 rounded-xl bg-surface-2" value={nickname} onChange={(event) => setNickname(event.target.value)} /></div>
             <div className="grid grid-cols-3 gap-3">
               <div className="col-span-2"><Label htmlFor="city">Cidade</Label><Input id="city" className="mt-1 h-12 rounded-xl bg-surface-2" value={city} onChange={(event) => setCity(event.target.value)} /></div>
@@ -435,7 +490,7 @@ function ProfilePage() {
             </div>
             <div className="flex gap-2 pt-2">
               <Button variant="secondary" className="h-12 flex-1 rounded-full" onClick={() => setEditing(false)}>Cancelar</Button>
-              <Button className="h-12 flex-1 rounded-full" disabled={save.isPending} onClick={() => save.mutate()}>{save.isPending ? "Salvando..." : "Salvar"}</Button>
+               <Button className="h-12 flex-1 rounded-full" disabled={save.isPending || compressingAvatar} onClick={() => save.mutate()}>{save.isPending ? "Salvando..." : compressingAvatar ? "Otimizando..." : "Salvar"}</Button>
             </div>
           </div>
         </DialogContent>
