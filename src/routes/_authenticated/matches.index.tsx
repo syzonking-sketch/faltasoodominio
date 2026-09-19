@@ -12,6 +12,7 @@ import { MatchDrawer } from "@/components/app/match-drawer";
 import type { RadarPin } from "@/components/app/map-radar";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import {
   Dialog,
   DialogContent,
@@ -118,6 +119,7 @@ function MatchesPage() {
     isSearching,
   } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
+  const [finishedOpen, setFinishedOpen] = useState(false);
 
   const activeQuery = useQuery({
     queryKey: ["matches", "active"],
@@ -689,18 +691,38 @@ function MatchesPage() {
               )}
             </div>
 
-            <div>
-              <SectionTitle label="Encerradas" count={finished.length} />
-              {finished.length === 0 ? (
-                <EmptyState
-                  icon={<CalendarCheck className="size-7" />}
-                  title="Sem histórico ainda"
-                  description="Assim que uma partida terminar, o placar e a súmula ficam guardados aqui."
-                />
-              ) : (
-                <MatchList matches={finished} onSelect={setSelected} myCoords={coords} />
-              )}
-            </div>
+            <Collapsible open={finishedOpen} onOpenChange={setFinishedOpen}>
+              <CollapsibleTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="mb-3 h-14 w-full justify-between rounded-2xl border border-border/60 bg-card/60 px-4 text-foreground shadow-sm backdrop-blur-sm hover:bg-card"
+                  aria-label={finishedOpen ? "Ocultar partidas encerradas" : "Ver partidas encerradas"}
+                >
+                  <span className="flex min-w-0 items-center gap-2">
+                    <CalendarCheck className="size-4 shrink-0 text-primary" />
+                    <span className="text-display text-sm font-bold uppercase">Partidas encerradas</span>
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-accent text-[11px] font-bold text-accent-foreground tabular-nums">
+                      {finished.length}
+                    </span>
+                  </span>
+                  <ChevronDown
+                    className={`size-5 shrink-0 transition-transform duration-300 ${finishedOpen ? "rotate-180" : ""}`}
+                  />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+                {finished.length === 0 ? (
+                  <EmptyState
+                    icon={<CalendarCheck className="size-7" />}
+                    title="Sem histórico ainda"
+                    description="Assim que uma partida terminar, o placar e a súmula ficam guardados aqui."
+                  />
+                ) : (
+                  <MatchList matches={finished} onSelect={setSelected} myCoords={coords} />
+                )}
+              </CollapsibleContent>
+            </Collapsible>
           </>
         )}
       </section>
