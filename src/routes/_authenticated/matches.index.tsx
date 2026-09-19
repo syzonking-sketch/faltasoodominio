@@ -470,6 +470,7 @@ function MatchesPage() {
         myCoords={coords}
         onOpenChange={(open) => setSelected(open ? selected : null)}
       />
+      </div>
     </AppShell>
   );
 }
