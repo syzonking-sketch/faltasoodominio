@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { createMatch, fetchMatches, fetchVenues } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { distanceMeters, formatDistance, GPS_CHECKIN_RADIUS, useGeolocation } from "@/lib/geo";
-import { effectiveStatus, matchStart, maxPlayers, playerCount } from "@/lib/match-utils";
+import { effectiveStatus, matchStart } from "@/lib/match-utils";
 import { friendlyError } from "@/lib/supabase";
 import type { MatchWithRelations } from "@/lib/types";
 
@@ -95,7 +95,7 @@ function MatchesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { coords, status: geoStatus, request: requestLocation } = useGeolocation() as any;
+  const { coords, status: geoStatus, request: requestLocation } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
 
   const activeQuery = useQuery({
@@ -472,7 +472,3 @@ function MatchesPage() {
     </AppShell>
   );
 }
-
-// evita warning de import não usado em builds futuros
-void maxPlayers;
-void playerCount;
