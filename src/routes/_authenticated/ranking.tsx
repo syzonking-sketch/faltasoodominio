@@ -16,7 +16,7 @@ import { AppShell } from "@/components/app/app-shell";
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { ErrorState } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
-import { fetchRanking } from "@/lib/api";
+import { fetchPlayerStats, fetchRanking } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { friendlyError } from "@/lib/supabase";
 import type { RankingRow } from "@/lib/types";
@@ -149,7 +149,7 @@ function RankingCard({ row, position, isMe }: { row: RankingRow; position: numbe
 }
 
 function RankingPage() {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [mode, setMode] = useState<RankingMode>("players");
   const [scope, setScope] = useState<RankingScope>("global");
 
@@ -159,10 +159,36 @@ function RankingPage() {
     enabled: mode === "players",
   });
 
-  const rows = rankingQuery.data ?? [];
+  const myStatsQuery = useQuery({
+    queryKey: ["player-stats", user?.id],
+    queryFn: () => fetchPlayerStats(user?.id ?? ""),
+    enabled: mode === "players" && Boolean(user?.id),
+  });
+
+  const rankingRows = rankingQuery.data ?? [];
+  const hasOwnRankingRow = user?.id
+    ? rankingRows.some((row) => row.user_id === user.id)
+    : false;
+  const fallbackOwnRow: RankingRow | null =
+    user?.id && profile && !hasOwnRankingRow && (myStatsQuery.data?.ratings_count ?? 0) > 0
+      ? {
+          user_id: user.id,
+          full_name: profile.full_name,
+          nickname: profile.nickname,
+          avatar_url: profile.avatar_url,
+          city: profile.city,
+          state: profile.state,
+          avg_score: myStatsQuery.data?.avg_score ?? 0,
+          ratings_count: myStatsQuery.data?.ratings_count ?? 0,
+          matches_played: myStatsQuery.data?.matches_played ?? 0,
+        }
+      : null;
+  const rows = [...rankingRows, ...(fallbackOwnRow ? [fallbackOwnRow] : [])].sort(
+    (a, b) => b.avg_score - a.avg_score || b.ratings_count - a.ratings_count,
+  );
   const topThree = rows.slice(0, 3);
   const remainingRows = rows.slice(3, 10);
-  const myIndex = profile?.id ? rows.findIndex((row) => row.user_id === profile.id) : -1;
+  const myIndex = user?.id ? rows.findIndex((row) => row.user_id === user.id) : -1;
   const myRow = myIndex >= 10 ? rows[myIndex] : null;
   const scopeContext = scope === "local" ? profile?.city : scope === "state" ? profile?.state : null;
 
