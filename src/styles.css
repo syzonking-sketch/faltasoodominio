@@ -73,6 +73,8 @@
   --color-brand: var(--brand);
   --color-brand-soft: var(--brand-soft);
   --color-live: var(--live);
+  --color-nav: var(--nav);
+  --color-nav-foreground: var(--nav-foreground);
 }
 
 :root {
@@ -107,6 +109,8 @@
   --gold: oklch(0.62 0.13 78);
   --gold-foreground: oklch(0.28 0.05 70);
   --live: oklch(0.62 0.2 27);
+  --nav: oklch(0.14 0.012 152);
+  --nav-foreground: oklch(0.985 0.004 145);
 
   --destructive: oklch(0.58 0.2 27);
   --destructive-foreground: oklch(0.99 0.005 25);
