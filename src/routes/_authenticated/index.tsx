@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Crosshair, Plus, Radar, Search, Sun, Moon, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { Bell, Crosshair, Plus, Radar, Search, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
 import { lazy, useMemo, useState, useEffect, useCallback } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
@@ -52,22 +52,7 @@ function MapPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [detailMatch, setDetailMatch] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [lightMap, setLightMap] = useState(false);
   const [onlyAvailable, setOnlyAvailable] = useState(false);
-
-  useEffect(() => {
-    const isLight = localStorage.getItem("light-map") === "true";
-    setLightMap(isLight);
-  }, []);
-
-  useEffect(() => {
-    if (lightMap) {
-      document.body.classList.add("light-map");
-    } else {
-      document.body.classList.remove("light-map");
-    }
-    localStorage.setItem("light-map", String(lightMap));
-  }, [lightMap]);
 
   const matchesQuery = useQuery({
     queryKey: ["matches", "active", "radar"],
