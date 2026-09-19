@@ -424,8 +424,8 @@ function TeamsPage() {
                     </div>
                     <div className="absolute inset-x-0 bottom-0 p-5">
                       <div className="mb-4 flex items-end gap-4">
-                        <div className="elevate-float grid size-24 shrink-0 place-items-center overflow-hidden rounded-[1.75rem] border border-border/70 bg-card/90 p-2 backdrop-blur-xl">
-                          {primaryTeam.shield_url ? <img src={primaryTeam.shield_url} alt={`Escudo ${primaryTeam.name}`} className="size-full object-contain" /> : <Shield className="size-12 text-primary" />}
+                        <div className="elevate-float grid size-24 shrink-0 place-items-center overflow-hidden rounded-[1.75rem] border border-border/70 bg-card/90 p-3 backdrop-blur-xl">
+                          {primaryTeam.shield_url ? <img src={primaryTeam.shield_url} alt={`Escudo ${primaryTeam.name}`} className="max-h-full max-w-full object-contain object-center" /> : <Shield className="size-12 text-primary" />}
                         </div>
                         <div className="min-w-0 pb-1">
                           <p className="mb-1 text-xs font-semibold text-primary">{primaryTeam.captain_id === user?.id ? "CAPITÃO" : "NO ELENCO"}</p>
