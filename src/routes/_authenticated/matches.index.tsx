@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, CalendarCheck, ChevronDown, Loader2, LocateFixed, MapPin, Plus, Radio, Search } from "lucide-react";
+import { ArrowLeft, CalendarCheck, ChevronDown, Loader2, LocateFixed, MapPin, Minus, Plus, Radio, Search, Settings2 } from "lucide-react";
 import { lazy, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -568,6 +568,78 @@ function MatchesPage() {
           ) : null}
         </div>
       </section>
+
+      <Dialog open={configOpen} onOpenChange={setConfigOpen}>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-[2rem] border-primary/15 bg-background p-6">
+          <DialogHeader className="text-left">
+            <DialogTitle className="text-display text-xl">Ajustar partida</DialogTitle>
+            <DialogDescription>Defina quantos jogadores cabem e quanto tempo a bola rola.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-2xl bg-surface-2 p-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Jogadores</p>
+                <p className="text-xs text-muted-foreground">Máximo na partida</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  aria-label="Diminuir jogadores"
+                  disabled={playersCount <= 2}
+                  onClick={() => setPlayersCount((value) => Math.max(2, value - 2))}
+                >
+                  <Minus className="size-4" />
+                </Button>
+                <span className="text-display min-w-8 text-center text-2xl font-extrabold tabular-nums text-foreground">
+                  {playersCount}
+                </span>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  aria-label="Aumentar jogadores"
+                  disabled={playersCount >= 30}
+                  onClick={() => setPlayersCount((value) => Math.min(30, value + 2))}
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-surface-2 p-4">
+              <p className="text-sm font-semibold text-foreground">Tempo de partida</p>
+              <p className="text-xs text-muted-foreground">A partida encerra sozinha ao fim</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[30, 60, 90, 120].map((minutes) => (
+                  <button
+                    key={minutes}
+                    type="button"
+                    onClick={() => setDurationMin(minutes)}
+                    className={`press rounded-full border px-4 py-2 text-sm font-semibold tabular-nums ${
+                      durationMin === minutes
+                        ? "border-transparent bg-primary text-primary-foreground"
+                        : "border-border/60 bg-secondary text-foreground"
+                    }`}
+                  >
+                    {minutes} min
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Button
+              size="lg"
+              className="press h-12 w-full rounded-full text-sm font-bold"
+              onClick={() => setConfigOpen(false)}
+            >
+              PRONTO
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
         <DialogContent className="max-h-[92dvh] w-[calc(100%-1rem)] max-w-2xl overflow-y-auto rounded-[2rem] border-primary/15 bg-background p-4 sm:p-6">
