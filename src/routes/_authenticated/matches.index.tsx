@@ -213,6 +213,7 @@ function MatchesPage() {
 
   return (
     <AppShell title="Partidas" bare>
+      <div className="radar-immersive -mb-32 min-h-dvh pb-32">
       {/* IMAGEM PRINCIPAL */}
       <section className="relative h-[46vh] min-h-[320px] w-full overflow-hidden">
         <img
@@ -469,6 +470,7 @@ function MatchesPage() {
         myCoords={coords}
         onOpenChange={(open) => setSelected(open ? selected : null)}
       />
+      </div>
     </AppShell>
   );
 }
