@@ -554,7 +554,7 @@ function TeamsPage() {
         </div>
       </div>
 
-      <Dialog open={Boolean(selectedTeam)} onOpenChange={(value) => !value && setSelectedTeamId(null)}>
+      <Dialog open={Boolean(selectedTeam)} onOpenChange={(value) => { if (!value) { setSelectedTeamId(null); setConfirmingDeleteId(null); } }}>
         <DialogContent className="max-h-[88dvh] max-w-[92vw] overflow-y-auto rounded-3xl sm:max-w-lg">
           {selectedTeam ? (() => {
             const members = selectedTeam.members ?? [];
