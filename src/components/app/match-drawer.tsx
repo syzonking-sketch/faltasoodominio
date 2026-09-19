@@ -217,20 +217,18 @@ export function MatchDrawer({
           <p className="truncate text-xs text-muted-foreground">
             {participant.profile?.full_name ?? ""}
           </p>
-          <div className="mt-1 flex flex-wrap items-center gap-1.5">
-            {participant.team_side ? (
-              <Badge variant="secondary" className="text-[10px]">
-                Time {participant.team_side}
-              </Badge>
-            ) : null}
-            {participant.checked_in_gps ? (
-              <Badge className="bg-primary/20 text-[10px] text-primary">GPS ✓</Badge>
-            ) : (
-              <Badge variant="outline" className="text-[10px]">
-                Sem GPS
-              </Badge>
-            )}
-          </div>
+          {participant.team_side || participant.checked_in_gps ? (
+            <div className="mt-1 flex flex-wrap items-center gap-1.5">
+              {participant.team_side ? (
+                <Badge variant="secondary" className="text-[10px]">
+                  Time {participant.team_side}
+                </Badge>
+              ) : null}
+              {participant.checked_in_gps ? (
+                <Badge className="bg-primary/20 text-[10px] text-primary">GPS ✓</Badge>
+              ) : null}
+            </div>
+          ) : null}
           </div>
         </Button>
         {!isMe && participant.role === "player" ? (
