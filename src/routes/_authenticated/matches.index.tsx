@@ -139,6 +139,9 @@ function MatchesPage() {
   const [venueDialogOpen, setVenueDialogOpen] = useState(false);
   const [venueSearch, setVenueSearch] = useState("");
   const [matchName, setMatchName] = useState("");
+  const [playersCount, setPlayersCount] = useState(10);
+  const [durationMin, setDurationMin] = useState(60);
+  const [configOpen, setConfigOpen] = useState(false);
   const [newVenue, setNewVenue] = useState<{
     name: string;
     address: string;
@@ -305,7 +308,7 @@ function MatchesPage() {
       if (slotHour == null) throw new Error("Escolha um horário disponível.");
       const start = new Date(selectedDay);
       start.setHours(slotHour, 0, 0, 0);
-      const end = new Date(start.getTime() + 60 * 60_000);
+      const end = new Date(start.getTime() + durationMin * 60_000);
       return createMatch({
         venue_id: selectedVenue.id,
         created_by: user.id,
@@ -316,7 +319,7 @@ function MatchesPage() {
         checked_in_gps: distanceToVenue != null && distanceToVenue <= GPS_CHECKIN_RADIUS,
         scheduled_at: start.toISOString(),
         finished_at: end.toISOString(),
-        max_players: 10,
+        max_players: playersCount,
         creator_is_scorekeeper: true,
       });
     },
