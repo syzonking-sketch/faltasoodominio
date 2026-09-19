@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import {
-  Bell,
   ChevronRight,
   Crown,
   MapPin,
@@ -15,6 +14,7 @@ import { useState } from "react";
 import { AppShell } from "@/components/app/app-shell";
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { ErrorState } from "@/components/app/states";
+import { NotificationsBell } from "@/components/app/notifications-bell";
 import { Button } from "@/components/ui/button";
 import { fetchPlayerStats, fetchRanking } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
@@ -211,9 +211,7 @@ function RankingPage() {
                   <h1 className="text-display truncate text-3xl leading-none font-bold text-foreground">Ranking</h1>
                 </div>
               </div>
-              <Button type="button" variant="secondary" size="icon" aria-label="Notificações" className="size-12 rounded-full border border-border/70 bg-secondary/80 backdrop-blur-xl">
-                <Bell className="size-5" />
-              </Button>
+<NotificationsBell />
             </div>
             <p className="mt-5 text-base text-muted-foreground">Os melhores da partida.</p>
           </header>

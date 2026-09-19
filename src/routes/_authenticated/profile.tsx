@@ -1,7 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import {
-  Bell,
   CalendarDays,
   Camera,
   ChevronRight,
@@ -24,6 +23,7 @@ import { AppShell } from "@/components/app/app-shell";
 import { MatchDrawer } from "@/components/app/match-drawer";
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { ErrorState } from "@/components/app/states";
+import { NotificationsBell } from "@/components/app/notifications-bell";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -356,9 +356,7 @@ function ProfilePage() {
                     </Button>
                     <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" className="sr-only" onChange={(event) => void selectAvatar(event.target.files?.[0])} />
                   </div>
-                  <Button type="button" variant="secondary" size="icon" aria-label="Notificações" className="size-12 rounded-full border border-border/70 bg-secondary/80 backdrop-blur-xl">
-                    <Bell className="size-5" />
-                  </Button>
+<NotificationsBell />
                 </div>
                 <div className="mt-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
                   <div className="min-w-0">
