@@ -595,7 +595,7 @@ function MatchesPage() {
                   : center)}
                 me={coords}
                 pins={venuePins}
-                selectedMatchId={newVenue ? "new-venue" : selectedVenue?.id}
+                selectedMatchId={newVenue ? "new-venue" : (selectedVenue?.id ?? null)}
                 onSelect={(id) => {
                   if (id === "new-venue") return;
                   selectVenue(id);
