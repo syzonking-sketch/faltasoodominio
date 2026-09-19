@@ -90,7 +90,7 @@ export function NotificationsBell({ className }: { className?: string }) {
 
   const goToMatch = (match: MatchWithRelations) => {
     setOpen(false);
-    void navigate({ to: "/matches", search: { match: match.id } as never });
+    void navigate({ to: "/matches", hash: match.id });
   };
 
   return (
