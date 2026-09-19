@@ -228,19 +228,23 @@ function MapPage() {
   return (
     <AppShell title="Radar" bare>
       <div className="mx-auto w-full max-w-2xl overflow-x-clip px-4">
-        <header className="pt-safe pb-5">
+        <header className="pt-safe pb-6">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-            <div className="flex min-w-0 items-center gap-2.5">
-              <img src={logoAsset.url} alt="The Match" className="size-9 shrink-0 rounded-xl object-cover shadow-[var(--shadow-soft)]" />
-              <span className="text-display truncate text-lg font-extrabold text-foreground">The Match</span>
+            <div className="flex min-w-0 items-center gap-2">
+              <img src={logoAsset.url} alt="The Match" className="size-7 shrink-0 rounded-lg object-cover" />
+              <span className="text-display truncate text-sm font-bold tracking-tight text-foreground">The Match</span>
             </div>
-            <Link to="/matches" aria-label="Notificações" className="press elevate-soft grid size-11 shrink-0 place-items-center rounded-full border border-border/60 bg-surface/90 backdrop-blur-xl">
+            <Link to="/matches" aria-label="Notificações" className="press elevate-soft grid size-11 shrink-0 place-items-center rounded-full border border-border/50 bg-surface/90 backdrop-blur-xl">
               <Bell className="size-5 text-foreground" />
             </Link>
           </div>
-          <p className="mt-5 text-sm font-semibold text-primary">{greeting} {displayName}.</p>
-          <h1 className="mt-1 max-w-sm text-3xl leading-[1.02] font-extrabold text-foreground">O que está rolando perto de você?</h1>
+          <h1 className="text-display mt-7 text-[2.1rem] leading-[1.06] font-extrabold tracking-tight text-foreground">
+            {greeting}
+            <br />
+            <span className="text-primary">{displayName}</span>
+          </h1>
         </header>
+
 
         <form onSubmit={handleSearchSubmit} className="relative flex items-center gap-2 pb-4">
           <div className="relative flex-1">
@@ -262,10 +266,11 @@ function MapPage() {
             size="icon"
              aria-label={onlyAvailable ? "Mostrar todas as partidas" : "Mostrar apenas partidas com vagas"}
              onClick={() => setOnlyAvailable((current) => !current)}
-             className={`press elevate-soft size-14 shrink-0 rounded-full ${onlyAvailable ? "bg-primary text-primary-foreground" : "bg-foreground text-background"}`}
+             className={`press elevate-float size-14 shrink-0 rounded-full bg-primary text-primary-foreground ${onlyAvailable ? "ring-2 ring-primary/40 ring-offset-2 ring-offset-background" : ""}`}
           >
              <SlidersHorizontal className="size-5" />
           </Button>
+
 
           {search.length > 2 && (isSearching || (searchResults && searchResults.length > 0) || (venuesQuery.data && venuesQuery.data.length > 0)) && (
             <div className="elevate-float absolute inset-x-0 top-full z-500 mt-2 max-h-60 overflow-y-auto rounded-3xl border border-border/60 bg-surface p-2">
