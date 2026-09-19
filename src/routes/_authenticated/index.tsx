@@ -334,7 +334,7 @@ function MapPage() {
                 <Crosshair className="size-4 text-primary" />
               </Button>
             </div>
-            <Link to="/matches/new" className="press elevate-float pointer-events-auto inline-flex h-11 items-center justify-center gap-1.5 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground" aria-label="Criar nova partida"><Plus className="size-4" /> Criar partida</Link>
+            <Link to="/matches" className="press elevate-float pointer-events-auto inline-flex h-11 items-center justify-center gap-1.5 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground" aria-label="Criar nova partida"><Plus className="size-4" /> Criar partida</Link>
           </div>
         </div>
 
