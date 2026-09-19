@@ -74,12 +74,12 @@ export function BottomNav() {
                       />
                     </span>
                     <span
-                      className={`text-display overflow-hidden leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 ${
+                      className={`text-display overflow-hidden text-[10px] leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 min-[360px]:text-[11px] ${
                         isActive
                           ? longLabel
-                            ? "mr-1.5 w-auto text-[0.6rem] opacity-100 min-[360px]:mr-1 min-[360px]:text-[0.66rem]"
-                            : "mr-2 w-auto text-[0.6435rem] opacity-100 min-[360px]:mr-2 min-[360px]:text-[0.7425rem]"
-                          : "m-0 w-0 text-[0.6435rem] opacity-0"
+                            ? "mr-1.5 w-auto opacity-100 min-[360px]:mr-1"
+                            : "mr-2 w-auto opacity-100 min-[360px]:mr-2"
+                          : "m-0 w-0 opacity-0"
                       }`}
                     >
                       {label.toUpperCase()}
