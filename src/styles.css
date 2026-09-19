@@ -309,12 +309,6 @@
   z-index: 0;
 }
 
-.leaflet-pane,
-.leaflet-top,
-.leaflet-bottom {
-  z-index: 1;
-}
-
 .leaflet-tile-pane {
   filter: saturate(0.72) brightness(1.03) contrast(0.96);
   transition: filter 0.3s ease;
