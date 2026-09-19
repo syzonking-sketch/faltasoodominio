@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Crosshair, Plus, Radar, Search, Sun, Moon, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
-import { lazy, useMemo, useState, useEffect, useCallback } from "react";
+import { Bell, Crosshair, Plus, Radar, Search, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { lazy, useMemo, useState, useCallback } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
 import { ClientOnly } from "@/components/app/client-only";
@@ -52,22 +52,7 @@ function MapPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [detailMatch, setDetailMatch] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [lightMap, setLightMap] = useState(false);
   const [onlyAvailable, setOnlyAvailable] = useState(false);
-
-  useEffect(() => {
-    const isLight = localStorage.getItem("light-map") === "true";
-    setLightMap(isLight);
-  }, []);
-
-  useEffect(() => {
-    if (lightMap) {
-      document.body.classList.add("light-map");
-    } else {
-      document.body.classList.remove("light-map");
-    }
-    localStorage.setItem("light-map", String(lightMap));
-  }, [lightMap]);
 
   const matchesQuery = useQuery({
     queryKey: ["matches", "active", "radar"],
@@ -350,16 +335,6 @@ function MapPage() {
 
           <div className="pointer-events-none absolute inset-x-3 bottom-3 z-400 flex items-end justify-between gap-2">
             <div className="flex gap-2">
-              <Button
-                type="button"
-                size="icon"
-                variant="secondary"
-                aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
-                onClick={() => setLightMap(!lightMap)}
-                className="press elevate-float pointer-events-auto size-10 rounded-full border border-border/60 bg-surface"
-              >
-                {lightMap ? <Moon className="size-4" /> : <Sun className="size-4" />}
-              </Button>
               <Button
                 type="button"
                 size="icon"
