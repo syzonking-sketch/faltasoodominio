@@ -60,6 +60,8 @@ export function MatchDrawer({
   const [selectedPlayer, setSelectedPlayer] = useState<Profile | null>(null);
   const [cardPlayerA, setCardPlayerA] = useState("");
   const [cardPlayerB, setCardPlayerB] = useState("");
+  const [scorerA, setScorerA] = useState("");
+  const [scorerB, setScorerB] = useState("");
 
   // Com o painel de detalhes aberto, a navegação inferior sai de cena e
   // volta quando o painel é fechado.
@@ -114,7 +116,7 @@ export function MatchDrawer({
   const events = eventsQuery.data ?? [];
 
   const addEvent = useMutation({
-    mutationFn: (input: { playerId: string; teamSide: TeamSide; eventType: "yellow_card" | "red_card" }) => {
+    mutationFn: (input: { playerId: string; teamSide: TeamSide; eventType: "goal" | "yellow_card" | "red_card" }) => {
       if (!matchId) throw new Error("Partida não carregada.");
       return addMatchEvent({
         match_id: matchId,
@@ -124,7 +126,13 @@ export function MatchDrawer({
       });
     },
     onSuccess: (_, input) => {
-      toast.success(input.eventType === "yellow_card" ? "Cartão amarelo aplicado." : "Cartão vermelho aplicado.");
+      toast.success(
+        input.eventType === "goal"
+          ? "Gol registrado na súmula!"
+          : input.eventType === "yellow_card"
+            ? "Cartão amarelo aplicado."
+            : "Cartão vermelho aplicado.",
+      );
       if (input.teamSide === "A") setCardPlayerA("");
       else setCardPlayerB("");
       invalidate();
@@ -423,16 +431,37 @@ export function MatchDrawer({
                   <div className="grid grid-cols-2 gap-3">
                     {(["A", "B"] as const).map((side) => {
                       const current = side === "A" ? match.score_team_a : match.score_team_b;
-                      const apply = (delta: number) =>
+                      const scorer = side === "A" ? scorerA : scorerB;
+                      const setScorer = side === "A" ? setScorerA : setScorerB;
+                      const sidePlayers = players.filter((player) => player.team_side === side);
+                      const apply = (delta: number) => {
                         saveScore.mutate({
                           score_team_a: side === "A" ? Math.max(0, match.score_team_a + delta) : match.score_team_a,
                           score_team_b: side === "B" ? Math.max(0, match.score_team_b + delta) : match.score_team_b,
                         });
+                        // Ao somar um gol com autor escolhido, registra o gol na súmula.
+                        if (delta > 0 && scorer) {
+                          addEvent.mutate({ playerId: scorer, teamSide: side, eventType: "goal" });
+                          setScorer("");
+                        }
+                      };
                       return (
                         <div key={side} className="rounded-2xl bg-surface-2 p-3 text-center">
                           <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                             Time {side}
                           </p>
+                          <Select value={scorer} onValueChange={setScorer}>
+                            <SelectTrigger aria-label={`Quem marcou o gol do time ${side}`} className="mt-2 h-9 text-xs">
+                              <SelectValue placeholder="Quem marcou?" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {sidePlayers.map((player) => (
+                                <SelectItem key={player.id} value={player.user_id}>
+                                  {player.profile?.nickname ?? player.profile?.full_name ?? "Boleiro"}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                           <div className="mt-2 flex items-center justify-center gap-3">
                             <Button
                               type="button"
