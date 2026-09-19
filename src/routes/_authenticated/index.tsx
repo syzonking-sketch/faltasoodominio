@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bell, Crosshair, Plus, Radar, Search, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
-import { lazy, useMemo, useState, useEffect, useCallback } from "react";
+import { lazy, useMemo, useState, useCallback } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
 import { ClientOnly } from "@/components/app/client-only";
