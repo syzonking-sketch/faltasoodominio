@@ -461,6 +461,54 @@ export function MatchDrawer({
                       );
                     })}
                   </div>
+
+                  <Separator />
+
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-foreground">Cartões</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {(["A", "B"] as const).map((side) => {
+                        const sidePlayers = players.filter((player) => player.team_side === side);
+                        const selectedId = side === "A" ? cardPlayerA : cardPlayerB;
+                        const setSelected = side === "A" ? setCardPlayerA : setCardPlayerB;
+                        return (
+                          <div key={side} className="space-y-2 rounded-2xl bg-surface-2 p-3">
+                            <p className="text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                              Time {side}
+                            </p>
+                            <Select value={selectedId} onValueChange={setSelected}>
+                              <SelectTrigger aria-label={`Jogador do time ${side}`} className="h-9 text-xs">
+                                <SelectValue placeholder="Jogador" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {sidePlayers.map((player) => (
+                                  <SelectItem key={player.id} value={player.user_id}>
+                                    {player.profile?.nickname ?? player.profile?.full_name ?? "Boleiro"}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                type="button"
+                                aria-label={`Cartão amarelo para o time ${side}`}
+                                disabled={!selectedId || addEvent.isPending}
+                                onClick={() => addEvent.mutate({ playerId: selectedId, teamSide: side, eventType: "yellow_card" })}
+                                className="press h-8 w-6 rounded-[4px] border border-yellow-600/40 bg-yellow-400 shadow-sm transition-transform disabled:opacity-40"
+                              />
+                              <button
+                                type="button"
+                                aria-label={`Cartão vermelho para o time ${side}`}
+                                disabled={!selectedId || addEvent.isPending}
+                                onClick={() => addEvent.mutate({ playerId: selectedId, teamSide: side, eventType: "red_card" })}
+                                className="press h-8 w-6 rounded-[4px] border border-red-800/40 bg-red-600 shadow-sm transition-transform disabled:opacity-40"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               ) : status === "active" && !match.scorekeeper_id ? (
                 <p className="rounded-2xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
