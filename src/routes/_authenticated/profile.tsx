@@ -258,6 +258,12 @@ function ProfilePage() {
     }
   }
 
+  function closeEditor() {
+    setEditing(false);
+    setAvatarBlob(null);
+    setAvatarPreview(null);
+  }
+
   const matchesQuery = useQuery({
     queryKey: ["profile-matches", user?.id],
     enabled: Boolean(user?.id),
@@ -466,7 +472,7 @@ function ProfilePage() {
         </div>
       </div>
 
-      <Dialog open={editing} onOpenChange={setEditing}>
+      <Dialog open={editing} onOpenChange={(open) => { if (open) setEditing(true); else closeEditor(); }}>
         <DialogContent className="w-[calc(100%-2rem)] rounded-[2rem] border-border bg-card p-5">
           <DialogHeader>
             <DialogTitle className="text-display text-2xl">Editar perfil</DialogTitle>
@@ -489,7 +495,7 @@ function ProfilePage() {
               <div><Label htmlFor="state">UF</Label><Input id="state" maxLength={2} className="mt-1 h-12 rounded-xl bg-surface-2 uppercase" value={state} onChange={(event) => setState(event.target.value)} /></div>
             </div>
             <div className="flex gap-2 pt-2">
-              <Button variant="secondary" className="h-12 flex-1 rounded-full" onClick={() => setEditing(false)}>Cancelar</Button>
+               <Button variant="secondary" className="h-12 flex-1 rounded-full" onClick={closeEditor}>Cancelar</Button>
                <Button className="h-12 flex-1 rounded-full" disabled={save.isPending || compressingAvatar} onClick={() => save.mutate()}>{save.isPending ? "Salvando..." : compressingAvatar ? "Otimizando..." : "Salvar"}</Button>
             </div>
           </div>
