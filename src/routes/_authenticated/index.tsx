@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Crosshair, Plus, Radar, Search, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { Crosshair, Plus, Radar, Search, Loader2, MapPin, X } from "lucide-react";
 import { NotificationsBell } from "@/components/app/notifications-bell";
 import { lazy, useMemo, useState, useCallback } from "react";
 
@@ -22,7 +22,6 @@ import { fetchMatches, fetchVenues } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { distanceMeters, formatDistance, useGeolocation } from "@/lib/geo";
 import { friendlyError } from "@/lib/supabase";
-import { isFull } from "@/lib/match-utils";
 
 const MapRadar = lazy(() => import("@/components/app/map-radar"));
 
@@ -53,7 +52,6 @@ function MapPage() {
   const [selected, setSelected] = useState<string | null>(null);
   const [detailMatch, setDetailMatch] = useState<string | null>(null);
   const [search, setSearch] = useState("");
-  const [onlyAvailable, setOnlyAvailable] = useState(false);
 
   const matchesQuery = useQuery({
     queryKey: ["matches", "active", "radar"],
@@ -133,7 +131,7 @@ function MapPage() {
     });
   }, [matchesQuery.data, search]);
 
-  const visibleMatches = (search.trim() ? matches : nearbyMatches).filter((match) => !onlyAvailable || !isFull(match));
+  const visibleMatches = search.trim() ? matches : nearbyMatches;
   const selectedMatch = activeMatches.find((match) => match.id === selected) ?? null;
 
   const handleSearchSubmit = useCallback(async (e: React.FormEvent) => {
@@ -247,15 +245,6 @@ function MapPage() {
               className="elevate-soft h-14 rounded-full border-border/60 bg-surface pl-12 text-base"
             />
           </div>
-          <Button
-            type="button"
-            size="icon"
-             aria-label={onlyAvailable ? "Mostrar todas as partidas" : "Mostrar apenas partidas com vagas"}
-             onClick={() => setOnlyAvailable((current) => !current)}
-             className={`press elevate-float size-14 shrink-0 rounded-full bg-primary text-primary-foreground ${onlyAvailable ? "ring-2 ring-primary/40 ring-offset-2 ring-offset-background" : ""}`}
-          >
-             <SlidersHorizontal className="size-5" />
-          </Button>
 
 
           {search.length > 2 && (isSearching || (searchResults && searchResults.length > 0) || (venuesQuery.data && venuesQuery.data.length > 0)) && (
