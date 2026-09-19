@@ -261,6 +261,7 @@ function TeamsPage() {
     mutationFn: deleteTeam,
     onSuccess: (_, teamId) => {
       queryClient.setQueryData<Team[]>(["teams"], (current) => current?.filter((team) => team.id !== teamId) ?? []);
+      setConfirmingDeleteId(null);
       setSelectedTeamId(null);
       toast.success("Time eliminado.");
       invalidate();
