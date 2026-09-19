@@ -55,7 +55,7 @@ export function BottomNav() {
                 to={to}
                 activeOptions={{ exact: to === "/" }}
                 tabIndex={hidden ? -1 : undefined}
-                className="press group flex size-[clamp(2.75rem,13.4vw,3.15rem)] min-w-0 items-center justify-center overflow-hidden rounded-full bg-nav-foreground/10 text-nav-foreground outline-none transition-[width,background-color,color,box-shadow] duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary"
+                className="press group flex size-[clamp(2.75rem,13.4vw,3.15rem)] min-w-0 items-center justify-center overflow-hidden rounded-full bg-nav-foreground/10 text-nav-foreground outline-none transition-[width,background-color,color,box-shadow] duration-150 ease-[cubic-bezier(0.2,0.8,0.3,1)] focus-visible:ring-2 focus-visible:ring-primary"
                 activeProps={{
                   className: cn(
                     "bg-primary text-primary-foreground shadow-raised",
@@ -69,12 +69,12 @@ export function BottomNav() {
                   <>
                     <span className="flex size-9 shrink-0 items-center justify-center rounded-full min-[360px]:size-10">
                       <Icon
-                        className="size-[1.3rem] transition-transform duration-300 group-hover:scale-105 min-[360px]:size-6"
+                        className="size-[1.3rem] transition-transform duration-150 group-hover:scale-105 min-[360px]:size-6"
                         strokeWidth={isActive ? 2.1 : 1.7}
                       />
                     </span>
                     <span
-                      className={`text-display overflow-hidden text-[10px] leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 min-[360px]:text-[11px] ${
+                      className={`text-display overflow-hidden text-[10px] leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-150 ease-[cubic-bezier(0.2,0.8,0.3,1)] min-[360px]:text-[11px] ${
                         isActive
                           ? longLabel
                             ? "mr-2 w-auto opacity-100 min-[360px]:mr-3"
