@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Flag, Loader2, MapPin, Users, Eye, Ban, ShieldCheck, X } from "lucide-react";
+import { CheckCircle2, Flag, Loader2, MapPin, Users, Eye, Ban, ShieldCheck, X, Goal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 
@@ -26,8 +26,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  addMatchEvent,
   cancelMatch,
   assignMatchScorekeeper,
+  fetchMatchEvents,
+  removeMatchEvent,
   fetchMatch,
   autoFinishIfExpired,
   fetchRatingsByEvaluator,
@@ -55,6 +58,8 @@ export function MatchDrawer({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<Profile | null>(null);
+  const [cardPlayerA, setCardPlayerA] = useState("");
+  const [cardPlayerB, setCardPlayerB] = useState("");
 
   // Com o painel de detalhes aberto, a navegação inferior sai de cena e
   // volta quando o painel é fechado.
@@ -101,8 +106,44 @@ export function MatchDrawer({
   const distance = myCoords && venueCoords ? distanceMeters(myCoords, venueCoords) : null;
   const withinRadius = distance !== null && distance <= GPS_CHECKIN_RADIUS;
 
+  const eventsQuery = useQuery({
+    queryKey: ["match-events", matchId],
+    enabled: Boolean(matchId),
+    queryFn: () => fetchMatchEvents(matchId!),
+  });
+  const events = eventsQuery.data ?? [];
+
+  const addEvent = useMutation({
+    mutationFn: (input: { playerId: string; teamSide: TeamSide; eventType: "yellow_card" | "red_card" }) => {
+      if (!matchId) throw new Error("Partida não carregada.");
+      return addMatchEvent({
+        match_id: matchId,
+        player_id: input.playerId,
+        team_side: input.teamSide,
+        event_type: input.eventType,
+      });
+    },
+    onSuccess: (_, input) => {
+      toast.success(input.eventType === "yellow_card" ? "Cartão amarelo aplicado." : "Cartão vermelho aplicado.");
+      if (input.teamSide === "A") setCardPlayerA("");
+      else setCardPlayerB("");
+      invalidate();
+    },
+    onError: (error) => toast.error(friendlyError(error)),
+  });
+
+  const removeEvent = useMutation({
+    mutationFn: removeMatchEvent,
+    onSuccess: () => {
+      toast.success("Evento removido da súmula.");
+      invalidate();
+    },
+    onError: (error) => toast.error(friendlyError(error)),
+  });
+
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["match", matchId] });
+    void queryClient.invalidateQueries({ queryKey: ["match-events", matchId] });
     void queryClient.invalidateQueries({ queryKey: ["matches"] });
     void queryClient.invalidateQueries({ queryKey: ["ranking"] });
   };
@@ -420,11 +461,100 @@ export function MatchDrawer({
                       );
                     })}
                   </div>
+
+                  <Separator />
+
+                  <div className="space-y-3">
+                    <p className="text-xs font-semibold text-foreground">Cartões</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {(["A", "B"] as const).map((side) => {
+                        const sidePlayers = players.filter((player) => player.team_side === side);
+                        const selectedId = side === "A" ? cardPlayerA : cardPlayerB;
+                        const setSelected = side === "A" ? setCardPlayerA : setCardPlayerB;
+                        return (
+                          <div key={side} className="space-y-2 rounded-2xl bg-surface-2 p-3">
+                            <p className="text-center text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                              Time {side}
+                            </p>
+                            <Select value={selectedId} onValueChange={setSelected}>
+                              <SelectTrigger aria-label={`Jogador do time ${side}`} className="h-9 text-xs">
+                                <SelectValue placeholder="Jogador" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {sidePlayers.map((player) => (
+                                  <SelectItem key={player.id} value={player.user_id}>
+                                    {player.profile?.nickname ?? player.profile?.full_name ?? "Boleiro"}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <div className="flex items-center justify-center gap-2">
+                              <button
+                                type="button"
+                                aria-label={`Cartão amarelo para o time ${side}`}
+                                disabled={!selectedId || addEvent.isPending}
+                                onClick={() => addEvent.mutate({ playerId: selectedId, teamSide: side, eventType: "yellow_card" })}
+                                className="press h-8 w-6 rounded-[4px] border border-yellow-600/40 bg-yellow-400 shadow-sm transition-transform disabled:opacity-40"
+                              />
+                              <button
+                                type="button"
+                                aria-label={`Cartão vermelho para o time ${side}`}
+                                disabled={!selectedId || addEvent.isPending}
+                                onClick={() => addEvent.mutate({ playerId: selectedId, teamSide: side, eventType: "red_card" })}
+                                className="press h-8 w-6 rounded-[4px] border border-red-800/40 bg-red-600 shadow-sm transition-transform disabled:opacity-40"
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 </div>
               ) : status === "active" && !match.scorekeeper_id ? (
                 <p className="rounded-2xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
                   O criador ainda não escolheu o responsável pelo placar.
                 </p>
+              ) : null}
+
+              {events.length > 0 ? (
+                <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
+                  <p className="text-xs font-semibold text-foreground">Súmula</p>
+                  <ul className="space-y-2">
+                    {events.map((event) => (
+                      <li key={event.id} className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
+                        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-surface">
+                          {event.event_type === "yellow_card" ? (
+                            <span className="h-4 w-3 rounded-[2px] bg-yellow-400" />
+                          ) : event.event_type === "red_card" ? (
+                            <span className="h-4 w-3 rounded-[2px] bg-red-600" />
+                          ) : (
+                            <Goal className="size-4 text-primary" />
+                          )}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-foreground">
+                            {event.player?.nickname ?? event.player?.full_name ?? "Jogador"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {event.event_type === "goal" ? "Gol" : event.event_type === "yellow_card" ? "Cartão amarelo" : "Cartão vermelho"}
+                            {" · Time "}{event.team_side}{event.minute != null ? ` · ${event.minute}'` : ""}
+                          </p>
+                        </div>
+                        {canEditScore ? (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label="Remover evento"
+                            disabled={removeEvent.isPending}
+                            onClick={() => removeEvent.mutate(event.id)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ) : null}
 
               {status === "active" ? (
