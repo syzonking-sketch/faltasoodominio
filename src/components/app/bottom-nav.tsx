@@ -34,7 +34,7 @@ export function BottomNav() {
       aria-label="Navegação principal"
       className="fixed inset-x-0 bottom-0 z-500 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)]"
     >
-      <ul className="mx-auto grid h-[4.75rem] w-full max-w-[23rem] grid-cols-5 items-center gap-1 rounded-full border border-border/40 bg-foreground/95 px-2 py-2 shadow-float backdrop-blur-xl">
+      <ul className="mx-auto grid h-[4.75rem] w-full max-w-[23rem] grid-cols-5 items-center gap-1 rounded-full border border-nav-foreground/10 bg-nav/95 px-2 py-2 shadow-float backdrop-blur-xl">
         {tabs.map(({ to, label, icon: Icon }) => (
           <li key={to} className="min-w-0">
             <Link
@@ -44,14 +44,14 @@ export function BottomNav() {
             >
               {({ isActive }) => (
                 <>
-                  <span className={`flex size-9 shrink-0 items-center justify-center rounded-full transition-all duration-300 ease-out sm:size-10 ${isActive ? "-translate-y-0.5 scale-105 bg-primary text-primary-foreground shadow-raised" : "text-background/75 group-hover:text-background"}`}>
+                  <span className={`flex size-9 shrink-0 items-center justify-center rounded-full transition-all duration-300 ease-out sm:size-10 ${isActive ? "-translate-y-0.5 scale-105 bg-primary text-primary-foreground shadow-raised" : "text-nav-foreground/75 group-hover:text-nav-foreground"}`}>
                     <Icon
                       className="size-[1.35rem] transition-transform duration-300 group-hover:scale-105 sm:size-6"
                       strokeWidth={isActive ? 2.1 : 1.7}
                     />
                   </span>
                   <span
-                    className={`text-display w-full truncate text-center text-[8px] leading-none font-bold tracking-normal transition-colors duration-300 min-[360px]:text-[9px] ${isActive ? "text-primary" : "text-background/60"}`}
+                    className={`text-display w-full truncate text-center text-[8px] leading-none font-bold tracking-normal transition-colors duration-300 min-[360px]:text-[9px] ${isActive ? "text-primary" : "text-nav-foreground/60"}`}
                   >
                     {label.toUpperCase()}
                   </span>
