@@ -66,7 +66,7 @@ export function BottomNav() {
                     />
                   </span>
                   <span
-                    className={`text-display overflow-hidden text-[0.65rem] leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 min-[360px]:text-xs ${isActive ? "mr-3 w-auto opacity-100 min-[360px]:mr-4" : "m-0 w-0 opacity-0"}`}
+                    className={`text-display overflow-hidden text-[0.6435rem] leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 min-[360px]:text-[0.7425rem] ${isActive ? "mr-3 w-auto opacity-100 min-[360px]:mr-4" : "m-0 w-0 opacity-0"}`}
                   >
                     {label.toUpperCase()}
                   </span>
