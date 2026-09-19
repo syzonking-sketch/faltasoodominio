@@ -216,6 +216,10 @@
   --shadow-raised: 0 2px 8px oklch(0 0 0 / 0.5);
   --shadow-float: 0 8px 30px -12px oklch(0 0 0 / 0.75);
 
+  background:
+    radial-gradient(130% 55% at 50% -12%, oklch(0.38 0.1 145 / 0.5), transparent 62%),
+    radial-gradient(90% 40% at 85% 8%, oklch(0.45 0.14 143 / 0.28), transparent 60%),
+    var(--background);
   background-color: var(--background);
   color: var(--foreground);
 }
