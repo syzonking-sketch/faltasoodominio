@@ -309,10 +309,10 @@ function ProfilePage() {
                     <Bell className="size-5" />
                   </Button>
                 </div>
-                <div className="mt-6 flex items-end justify-between gap-4">
+                <div className="mt-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
                   <div className="min-w-0">
                     <p className="text-xs font-semibold tracking-wider text-primary uppercase">Meu perfil</p>
-                    <h1 className="text-display mt-1 truncate text-4xl leading-none font-bold text-foreground">{accountNickname}</h1>
+                     <h1 className="text-display mt-1 whitespace-normal break-words text-3xl leading-tight font-bold text-foreground [overflow-wrap:anywhere] sm:text-4xl">{accountNickname}</h1>
                     <p className="mt-2 truncate text-sm text-muted-foreground">
                       {accountFullName}{accountCity ? ` • ${accountCity}${accountState ? ` / ${accountState}` : ""}` : ""}
                     </p>
