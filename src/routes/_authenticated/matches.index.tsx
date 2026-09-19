@@ -1,21 +1,35 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, CalendarCheck, ChevronDown, Loader2, LocateFixed, MapPin, Radio } from "lucide-react";
-import { useMemo, useState } from "react";
+import { ArrowLeft, CalendarCheck, ChevronDown, Loader2, LocateFixed, MapPin, Plus, Radio, Search } from "lucide-react";
+import { lazy, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import heroImage from "@/assets/matches-hero.jpg";
 import { AppShell } from "@/components/app/app-shell";
+import { ClientOnly } from "@/components/app/client-only";
 import { MatchCard } from "@/components/app/match-card";
 import { MatchDrawer } from "@/components/app/match-drawer";
+import type { RadarPin } from "@/components/app/map-radar";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
-import { createMatch, fetchMatches, fetchVenues } from "@/lib/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { createMatch, createVenue, fetchMatches, fetchVenues } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { distanceMeters, formatDistance, GPS_CHECKIN_RADIUS, useGeolocation } from "@/lib/geo";
+import { distanceMeters, formatDistance, GPS_CHECKIN_RADIUS, reverseGeocode, useGeolocation, type Coords } from "@/lib/geo";
 import { effectiveStatus, matchStart } from "@/lib/match-utils";
 import { friendlyError } from "@/lib/supabase";
 import type { MatchWithRelations } from "@/lib/types";
+
+const MapRadar = lazy(() => import("@/components/app/map-radar"));
 
 export const Route = createFileRoute("/_authenticated/matches/")({
   head: () => ({
@@ -95,7 +109,14 @@ function MatchesPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { coords, status: geoStatus, request: requestLocation } = useGeolocation();
+  const {
+    coords,
+    center,
+    status: geoStatus,
+    request: requestLocation,
+    searchLocation,
+    isSearching,
+  } = useGeolocation();
   const [selected, setSelected] = useState<string | null>(null);
 
   const activeQuery = useQuery({
@@ -113,7 +134,41 @@ function MatchesPage() {
   const venues = venuesQuery.data ?? [];
   const [venueId, setVenueId] = useState<string | null>(null);
   const [venuePickerOpen, setVenuePickerOpen] = useState(false);
+  const [venueDialogOpen, setVenueDialogOpen] = useState(false);
+  const [venueSearch, setVenueSearch] = useState("");
+  const [matchName, setMatchName] = useState("");
+  const [newVenue, setNewVenue] = useState<{
+    name: string;
+    address: string;
+    city: string;
+    state: string;
+    coords: Coords;
+  } | null>(null);
   const selectedVenue = venues.find((v) => v.id === venueId) ?? venues[0] ?? null;
+
+  const venuePins = useMemo<RadarPin[]>(
+    () => [
+      ...venues.map((venue) => ({
+        id: venue.id,
+        lat: Number(venue.latitude),
+        lng: Number(venue.longitude),
+        label: venue.name,
+        players: 0,
+        live: venue.id === selectedVenue?.id,
+      })),
+      ...(newVenue
+        ? [{
+            id: "new-venue",
+            lat: newVenue.coords.lat,
+            lng: newVenue.coords.lng,
+            label: newVenue.name.trim() || "Novo local",
+            players: 0,
+            live: true,
+          }]
+        : []),
+    ],
+    [newVenue, selectedVenue?.id, venues],
+  );
 
   const [dayOffset, setDayOffset] = useState(0);
   const [slotHour, setSlotHour] = useState<number | null>(null);
@@ -179,6 +234,68 @@ function MatchesPage() {
         })
       : null;
 
+  const selectVenue = (id: string) => {
+    setVenueId(id);
+    setSlotHour(null);
+    setVenuePickerOpen(false);
+  };
+
+  const choosePoint = async (point: Coords) => {
+    const place = await reverseGeocode(point.lat, point.lng);
+    setNewVenue({
+      name: "",
+      address: place.address,
+      city: place.city,
+      state: place.state,
+      coords: point,
+    });
+  };
+
+  const findVenueAddress = async () => {
+    const query = venueSearch.trim();
+    if (query.length < 3) {
+      toast.error("Digite pelo menos 3 caracteres para buscar.");
+      return;
+    }
+    const point = await searchLocation(query);
+    if (!point) {
+      toast.error("Local não encontrado. Tente outro endereço ou marque no mapa.");
+      return;
+    }
+    await choosePoint(point);
+  };
+
+  const addVenue = useMutation({
+    mutationFn: async () => {
+      if (!newVenue) throw new Error("Escolha o local no mapa.");
+      const name = newVenue.name.trim();
+      const address = newVenue.address.trim();
+      if (name.length < 3 || name.length > 80) {
+        throw new Error("O nome do campo deve ter entre 3 e 80 caracteres.");
+      }
+      if (address.length < 3 || address.length > 180) {
+        throw new Error("Informe um endereço ou referência válida.");
+      }
+      return createVenue({
+        name,
+        address,
+        city: newVenue.city || null,
+        state: newVenue.state || null,
+        latitude: newVenue.coords.lat,
+        longitude: newVenue.coords.lng,
+      });
+    },
+    onSuccess: (venue) => {
+      toast.success("Campo adicionado e selecionado!");
+      selectVenue(venue.id);
+      setNewVenue(null);
+      setVenueSearch("");
+      setVenueDialogOpen(false);
+      void queryClient.invalidateQueries({ queryKey: ["venues"] });
+    },
+    onError: (err) => toast.error(friendlyError(err)),
+  });
+
   const book = useMutation({
     mutationFn: async () => {
       if (!user?.id) throw new Error("Entre na sua conta para marcar uma partida.");
@@ -191,7 +308,7 @@ function MatchesPage() {
         venue_id: selectedVenue.id,
         created_by: user.id,
         match_type: "pelada",
-        name: null,
+        name: matchName.trim() || null,
         role: "player",
         team_side: "A",
         checked_in_gps: distanceToVenue != null && distanceToVenue <= GPS_CHECKIN_RADIUS,
@@ -204,6 +321,7 @@ function MatchesPage() {
     onSuccess: () => {
       toast.success("Partida marcada! Ela já aparece no radar.");
       setSlotHour(null);
+      setMatchName("");
       void queryClient.invalidateQueries({ queryKey: ["matches"] });
     },
     onError: (err) => toast.error(friendlyError(err)),
@@ -252,14 +370,27 @@ function MatchesPage() {
             Futebol society
           </p>
 
-          <div className="mt-1 flex items-start justify-between gap-3">
-            <h1 className="text-display min-w-0 truncate text-2xl leading-tight font-bold text-foreground">
+          <div className="mt-3">
+            <Label htmlFor="quick-match-name" className="mb-2 block text-xs font-semibold text-muted-foreground">
+              Nome da partida
+            </Label>
+            <Input
+              id="quick-match-name"
+              value={matchName}
+              maxLength={80}
+              onChange={(event) => setMatchName(event.target.value)}
+              placeholder="Ex.: Pelada de sábado"
+              className="h-12 rounded-2xl bg-secondary/70 text-base font-semibold"
+            />
+          </div>
+
+          <div className="mt-4 flex items-start justify-between gap-3">
+            <h1 className="text-display min-w-0 break-words text-2xl leading-tight font-bold text-foreground">
               {selectedVenue?.name ?? "Nenhuma quadra cadastrada"}
             </h1>
             <button
               type="button"
               onClick={() => setVenuePickerOpen((v) => !v)}
-              disabled={venues.length === 0}
               className="press flex shrink-0 items-center gap-1 rounded-full bg-secondary px-3 py-2 text-xs font-semibold text-muted-foreground disabled:opacity-50"
             >
               Campo <ChevronDown className="size-3.5" />
@@ -268,23 +399,19 @@ function MatchesPage() {
 
           <p className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
             <MapPin className="size-3.5 shrink-0" />
-            <span className="truncate">
-              {selectedVenue?.address ?? "Cadastre uma quadra no mapa do radar"}
+            <span className="min-w-0 break-words">
+              {selectedVenue?.address ?? "Escolha um campo existente ou adicione um novo no mapa"}
               {distanceToVenue != null ? ` • ${formatDistance(distanceToVenue)}` : ""}
             </span>
           </p>
 
-          {venuePickerOpen && venues.length > 0 ? (
+          {venuePickerOpen ? (
             <ul className="mt-3 max-h-56 space-y-1 overflow-y-auto rounded-2xl border border-border/60 bg-surface-2 p-1">
               {venues.map((v) => (
                 <li key={v.id}>
                   <button
                     type="button"
-                    onClick={() => {
-                      setVenueId(v.id);
-                      setSlotHour(null);
-                      setVenuePickerOpen(false);
-                    }}
+                    onClick={() => selectVenue(v.id)}
                     className={`w-full truncate rounded-xl px-3 py-2 text-left text-sm ${
                       v.id === selectedVenue?.id
                         ? "bg-accent font-semibold text-accent-foreground"
@@ -295,8 +422,31 @@ function MatchesPage() {
                   </button>
                 </li>
               ))}
+              <li>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="h-11 w-full justify-start rounded-xl text-primary"
+                  onClick={() => {
+                    setVenuePickerOpen(false);
+                    setVenueDialogOpen(true);
+                  }}
+                >
+                  <Plus className="size-4" /> Adicionar novo campo
+                </Button>
+              </li>
             </ul>
           ) : null}
+
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-3 h-11 w-full rounded-2xl border-dashed"
+            onClick={() => setVenueDialogOpen(true)}
+          >
+            <MapPin className="size-4" />
+            Não encontrou? Adicionar campo
+          </Button>
 
           {/* CALENDÁRIO HORIZONTAL */}
           <p className="text-display mt-5 text-sm font-bold text-foreground">Data da partida</p>
@@ -360,7 +510,9 @@ function MatchesPage() {
           {/* RESUMO */}
           <div className="mt-5 rounded-2xl bg-surface-2 p-4">
             <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Resumo</p>
-            <p className="text-display mt-1 text-lg font-bold text-foreground">Futebol Society</p>
+            <p className="text-display mt-1 break-words text-lg font-bold text-foreground">
+              {matchName.trim() || "Partida sem nome"}
+            </p>
             <p className="text-sm text-muted-foreground">
               {selectedVenue?.name ?? "Selecione uma quadra"}
             </p>
@@ -391,16 +543,6 @@ function MatchesPage() {
             MARCAR PARTIDA
           </Button>
 
-          {!selectedVenue && !venuesQuery.isPending ? (
-            <Button
-              variant="outline"
-              className="press mt-2 h-12 w-full rounded-full"
-              onClick={() => void navigate({ to: "/matches/new" })}
-            >
-              Cadastrar quadra no mapa
-            </Button>
-          ) : null}
-
           {geoStatus === "denied" ? (
             <p className="mt-2 text-center text-xs text-muted-foreground">
               Localização desativada — as distâncias ficam ocultas.
@@ -408,6 +550,104 @@ function MatchesPage() {
           ) : null}
         </div>
       </section>
+
+      <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
+        <DialogContent className="max-h-[92dvh] w-[calc(100%-1rem)] max-w-2xl overflow-y-auto rounded-[2rem] border-primary/15 bg-background p-4 sm:p-6">
+          <DialogHeader className="pr-10 text-left">
+            <DialogTitle className="text-display text-2xl">Adicionar campo</DialogTitle>
+            <DialogDescription>
+              Busque um endereço ou toque no mapa para marcar exatamente onde a bola vai rolar.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="flex gap-2">
+            <Input
+              value={venueSearch}
+              maxLength={160}
+              onChange={(event) => setVenueSearch(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  void findVenueAddress();
+                }
+              }}
+              placeholder="Rua, bairro ou nome do local"
+              aria-label="Buscar endereço do campo"
+              className="h-11 rounded-2xl"
+            />
+            <Button
+              type="button"
+              size="icon"
+              className="size-11 shrink-0 rounded-full"
+              disabled={isSearching}
+              onClick={() => void findVenueAddress()}
+              aria-label="Buscar local no mapa"
+            >
+              {isSearching ? <Loader2 className="size-4 animate-spin" /> : <Search className="size-4" />}
+            </Button>
+          </div>
+
+          <div className="h-64 overflow-hidden rounded-3xl border border-border">
+            <ClientOnly fallback={<Skeleton className="size-full" />}>
+              <MapRadar
+                center={newVenue?.coords ?? (selectedVenue
+                  ? { lat: Number(selectedVenue.latitude), lng: Number(selectedVenue.longitude) }
+                  : center)}
+                me={coords}
+                pins={venuePins}
+                selectedMatchId={newVenue ? "new-venue" : (selectedVenue?.id ?? null)}
+                onSelect={(id) => {
+                  if (id === "new-venue") return;
+                  selectVenue(id);
+                  setNewVenue(null);
+                  setVenueDialogOpen(false);
+                }}
+                onMapClick={(point) => void choosePoint(point)}
+              />
+            </ClientOnly>
+          </div>
+
+          {newVenue ? (
+            <div className="space-y-3 rounded-3xl border border-primary/20 bg-primary/5 p-4">
+              <div>
+                <Label htmlFor="new-venue-name" className="mb-1.5 block">Nome do campo</Label>
+                <Input
+                  id="new-venue-name"
+                  value={newVenue.name}
+                  maxLength={80}
+                  onChange={(event) => setNewVenue({ ...newVenue, name: event.target.value })}
+                  placeholder="Ex.: Campo do bairro"
+                  className="rounded-2xl"
+                />
+              </div>
+              <div>
+                <Label htmlFor="new-venue-address" className="mb-1.5 block">Endereço ou referência</Label>
+                <Input
+                  id="new-venue-address"
+                  value={newVenue.address}
+                  maxLength={180}
+                  onChange={(event) => setNewVenue({ ...newVenue, address: event.target.value })}
+                  placeholder="Ex.: Rua Principal, 120"
+                  className="rounded-2xl"
+                />
+              </div>
+              <Button
+                type="button"
+                className="h-12 w-full rounded-full"
+                disabled={addVenue.isPending || newVenue.name.trim().length < 3 || newVenue.address.trim().length < 3}
+                onClick={() => addVenue.mutate()}
+              >
+                {addVenue.isPending ? <Loader2 className="size-4 animate-spin" /> : <Plus className="size-4" />}
+                Salvar e selecionar campo
+              </Button>
+            </div>
+          ) : (
+            <p className="rounded-2xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+              Toque no mapa para posicionar o novo campo. Você também pode tocar em um campo existente para selecioná-lo.
+            </p>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* LISTAS REAIS */}
       <section className="mx-auto mt-6 max-w-2xl space-y-8 px-4">
