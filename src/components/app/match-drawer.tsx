@@ -516,6 +516,47 @@ export function MatchDrawer({
                 </p>
               ) : null}
 
+              {events.length > 0 ? (
+                <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
+                  <p className="text-xs font-semibold text-foreground">Súmula</p>
+                  <ul className="space-y-2">
+                    {events.map((event) => (
+                      <li key={event.id} className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
+                        <span className="grid size-8 shrink-0 place-items-center rounded-full bg-surface">
+                          {event.event_type === "yellow_card" ? (
+                            <span className="h-4 w-3 rounded-[2px] bg-yellow-400" />
+                          ) : event.event_type === "red_card" ? (
+                            <span className="h-4 w-3 rounded-[2px] bg-red-600" />
+                          ) : (
+                            <Goal className="size-4 text-primary" />
+                          )}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-foreground">
+                            {event.player?.nickname ?? event.player?.full_name ?? "Jogador"}
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            {event.event_type === "goal" ? "Gol" : event.event_type === "yellow_card" ? "Cartão amarelo" : "Cartão vermelho"}
+                            {" · Time "}{event.team_side}{event.minute != null ? ` · ${event.minute}'` : ""}
+                          </p>
+                        </div>
+                        {canEditScore ? (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            aria-label="Remover evento"
+                            disabled={removeEvent.isPending}
+                            onClick={() => removeEvent.mutate(event.id)}
+                          >
+                            <Trash2 className="size-4" />
+                          </Button>
+                        ) : null}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+
               {status === "active" ? (
                 <div className="space-y-3 rounded-2xl border border-border bg-card p-4">
                   {mine ? (
