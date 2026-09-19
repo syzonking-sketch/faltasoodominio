@@ -354,16 +354,6 @@ function MapPage() {
                 type="button"
                 size="icon"
                 variant="secondary"
-                aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
-                onClick={() => setLightMap(!lightMap)}
-                className="press elevate-float pointer-events-auto size-10 rounded-full border border-border/60 bg-surface"
-              >
-                {lightMap ? <Moon className="size-4" /> : <Sun className="size-4" />}
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant="secondary"
                 aria-label="Centralizar no meu GPS"
                 onClick={() => void requestLocation()}
                 className="press elevate-float pointer-events-auto size-10 rounded-full border border-border/60 bg-surface"
