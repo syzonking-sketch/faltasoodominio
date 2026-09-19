@@ -215,15 +215,7 @@ function MatchesPage() {
     <AppShell title="Partidas" bare>
       <div className="radar-immersive -mb-32 min-h-dvh pb-32">
       {/* IMAGEM PRINCIPAL */}
-      <section
-        className="relative h-[46vh] min-h-[320px] w-full overflow-hidden"
-        style={{
-          WebkitMaskImage:
-            "linear-gradient(to bottom, black 0%, black 42%, rgba(0,0,0,0.65) 62%, transparent 78%)",
-          maskImage:
-            "linear-gradient(to bottom, black 0%, black 42%, rgba(0,0,0,0.65) 62%, transparent 78%)",
-        }}
-      >
+      <section className="relative h-[46vh] min-h-[320px] w-full overflow-hidden">
         <img
           src={heroImage}
           alt="Jogador de futebol em ação numa quadra society"
@@ -231,7 +223,7 @@ function MatchesPage() {
           height={1280}
           className="size-full object-cover"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-background" />
 
         <div className="pt-safe absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-3">
           <button
@@ -255,13 +247,7 @@ function MatchesPage() {
 
       {/* PAINEL SOBREPOSTO */}
       <section className="relative z-10 -mt-16 px-3">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 -top-28 h-28 bg-gradient-to-b from-transparent via-background/60 to-background"
-        />
-
-        <div className="relative mx-auto max-w-2xl rounded-[2rem] border border-border/60 bg-card p-5 shadow-[var(--shadow-raised)]">
-
+        <div className="mx-auto max-w-2xl rounded-[2rem] border border-border/60 bg-card p-5 shadow-[var(--shadow-raised)]">
           <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             Futebol society
           </p>
