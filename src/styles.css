@@ -305,6 +305,8 @@
   background: var(--surface-2);
   font-family: var(--font-sans);
   cursor: crosshair !important;
+  /* Mantém as camadas internas do mapa atrás de drawers e diálogos */
+  z-index: 0;
 }
 
 .leaflet-tile-pane {
