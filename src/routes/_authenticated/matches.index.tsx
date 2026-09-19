@@ -338,7 +338,7 @@ function MatchesPage() {
     <AppShell title="Partidas" bare>
       <div className="radar-immersive -mb-32 min-h-dvh pb-32">
       {/* IMAGEM PRINCIPAL */}
-      <section className="relative h-[clamp(19rem,46dvh,34rem)] w-full overflow-hidden">
+      <section className="relative h-[46vh] min-h-[320px] w-full overflow-hidden">
         <img
           src={heroImage}
           alt="Jogador de futebol em ação numa quadra society"
@@ -369,8 +369,8 @@ function MatchesPage() {
       </section>
 
       {/* PAINEL SOBREPOSTO */}
-      <section className="relative z-10 -mt-16 px-2 min-[23rem]:px-3">
-        <div className="mx-auto max-w-2xl rounded-[2rem] border border-border/60 bg-card p-4 shadow-[var(--shadow-raised)] min-[23rem]:p-5">
+      <section className="relative z-10 -mt-16 px-3">
+        <div className="mx-auto max-w-2xl rounded-[2rem] border border-border/60 bg-card p-5 shadow-[var(--shadow-raised)]">
           <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             Futebol society
           </p>

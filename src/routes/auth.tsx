@@ -136,14 +136,14 @@ function AuthPage() {
   }
 
   return (
-    <div className="bg-field flex min-h-[100dvh] flex-col items-center justify-center overflow-x-clip px-4 pt-[calc(max(env(safe-area-inset-top,0px),0px)+2rem)] pb-[calc(max(env(safe-area-inset-bottom,0px),0px)+2rem)]">
+    <div className="bg-field flex min-h-dvh flex-col items-center justify-center px-4 py-10">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <span className="text-display inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
             A Elite da Várzea
           </span>
           <img src={logoAsset.url} alt="Logo" className="mx-auto mb-4 size-24 rounded-2xl border-2 border-primary/20 shadow-lg shadow-primary/10" />
-          <h1 className="text-display mt-4 text-5xl leading-none font-extrabold tracking-tight text-foreground italic sm:text-6xl">
+          <h1 className="text-display mt-4 text-6xl leading-none font-extrabold tracking-tight text-foreground italic">
             THE <span className="text-primary">MATCH</span>
           </h1>
           <p className="mt-2 text-sm font-medium text-muted-foreground uppercase tracking-widest">
@@ -211,7 +211,7 @@ function AuthPage() {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-5 gap-2 min-[23rem]:grid-cols-6">
+                  <div className="grid grid-cols-6 gap-2">
                     {GENERIC_AVATARS.map((avatar) => (
                       <button
                         key={avatar.id}
@@ -249,8 +249,8 @@ function AuthPage() {
                   <Input id="nickname" placeholder="Ronaldinho da Vila" {...signUp.register("nickname")} />
                   <FieldError message={signUp.formState.errors.nickname?.message} />
                 </div>
-                <div className="grid grid-cols-[minmax(0,1fr)_4.5rem] gap-3">
-                  <div>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="col-span-2">
                     <Label htmlFor="city">Cidade</Label>
                     <Input id="city" {...signUp.register("city")} />
                     <FieldError message={signUp.formState.errors.city?.message} />

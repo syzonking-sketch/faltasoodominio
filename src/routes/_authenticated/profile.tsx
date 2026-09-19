@@ -97,7 +97,7 @@ function statusLabel(match: MatchWithRelations) {
 function ProfileSkeleton() {
   return (
     <div className="space-y-6 px-4 pt-safe">
-                 <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4 pt-4">
+      <div className="flex items-start justify-between pt-4">
         <div className="size-16 animate-pulse rounded-full bg-surface-2" />
         <div className="size-12 animate-pulse rounded-full bg-surface-2" />
       </div>
@@ -356,7 +356,7 @@ function ProfilePage() {
                     </Button>
                     <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" className="sr-only" onChange={(event) => void selectAvatar(event.target.files?.[0])} />
                   </div>
-                  <NotificationsBell className="shrink-0" />
+<NotificationsBell />
                 </div>
                 <div className="mt-6 grid grid-cols-[minmax(0,1fr)_auto] items-end gap-4">
                   <div className="min-w-0">

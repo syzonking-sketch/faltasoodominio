@@ -1,8 +1,5 @@
 # Roadmap
 
-- [x] Configurar instalação do The Match como aplicativo móvel pelo manifesto.
-- [x] Respeitar notch, barra inferior e altura dinâmica em celulares e tablets.
-- [x] Adaptar navegação inferior e telas-base para aparelhos estreitos e maiores.
 - [x] Abrir informações completas ao tocar em um time.
 - [x] Permitir ao capitão eliminar o próprio time com confirmação.
 - [x] Atualizar elenco e solicitações imediatamente ao aceitar ou recusar.

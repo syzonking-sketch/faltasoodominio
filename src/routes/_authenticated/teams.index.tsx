@@ -297,8 +297,8 @@ function TeamsPage() {
   return (
     <AppShell title="Times" bare>
       <div className="radar-immersive -mb-32 min-h-dvh overflow-x-clip pb-44">
-        <div className="mx-auto w-full max-w-2xl px-3 min-[23rem]:px-4">
-          <header className="pt-safe grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pb-5">
+        <div className="mx-auto w-full max-w-2xl px-4">
+          <header className="pt-safe flex items-center justify-between gap-3 pb-5">
             <div className="flex min-w-0 items-center gap-2.5">
               <img src={logoAsset.url} alt="The Match" className="size-9 rounded-xl object-cover" />
               <div className="min-w-0">
@@ -401,7 +401,7 @@ function TeamsPage() {
                   <button
                     type="button"
                     onClick={() => setSelectedTeamId(primaryTeam.id)}
-                    className="press elevate-float group relative block h-[clamp(24rem,62dvh,29rem)] w-full overflow-hidden rounded-[2.25rem] border border-border/60 text-left"
+                    className="press elevate-float group relative block h-[29rem] w-full overflow-hidden rounded-[2.25rem] border border-border/60 text-left"
                     aria-label={`Abrir ${primaryTeam.name}`}
                   >
                     <img src={heroImage} alt="Campo de futebol" className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.02]" />
@@ -419,7 +419,7 @@ function TeamsPage() {
                         </div>
                         <div className="min-w-0 pb-1">
                           <p className="mb-1 text-xs font-semibold text-primary">{primaryTeam.captain_id === user?.id ? "CAPITÃO" : "NO ELENCO"}</p>
-                          <h2 className="text-display break-words text-3xl leading-[0.96] font-extrabold text-foreground [overflow-wrap:anywhere] min-[23rem]:text-[2.25rem]">{primaryTeam.name}</h2>
+                          <h2 className="text-display break-words text-[2.25rem] leading-[0.92] font-extrabold text-foreground">{primaryTeam.name}</h2>
                         </div>
                       </div>
                       <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/50 pt-4 text-xs font-semibold text-foreground/90">

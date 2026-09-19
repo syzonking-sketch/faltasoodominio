@@ -212,7 +212,7 @@ function MapPage() {
   return (
     <AppShell title="Radar" bare>
       <div className="radar-immersive -mb-32 min-h-dvh pb-32">
-      <div className="mx-auto w-full max-w-2xl overflow-x-clip px-3 min-[23rem]:px-4">
+      <div className="mx-auto w-full max-w-2xl overflow-x-clip px-4">
 
         <header className="pt-safe pb-6">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
@@ -222,7 +222,7 @@ function MapPage() {
             </div>
             <NotificationsBell className="size-11 shrink-0 border-border/50 bg-surface/90" />
           </div>
-          <h1 className="text-display mt-7 text-3xl leading-[1.04] font-extrabold tracking-tight text-foreground min-[23rem]:text-[2.35rem]">
+          <h1 className="text-display mt-7 text-[2.35rem] leading-[1.04] font-extrabold tracking-tight text-foreground">
             <span className="text-primary">{greeting}</span>
             <br />
             {displayName}
@@ -303,7 +303,7 @@ function MapPage() {
           )}
         </form>
 
-        <div className="elevate-soft relative h-[clamp(13rem,36dvh,15rem)] w-full overflow-hidden rounded-[2rem] border border-border/50">
+        <div className="elevate-soft relative h-[15rem] w-full overflow-hidden rounded-[2rem] border border-border/50">
           <ClientOnly fallback={<Skeleton className="h-full w-full rounded-none" />}>
             <MapRadar
               center={center}
@@ -380,7 +380,7 @@ function MapPage() {
         ) : null}
       </div>
 
-      <div className="mx-auto max-w-2xl px-3 pt-7 pb-36 min-[23rem]:px-4">
+      <div className="mx-auto max-w-2xl px-4 pt-7 pb-36">
         <div className="mb-5 flex items-center justify-between gap-3">
           <div className="min-w-0">
             <h2 className="text-display text-[1.6rem] leading-tight font-extrabold tracking-tight text-foreground">Acontecendo<br />perto de você</h2>
