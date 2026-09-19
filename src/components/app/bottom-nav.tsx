@@ -46,35 +46,50 @@ export function BottomNav() {
       )}
     >
       <ul className="mx-auto flex h-20 w-full max-w-96 items-center justify-center gap-1 rounded-full border border-nav-foreground/10 bg-nav/95 px-1.5 py-2 shadow-float backdrop-blur-xl min-[360px]:gap-1.5 min-[360px]:px-2">
-        {tabs.map(({ to, label, icon: Icon }) => (
-          <li key={to} className="min-w-0">
-            <Link
-              to={to}
-              activeOptions={{ exact: to === "/" }}
-              tabIndex={hidden ? -1 : undefined}
-              className="press group flex size-11 min-w-0 items-center justify-center overflow-hidden rounded-full bg-nav-foreground/10 text-nav-foreground outline-none transition-[width,background-color,color,box-shadow] duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary min-[360px]:size-[3.15rem]"
-              activeProps={{
-                className: "h-11 w-[5.75rem] bg-primary text-primary-foreground shadow-raised min-[360px]:h-[3.15rem] min-[360px]:w-[6.75rem]",
-              }}
-            >
-              {({ isActive }) => (
-                <>
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-full min-[360px]:size-10">
-                    <Icon
-                      className="size-[1.3rem] transition-transform duration-300 group-hover:scale-105 min-[360px]:size-6"
-                      strokeWidth={isActive ? 2.1 : 1.7}
-                    />
-                  </span>
-                  <span
-                    className={`text-display overflow-hidden text-[0.6435rem] leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 min-[360px]:text-[0.7425rem] ${isActive ? "mr-3 w-auto opacity-100 min-[360px]:mr-4" : "m-0 w-0 opacity-0"}`}
-                  >
-                    {label.toUpperCase()}
-                  </span>
-                </>
-              )}
-            </Link>
-          </li>
-        ))}
+        {tabs.map(({ to, label, icon: Icon }) => {
+          const longLabel = label.length > 6;
+
+          return (
+            <li key={to} className="min-w-0">
+              <Link
+                to={to}
+                activeOptions={{ exact: to === "/" }}
+                tabIndex={hidden ? -1 : undefined}
+                className="press group flex size-[clamp(2.75rem,13.4vw,3.15rem)] min-w-0 items-center justify-center overflow-hidden rounded-full bg-nav-foreground/10 text-nav-foreground outline-none transition-[width,background-color,color,box-shadow] duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary"
+                activeProps={{
+                  className: cn(
+                    "bg-primary text-primary-foreground shadow-raised",
+                    longLabel
+                      ? "w-[clamp(5.95rem,28.6vw,7.1rem)]"
+                      : "w-[clamp(5.75rem,27.5vw,6.75rem)]",
+                  ),
+                }}
+              >
+                {({ isActive }) => (
+                  <>
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full min-[360px]:size-10">
+                      <Icon
+                        className="size-[1.3rem] transition-transform duration-300 group-hover:scale-105 min-[360px]:size-6"
+                        strokeWidth={isActive ? 2.1 : 1.7}
+                      />
+                    </span>
+                    <span
+                      className={`text-display overflow-hidden text-[10px] leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 min-[360px]:text-[11px] ${
+                        isActive
+                          ? longLabel
+                            ? "mr-2 w-auto opacity-100 min-[360px]:mr-3"
+                            : "mr-2 w-auto opacity-100 min-[360px]:mr-2"
+                          : "m-0 w-0 opacity-0"
+                      }`}
+                    >
+                      {label.toUpperCase()}
+                    </span>
+                  </>
+                )}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </nav>
   );
