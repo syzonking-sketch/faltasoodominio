@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { ArrowLeft, CalendarCheck, ChevronDown, Loader2, LocateFixed, MapPin, Plus, Radio, Search } from "lucide-react";
+import { ArrowLeft, CalendarCheck, ChevronDown, Loader2, LocateFixed, MapPin, Minus, Plus, Radio, Search, Settings2 } from "lucide-react";
 import { lazy, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -139,6 +139,9 @@ function MatchesPage() {
   const [venueDialogOpen, setVenueDialogOpen] = useState(false);
   const [venueSearch, setVenueSearch] = useState("");
   const [matchName, setMatchName] = useState("");
+  const [playersCount, setPlayersCount] = useState(10);
+  const [durationMin, setDurationMin] = useState(60);
+  const [configOpen, setConfigOpen] = useState(false);
   const [newVenue, setNewVenue] = useState<{
     name: string;
     address: string;
@@ -305,7 +308,7 @@ function MatchesPage() {
       if (slotHour == null) throw new Error("Escolha um horário disponível.");
       const start = new Date(selectedDay);
       start.setHours(slotHour, 0, 0, 0);
-      const end = new Date(start.getTime() + 60 * 60_000);
+      const end = new Date(start.getTime() + durationMin * 60_000);
       return createMatch({
         venue_id: selectedVenue.id,
         created_by: user.id,
@@ -316,7 +319,7 @@ function MatchesPage() {
         checked_in_gps: distanceToVenue != null && distanceToVenue <= GPS_CHECKIN_RADIUS,
         scheduled_at: start.toISOString(),
         finished_at: end.toISOString(),
-        max_players: 10,
+        max_players: playersCount,
         creator_is_scorekeeper: true,
       });
     },
@@ -509,9 +512,20 @@ function MatchesPage() {
             </p>
           ) : null}
 
-          {/* RESUMO */}
-          <div className="mt-5 rounded-2xl bg-surface-2 p-4">
-            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Resumo</p>
+          {/* RESUMO — toque para ajustar jogadores e duração */}
+          <button
+            type="button"
+            onClick={() => setConfigOpen(true)}
+            aria-label="Ajustar número de jogadores e tempo de partida"
+            className="press mt-5 w-full rounded-2xl bg-surface-2 p-4 text-left transition-colors hover:bg-surface-2/80"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Resumo</p>
+              <span className="flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                <Settings2 className="size-3" />
+                Ajustar
+              </span>
+            </div>
             <p className="text-display mt-1 break-words text-lg font-bold text-foreground">
               {matchName.trim() || "Partida sem nome"}
             </p>
@@ -525,11 +539,13 @@ function MatchesPage() {
                 month: "long",
               })}
               {slotHour != null
-                ? ` • ${String(slotHour).padStart(2, "0")}:00 — ${String(slotHour + 1).padStart(2, "0")}:00`
+                ? ` • ${String(slotHour).padStart(2, "0")}:00 — ${String(Math.floor((slotHour * 60 + durationMin) / 60) % 24).padStart(2, "0")}:${String((slotHour * 60 + durationMin) % 60).padStart(2, "0")}`
                 : " • escolha um horário"}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">1/10 jogadores ao criar</p>
-          </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              1/{playersCount} jogadores ao criar • {durationMin} min de jogo
+            </p>
+          </button>
 
           <Button
             size="lg"
@@ -552,6 +568,78 @@ function MatchesPage() {
           ) : null}
         </div>
       </section>
+
+      <Dialog open={configOpen} onOpenChange={setConfigOpen}>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-[2rem] border-primary/15 bg-background p-6">
+          <DialogHeader className="text-left">
+            <DialogTitle className="text-display text-xl">Ajustar partida</DialogTitle>
+            <DialogDescription>Defina quantos jogadores cabem e quanto tempo a bola rola.</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between rounded-2xl bg-surface-2 p-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">Jogadores</p>
+                <p className="text-xs text-muted-foreground">Máximo na partida</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  aria-label="Diminuir jogadores"
+                  disabled={playersCount <= 2}
+                  onClick={() => setPlayersCount((value) => Math.max(2, value - 2))}
+                >
+                  <Minus className="size-4" />
+                </Button>
+                <span className="text-display min-w-8 text-center text-2xl font-extrabold tabular-nums text-foreground">
+                  {playersCount}
+                </span>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  aria-label="Aumentar jogadores"
+                  disabled={playersCount >= 30}
+                  onClick={() => setPlayersCount((value) => Math.min(30, value + 2))}
+                >
+                  <Plus className="size-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="rounded-2xl bg-surface-2 p-4">
+              <p className="text-sm font-semibold text-foreground">Tempo de partida</p>
+              <p className="text-xs text-muted-foreground">A partida encerra sozinha ao fim</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {[30, 60, 90, 120].map((minutes) => (
+                  <button
+                    key={minutes}
+                    type="button"
+                    onClick={() => setDurationMin(minutes)}
+                    className={`press rounded-full border px-4 py-2 text-sm font-semibold tabular-nums ${
+                      durationMin === minutes
+                        ? "border-transparent bg-primary text-primary-foreground"
+                        : "border-border/60 bg-secondary text-foreground"
+                    }`}
+                  >
+                    {minutes} min
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <Button
+              size="lg"
+              className="press h-12 w-full rounded-full text-sm font-bold"
+              onClick={() => setConfigOpen(false)}
+            >
+              PRONTO
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={venueDialogOpen} onOpenChange={setVenueDialogOpen}>
         <DialogContent className="max-h-[92dvh] w-[calc(100%-1rem)] max-w-2xl overflow-y-auto rounded-[2rem] border-primary/15 bg-background p-4 sm:p-6">
