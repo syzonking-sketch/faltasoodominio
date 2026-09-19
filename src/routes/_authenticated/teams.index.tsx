@@ -578,7 +578,24 @@ function TeamsPage() {
                   </section>
                   {isCaptain && pending.length ? <section><h3 className="mb-2 text-sm font-semibold">Solicitações ({pending.length})</h3><div className="space-y-2">{pending.map((member) => <div key={member.id} className="flex items-center gap-2 rounded-2xl border border-border p-2"><PlayerAvatar name={member.profile?.full_name ?? "Boleiro"} nickname={member.profile?.nickname ?? null} photoUrl={member.profile?.avatar_url ?? null} size="sm" /><span className="min-w-0 flex-1 truncate text-sm font-medium">{member.profile?.nickname ?? member.profile?.full_name ?? "Boleiro"}</span><Button size="icon" variant="secondary" aria-label="Aprovar solicitação" disabled={approve.isPending || reject.isPending} onClick={() => approve.mutate(member.id)}><Check className="size-4" /></Button><Button size="icon" variant="ghost" aria-label="Recusar solicitação" disabled={approve.isPending || reject.isPending} onClick={() => reject.mutate(member.id)}><X className="size-4" /></Button></div>)}</div></section> : null}
                   {!isCaptain && !myMembership ? <Button className="w-full rounded-full" disabled={join.isPending} onClick={() => join.mutate(selectedTeam.id)}><UserPlus className="size-4" /> Solicitar entrada</Button> : null}
-                  {isCaptain ? <AlertDialog><AlertDialogTrigger asChild><Button variant="destructive" className="w-full rounded-full" disabled={removeTeam.isPending}><Trash2 className="size-4" /> Eliminar time</Button></AlertDialogTrigger><AlertDialogContent className="max-w-[90vw] rounded-3xl sm:max-w-md"><AlertDialogHeader><AlertDialogTitle>Eliminar {selectedTeam.name}?</AlertDialogTitle><AlertDialogDescription>O time, o elenco e as solicitações serão removidos definitivamente.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel>Cancelar</AlertDialogCancel><AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90" onClick={() => removeTeam.mutate(selectedTeam.id)}>Eliminar time</AlertDialogAction></AlertDialogFooter></AlertDialogContent></AlertDialog> : null}
+                  {isCaptain ? (
+                    confirmingDeleteId === selectedTeam.id ? (
+                      <div className="space-y-3 rounded-2xl border border-destructive/40 bg-destructive/10 p-4">
+                        <p className="text-sm font-bold text-foreground">Eliminar {selectedTeam.name}?</p>
+                        <p className="text-xs text-muted-foreground">O time, o elenco e as solicitações serão removidos definitivamente.</p>
+                        <div className="flex gap-2">
+                          <Button variant="secondary" className="h-11 flex-1 rounded-full" disabled={removeTeam.isPending} onClick={() => setConfirmingDeleteId(null)}>Cancelar</Button>
+                          <Button variant="destructive" className="h-11 flex-1 rounded-full" disabled={removeTeam.isPending} onClick={() => removeTeam.mutate(selectedTeam.id)}>
+                            {removeTeam.isPending ? <Loader2 className="size-4 animate-spin" /> : <Trash2 className="size-4" />} Confirmar
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <Button variant="destructive" className="w-full rounded-full" disabled={removeTeam.isPending} onClick={() => setConfirmingDeleteId(selectedTeam.id)}>
+                        <Trash2 className="size-4" /> Eliminar time
+                      </Button>
+                    )
+                  ) : null}
                 </div>
               </>
             );
