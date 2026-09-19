@@ -230,16 +230,50 @@
 
 
 @layer base {
+  html {
+    min-width: 20rem;
+    min-height: 100%;
+    overflow-x: clip;
+    background-color: var(--color-background);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   * {
     border-color: var(--color-border);
+    min-width: 0;
   }
 
   body {
+    width: 100%;
+    min-width: 20rem;
+    min-height: 100dvh;
+    overflow-x: clip;
     background-color: var(--color-background);
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     overscroll-behavior-y: none;
+  }
+
+  button,
+  a,
+  input,
+  select,
+  textarea {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  a {
+    touch-action: manipulation;
+  }
+
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
   }
 
   h1,
@@ -255,12 +289,20 @@
   }
 }
 
+@media (max-width: 47.999rem) {
+  input,
+  select,
+  textarea {
+    font-size: 1rem;
+  }
+}
+
 @utility pb-safe {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+  padding-bottom: calc(max(env(safe-area-inset-bottom, 0px), 0px) + 0.5rem);
 }
 
 @utility pt-safe {
-  padding-top: calc(env(safe-area-inset-top, 0px) + 0.5rem);
+  padding-top: calc(max(env(safe-area-inset-top, 0px), 0px) + 0.5rem);
 }
 
 @utility text-display {

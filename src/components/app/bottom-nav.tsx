@@ -39,34 +39,34 @@ export function BottomNav() {
       aria-label="Navegação principal"
       aria-hidden={hidden}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-500 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] transition-[transform,opacity] duration-300 ease-out",
+        "fixed inset-x-0 bottom-0 z-500 px-2 pb-[calc(max(env(safe-area-inset-bottom,0px),0px)+0.625rem)] transition-[transform,opacity] duration-300 ease-out sm:px-4 sm:pb-[calc(max(env(safe-area-inset-bottom,0px),0px)+0.75rem)]",
         hidden
           ? "pointer-events-none translate-y-[calc(100%+1.5rem)] opacity-0"
           : "translate-y-0 opacity-100",
       )}
     >
-      <ul className="mx-auto flex h-[4.75rem] w-full max-w-[23rem] items-center justify-center gap-1.5 rounded-full border border-nav-foreground/10 bg-nav/95 px-2 py-2 shadow-float backdrop-blur-xl">
+      <ul className="mx-auto grid h-[4.5rem] w-full max-w-[23rem] grid-cols-5 items-center gap-1 rounded-full border border-nav-foreground/10 bg-nav/95 px-1.5 py-2 shadow-float backdrop-blur-xl sm:h-[4.75rem] sm:gap-1.5 sm:px-2">
         {tabs.map(({ to, label, icon: Icon }) => (
-          <li key={to} className="min-w-0">
+          <li key={to} className="flex min-w-0 justify-center">
             <Link
               to={to}
               activeOptions={{ exact: to === "/" }}
               tabIndex={hidden ? -1 : undefined}
-              className="press group flex size-12 min-w-0 items-center justify-center overflow-hidden rounded-full bg-nav-foreground/10 text-nav-foreground outline-none transition-[width,background-color,color,box-shadow] duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary"
+              className="press group flex size-11 min-w-0 items-center justify-center overflow-hidden rounded-full bg-nav-foreground/10 text-nav-foreground outline-none transition-[width,background-color,color,box-shadow] duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary sm:size-12"
               activeProps={{
-                className: "h-12 w-[6.6rem] bg-primary text-primary-foreground shadow-raised",
+                className: "h-11 w-full bg-primary text-primary-foreground shadow-raised sm:h-12",
               }}
             >
               {({ isActive }) => (
                 <>
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full sm:size-10">
                     <Icon
                       className="size-[1.35rem] transition-transform duration-300 group-hover:scale-105 sm:size-6"
                       strokeWidth={isActive ? 2.1 : 1.7}
                     />
                   </span>
                   <span
-                    className={`text-display overflow-hidden text-xs leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 ${isActive ? "mr-4 w-auto opacity-100" : "m-0 w-0 opacity-0"}`}
+                    className={`text-display overflow-hidden text-[0.625rem] leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 sm:text-xs ${isActive ? "mr-2 w-auto opacity-100 sm:mr-3" : "m-0 w-0 opacity-0"}`}
                   >
                     {label.toUpperCase()}
                   </span>

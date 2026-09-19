@@ -197,7 +197,7 @@ function RankingPage() {
       <div className="radar-immersive -mb-32 min-h-dvh overflow-x-hidden pb-40">
         <div className="mx-auto max-w-2xl">
           <header className="px-4 pt-safe">
-            <div className="flex items-center justify-between pt-4">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 pt-4">
               <div className="flex min-w-0 items-center gap-3">
                 <PlayerAvatar
                   name={profile?.full_name ?? "Jogador"}
@@ -211,7 +211,7 @@ function RankingPage() {
                   <h1 className="text-display truncate text-3xl leading-none font-bold text-foreground">Ranking</h1>
                 </div>
               </div>
-<NotificationsBell />
+              <NotificationsBell className="shrink-0" />
             </div>
             <p className="mt-5 text-base text-muted-foreground">Os melhores da partida.</p>
           </header>
