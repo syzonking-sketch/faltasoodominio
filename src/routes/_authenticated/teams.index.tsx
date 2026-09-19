@@ -523,7 +523,7 @@ function TeamsPage() {
               ) : null}
 
               <section id="descobrir-times" className="mt-10 scroll-mt-6">
-                <div className="mb-4 flex items-end justify-between gap-3"><div><p className="text-[10px] font-bold tracking-[0.16em] text-primary uppercase">Futebol na região</p><h2 className="text-display text-2xl font-extrabold">Descobrir times</h2></div><Sparkles className="size-5 text-primary" /></div>
+                <div className="mb-4"><p className="text-[10px] font-bold tracking-[0.16em] text-primary uppercase">Futebol na região</p><h2 className="text-display text-2xl font-extrabold">Descobrir times</h2></div>
                 {categorized.discover.length === 0 ? (
                   <div className="rounded-[1.75rem] border border-dashed border-border bg-surface/60 p-6 text-center"><Users className="mx-auto size-7 text-primary" /><p className="mt-2 font-bold">Nenhum outro time disponível</p><p className="mt-1 text-xs text-muted-foreground">Novos times da comunidade aparecerão aqui.</p></div>
                 ) : (
