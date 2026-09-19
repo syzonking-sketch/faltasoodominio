@@ -254,7 +254,12 @@ function MatchesPage() {
 
       {/* PAINEL SOBREPOSTO */}
       <section className="relative z-10 -mt-16 px-3">
-        <div className="mx-auto max-w-2xl rounded-[2rem] border border-border/60 bg-card p-5 shadow-[var(--shadow-raised)]">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 -top-28 h-28 bg-gradient-to-b from-transparent via-background/45 to-background/85"
+        />
+        <div className="relative mx-auto max-w-2xl rounded-[2rem] border border-border/60 bg-card p-5 shadow-[var(--shadow-raised)]">
+
           <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             Futebol society
           </p>
