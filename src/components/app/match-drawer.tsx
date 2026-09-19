@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Flag, Loader2, MapPin, Users, Eye, Ban, ShieldCheck } from "lucide-react";
+import { CheckCircle2, Flag, Loader2, MapPin, Users, Eye, Ban, ShieldCheck, X } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Drawer,
+  DrawerClose,
   DrawerContent,
   DrawerDescription,
   DrawerHeader,
@@ -248,15 +249,32 @@ export function MatchDrawer({
 
   return (
     <Drawer open={Boolean(matchId)} onOpenChange={onOpenChange}>
-      <DrawerContent className="max-h-[calc(100dvh-env(safe-area-inset-top,0px)-0.75rem)]">
+      <DrawerContent className="max-h-[calc(100dvh-env(safe-area-inset-top,0px)-0.75rem)] rounded-t-[2rem] border-x border-t border-primary/15 bg-background/95 shadow-2xl backdrop-blur-xl">
+        <DrawerClose asChild>
+          <Button
+            type="button"
+            size="icon"
+            variant="secondary"
+            aria-label="Fechar detalhes da partida"
+            title="Fechar"
+            className="absolute right-4 top-4 z-30 size-11 rounded-full border border-border bg-surface-2 shadow-lg"
+          >
+            <X className="size-5" />
+          </Button>
+        </DrawerClose>
+
         <div className="mx-auto min-h-0 w-full max-w-2xl flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))]">
-          <DrawerHeader className="px-0">
-            <DrawerTitle className="text-display text-2xl">
+          <DrawerHeader className="border-b border-border/60 px-0 pb-4 pr-14 pt-3 text-left">
+            <div className="mb-1 flex items-center gap-2">
+              <span className="size-2 rounded-full bg-primary shadow-[0_0_14px_var(--primary)]" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-primary">Detalhes da partida</span>
+            </div>
+            <DrawerTitle className="text-display break-words text-2xl leading-tight">
               {match?.venue?.name ?? "Súmula digital"}
             </DrawerTitle>
-            <DrawerDescription className="flex items-center gap-1.5 text-xs">
-              <MapPin className="size-3.5" />
-              {match?.venue?.address ?? "Carregando dados da partida…"}
+            <DrawerDescription className="mt-1 flex items-start gap-1.5 text-xs leading-relaxed">
+              <MapPin className="mt-0.5 size-3.5 shrink-0 text-primary" />
+              <span className="break-words">{match?.venue?.address ?? "Carregando dados da partida…"}</span>
             </DrawerDescription>
           </DrawerHeader>
 
@@ -271,9 +289,10 @@ export function MatchDrawer({
             <ErrorState message="Partida não encontrada." />
           ) : (
             <div className="space-y-5">
-              <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4">
+              <div className="relative flex items-center justify-between overflow-hidden rounded-3xl border border-primary/15 bg-card p-5 shadow-lg">
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-primary/60" />
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Time A</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Time A</p>
                   <p className="text-display text-4xl font-extrabold text-foreground">
                     {match.score_team_a}
                   </p>
@@ -311,7 +330,7 @@ export function MatchDrawer({
                   </div>
                 </div>
                 <div className="text-center">
-                  <p className="text-xs text-muted-foreground">Time B</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Time B</p>
                   <p className="text-display text-4xl font-extrabold text-foreground">
                     {match.score_team_b}
                   </p>
