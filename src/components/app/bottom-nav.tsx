@@ -39,35 +39,33 @@ export function BottomNav() {
       aria-label="Navegação principal"
       aria-hidden={hidden}
       className={cn(
-        "fixed inset-x-0 bottom-0 z-500 px-2 pb-[calc(max(env(safe-area-inset-bottom,0px),0px)+0.625rem)] transition-[transform,opacity] duration-300 ease-out sm:px-4 sm:pb-[calc(max(env(safe-area-inset-bottom,0px),0px)+0.75rem)]",
+        "fixed inset-x-0 bottom-0 z-500 px-2.5 pb-[calc(max(env(safe-area-inset-bottom,0px),0px)+0.625rem)] transition-[transform,opacity] duration-300 ease-out min-[400px]:px-3 sm:px-4 sm:pb-[calc(max(env(safe-area-inset-bottom,0px),0px)+0.75rem)]",
         hidden
           ? "pointer-events-none translate-y-[calc(100%+1.5rem)] opacity-0"
           : "translate-y-0 opacity-100",
       )}
     >
-      <ul className="mx-auto grid h-[4.5rem] w-full max-w-[23rem] grid-cols-5 items-center gap-1 rounded-full border border-nav-foreground/10 bg-nav/95 px-1.5 py-2 shadow-float backdrop-blur-xl sm:h-[4.75rem] sm:gap-1.5 sm:px-2">
+      <ul className="mx-auto grid h-[4.875rem] w-full max-w-[32rem] grid-cols-5 items-stretch gap-0.5 rounded-full border border-nav-foreground/10 bg-nav/95 p-1.5 shadow-float backdrop-blur-xl min-[360px]:h-[5.125rem] min-[360px]:gap-1 min-[360px]:p-2 sm:h-[5.375rem] sm:gap-1.5">
         {tabs.map(({ to, label, icon: Icon }) => (
-          <li key={to} className="flex min-w-0 justify-center">
+          <li key={to} className="flex min-w-0 items-stretch justify-center">
             <Link
               to={to}
               activeOptions={{ exact: to === "/" }}
               tabIndex={hidden ? -1 : undefined}
-              className="press group flex size-11 min-w-0 items-center justify-center overflow-hidden rounded-full bg-nav-foreground/10 text-nav-foreground outline-none transition-[width,background-color,color,box-shadow] duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary sm:size-12"
+              className="press group flex h-full w-full min-w-0 flex-col items-center justify-center gap-0.5 overflow-hidden rounded-full bg-transparent px-0.5 text-nav-foreground/75 outline-none transition-[background-color,color,box-shadow] duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary min-[360px]:gap-1 sm:px-1"
               activeProps={{
-                className: "h-11 w-full bg-primary text-primary-foreground shadow-raised sm:h-12",
+                className: "bg-primary text-primary-foreground shadow-raised",
               }}
             >
               {({ isActive }) => (
                 <>
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full sm:size-10">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full min-[360px]:size-8 sm:size-9">
                     <Icon
-                      className="size-[1.35rem] transition-transform duration-300 group-hover:scale-105 sm:size-6"
+                      className="size-5 transition-transform duration-300 group-hover:scale-105 min-[360px]:size-[1.35rem] sm:size-6"
                       strokeWidth={isActive ? 2.1 : 1.7}
                     />
                   </span>
-                  <span
-                    className={`text-display overflow-hidden text-[0.625rem] leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 sm:text-xs ${isActive ? "mr-2 w-auto opacity-100 sm:mr-3" : "m-0 w-0 opacity-0"}`}
-                  >
+                  <span className="text-display block w-full overflow-hidden text-center text-[0.5625rem] leading-none font-bold whitespace-nowrap min-[360px]:text-[0.625rem] min-[400px]:text-[0.6875rem] sm:text-xs">
                     {label.toUpperCase()}
                   </span>
                 </>
