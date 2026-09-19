@@ -354,7 +354,6 @@ function TeamsPage() {
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="text-sm font-semibold text-foreground">{shieldPreview ? "Escudo pronto" : "Adicionar escudo"}</p>
-                          <p className="text-xs text-muted-foreground">A imagem será recortada e comprimida automaticamente.</p>
                         </div>
                         <Button
                           type="button"
