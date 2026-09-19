@@ -60,6 +60,8 @@ export function MatchDrawer({
   const [selectedPlayer, setSelectedPlayer] = useState<Profile | null>(null);
   const [cardPlayerA, setCardPlayerA] = useState("");
   const [cardPlayerB, setCardPlayerB] = useState("");
+  const [scorerA, setScorerA] = useState("");
+  const [scorerB, setScorerB] = useState("");
 
   // Com o painel de detalhes aberto, a navegação inferior sai de cena e
   // volta quando o painel é fechado.
@@ -114,7 +116,7 @@ export function MatchDrawer({
   const events = eventsQuery.data ?? [];
 
   const addEvent = useMutation({
-    mutationFn: (input: { playerId: string; teamSide: TeamSide; eventType: "yellow_card" | "red_card" }) => {
+    mutationFn: (input: { playerId: string; teamSide: TeamSide; eventType: "goal" | "yellow_card" | "red_card" }) => {
       if (!matchId) throw new Error("Partida não carregada.");
       return addMatchEvent({
         match_id: matchId,
@@ -124,7 +126,13 @@ export function MatchDrawer({
       });
     },
     onSuccess: (_, input) => {
-      toast.success(input.eventType === "yellow_card" ? "Cartão amarelo aplicado." : "Cartão vermelho aplicado.");
+      toast.success(
+        input.eventType === "goal"
+          ? "Gol registrado na súmula!"
+          : input.eventType === "yellow_card"
+            ? "Cartão amarelo aplicado."
+            : "Cartão vermelho aplicado.",
+      );
       if (input.teamSide === "A") setCardPlayerA("");
       else setCardPlayerB("");
       invalidate();
