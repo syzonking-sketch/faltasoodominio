@@ -330,7 +330,7 @@ function MapPage() {
           )}
         </form>
 
-        <div className="elevate-soft relative h-[64dvh] min-h-[470px] max-h-[650px] w-full overflow-hidden rounded-[2rem] border border-border/50">
+        <div className="elevate-soft relative h-[15rem] w-full overflow-hidden rounded-[2rem] border border-border/50">
           <ClientOnly fallback={<Skeleton className="h-full w-full rounded-none" />}>
             <MapRadar
               center={center}
@@ -348,17 +348,17 @@ function MapPage() {
             />
           </ClientOnly>
 
-          <div className={`pointer-events-none absolute inset-x-4 z-400 flex items-end justify-between gap-3 transition-all duration-300 ${selectedMatch ? "bottom-[13.75rem]" : "bottom-4"}`}>
-            <div className="flex flex-col gap-2">
+          <div className="pointer-events-none absolute inset-x-3 bottom-3 z-400 flex items-end justify-between gap-2">
+            <div className="flex gap-2">
               <Button
                 type="button"
                 size="icon"
                 variant="secondary"
                 aria-label={lightMap ? "Mudar para mapa escuro" : "Mudar para mapa claro"}
                 onClick={() => setLightMap(!lightMap)}
-                className="press elevate-float pointer-events-auto size-12 rounded-full border border-border/60 bg-surface"
+                className="press elevate-float pointer-events-auto size-10 rounded-full border border-border/60 bg-surface"
               >
-                {lightMap ? <Moon className="size-5" /> : <Sun className="size-5" />}
+                {lightMap ? <Moon className="size-4" /> : <Sun className="size-4" />}
               </Button>
               <Button
                 type="button"
@@ -366,24 +366,25 @@ function MapPage() {
                 variant="secondary"
                 aria-label="Centralizar no meu GPS"
                 onClick={() => void requestLocation()}
-                className="press elevate-float pointer-events-auto size-12 rounded-full border border-border/60 bg-surface"
+                className="press elevate-float pointer-events-auto size-10 rounded-full border border-border/60 bg-surface"
               >
-                <Crosshair className="size-5 text-primary" />
+                <Crosshair className="size-4 text-primary" />
               </Button>
             </div>
-            {!selectedMatch ? <Link to="/matches/new" className="press elevate-float pointer-events-auto inline-flex h-14 items-center justify-center gap-2 rounded-full bg-primary px-6 text-base font-bold text-primary-foreground" aria-label="Criar nova partida"><Plus className="size-5" /> Criar partida</Link> : null}
+            <Link to="/matches/new" className="press elevate-float pointer-events-auto inline-flex h-11 items-center justify-center gap-1.5 rounded-full bg-primary px-5 text-sm font-bold text-primary-foreground" aria-label="Criar nova partida"><Plus className="size-4" /> Criar partida</Link>
           </div>
-          {selectedMatch ? (
-            <div className="absolute inset-x-3 bottom-3 z-410">
-              <Button type="button" size="icon" variant="secondary" onClick={() => setSelected(null)} aria-label="Fechar partida selecionada" className="elevate-float absolute top-3 right-3 z-10 size-9 rounded-full bg-surface/90 backdrop-blur"><X className="size-4" /></Button>
-              <RadarMatchCard
-                match={selectedMatch}
-                distance={coords && selectedMatch.venue ? distanceMeters(coords, { lat: Number(selectedMatch.venue.latitude), lng: Number(selectedMatch.venue.longitude) }) : null}
-                onSelect={setDetailMatch}
-              />
-            </div>
-          ) : null}
         </div>
+
+        {selectedMatch ? (
+          <div className="relative mt-3">
+            <Button type="button" size="icon" variant="secondary" onClick={() => setSelected(null)} aria-label="Fechar partida selecionada" className="elevate-float absolute top-3 right-3 z-10 size-9 rounded-full bg-surface/90 backdrop-blur"><X className="size-4" /></Button>
+            <RadarMatchCard
+              match={selectedMatch}
+              distance={coords && selectedMatch.venue ? distanceMeters(coords, { lat: Number(selectedMatch.venue.latitude), lng: Number(selectedMatch.venue.longitude) }) : null}
+              onSelect={setDetailMatch}
+            />
+          </div>
+        ) : null}
 
         {status === "checking" || status === "prompt" || status === "requesting" ? (
           <div className="elevate-soft rise-in mt-3 rounded-3xl border border-border/60 bg-surface px-4 py-3 text-[11px] text-foreground">
