@@ -222,8 +222,15 @@ function MatchesPage() {
           width={1024}
           height={1280}
           className="size-full object-cover"
+          style={{
+            WebkitMaskImage:
+              "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.55) 72%, transparent 96%)",
+            maskImage:
+              "linear-gradient(to bottom, black 0%, black 45%, rgba(0,0,0,0.55) 72%, transparent 96%)",
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/10 to-transparent" />
+
 
         <div className="pt-safe absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-3">
           <button
