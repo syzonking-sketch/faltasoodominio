@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, Crosshair, Plus, Radar, Search, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { Crosshair, Plus, Radar, Search, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { NotificationsBell } from "@/components/app/notifications-bell";
 import { lazy, useMemo, useState, useCallback } from "react";
 
 import { AppShell } from "@/components/app/app-shell";
@@ -221,9 +222,7 @@ function MapPage() {
               <img src={logoAsset.url} alt="The Match" className="size-7 shrink-0 rounded-lg object-cover" />
               <span className="text-display truncate text-sm font-bold tracking-tight text-foreground">The Match</span>
             </div>
-            <Link to="/matches" aria-label="Notificações" className="press elevate-soft grid size-11 shrink-0 place-items-center rounded-full border border-border/50 bg-surface/90 backdrop-blur-xl">
-              <Bell className="size-5 text-foreground" />
-            </Link>
+            <NotificationsBell className="size-11 shrink-0 border-border/50 bg-surface/90" />
           </div>
           <h1 className="text-display mt-7 text-[2.35rem] leading-[1.04] font-extrabold tracking-tight text-foreground">
             <span className="text-primary">{greeting}</span>
