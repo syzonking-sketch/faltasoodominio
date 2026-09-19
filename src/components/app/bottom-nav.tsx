@@ -1,6 +1,9 @@
 import { Link } from "@tanstack/react-router";
 import { MapPin, Trophy, UserRound, UsersRound } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+import { useNavHidden } from "@/lib/nav-visibility";
+
 function BallIcon({ className, strokeWidth = 1.7 }: { className?: string; strokeWidth?: number }) {
   return (
     <svg
@@ -29,10 +32,18 @@ const tabs = [
 ] as const;
 
 export function BottomNav() {
+  const hidden = useNavHidden();
+
   return (
     <nav
       aria-label="Navegação principal"
-      className="fixed inset-x-0 bottom-0 z-500 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)]"
+      aria-hidden={hidden}
+      className={cn(
+        "fixed inset-x-0 bottom-0 z-500 px-4 pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] transition-[transform,opacity] duration-300 ease-out",
+        hidden
+          ? "pointer-events-none translate-y-[calc(100%+1.5rem)] opacity-0"
+          : "translate-y-0 opacity-100",
+      )}
     >
       <ul className="mx-auto flex h-[4.75rem] w-full max-w-[23rem] items-center justify-center gap-1.5 rounded-full border border-nav-foreground/10 bg-nav/95 px-2 py-2 shadow-float backdrop-blur-xl">
         {tabs.map(({ to, label, icon: Icon }) => (
@@ -40,6 +51,7 @@ export function BottomNav() {
             <Link
               to={to}
               activeOptions={{ exact: to === "/" }}
+              tabIndex={hidden ? -1 : undefined}
               className="press group flex size-12 min-w-0 items-center justify-center overflow-hidden rounded-full bg-nav-foreground/10 text-nav-foreground outline-none transition-[width,background-color,color,box-shadow] duration-300 ease-out focus-visible:ring-2 focus-visible:ring-primary"
               activeProps={{
                 className: "h-12 w-[6.6rem] bg-primary text-primary-foreground shadow-raised",
