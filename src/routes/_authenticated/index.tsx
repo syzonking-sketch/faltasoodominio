@@ -332,7 +332,7 @@ function MapPage() {
             />
           </ClientOnly>
 
-          <div className="pointer-events-none absolute inset-x-3 bottom-3 z-400 flex items-end justify-between gap-2">
+          <div className="pointer-events-none absolute inset-x-3 bottom-3 z-10 flex items-end justify-between gap-2">
             <div className="flex gap-2">
               <Button
                 type="button"
