@@ -415,17 +415,15 @@ function MapPage() {
       </div>
 
       <div className="mx-auto max-w-2xl px-4 pt-7 pb-36">
-        <div className="mb-4 flex items-center justify-between gap-3">
+        <div className="mb-5 flex items-center justify-between gap-3">
           <div className="min-w-0">
-            <h2 className="text-display text-xl font-bold text-foreground">Acontecendo perto de você</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Toque em uma partida para ver os detalhes
-            </p>
+            <h2 className="text-display text-[1.6rem] leading-tight font-extrabold tracking-tight text-foreground">Acontecendo<br />perto de você</h2>
           </div>
-          <span className="grid size-9 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-foreground tabular-nums">
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-primary/15 text-base font-extrabold text-primary tabular-nums">
             {visibleMatches.length}
           </span>
         </div>
+
 
         {matchesQuery.isPending ? (
           <ListSkeleton />
@@ -448,7 +446,7 @@ function MapPage() {
             }
           />
         ) : (
-          <ul className="grid gap-4 sm:grid-cols-2">
+          <ul className="grid gap-5">
             {visibleMatches.map((match) => {
               const venueCoords = match.venue
                 ? { lat: Number(match.venue.latitude), lng: Number(match.venue.longitude) }
