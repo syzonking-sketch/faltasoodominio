@@ -115,6 +115,7 @@ function TeamsPage() {
   const [open, setOpen] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<Profile | null>(null);
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<string | null>(null);
   const [shieldBlob, setShieldBlob] = useState<Blob | null>(null);
   const [shieldPreview, setShieldPreview] = useState<string | null>(null);
   const [compressingShield, setCompressingShield] = useState(false);
