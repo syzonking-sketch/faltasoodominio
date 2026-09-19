@@ -1,19 +1,19 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, Flag, Goal, Loader2, Shield, Swords, Trash2 } from "lucide-react";
+import { ArrowLeft, CalendarClock, Flag, Goal, Loader2, MapPin, Plus, Shield, Swords, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { AppShell } from "@/components/app/app-shell";
 import { PlayerAvatar } from "@/components/app/player-avatar";
-import { EmptyState, ErrorState, FieldError, ListSkeleton } from "@/components/app/states";
-import { Badge } from "@/components/ui/badge";
+import { FieldError } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -45,23 +45,44 @@ export const Route = createFileRoute("/_authenticated/teams/confrontos")({
       {
         name: "description",
         content:
-          "Agende confrontos entre times e valide o placar em dupla checagem entre capitães. Divergência anula a partida.",
+          "Agende confrontos entre times e acompanhe placar, gols e cartões com súmula validada pelo juiz.",
       },
       { property: "og:title", content: "Contras entre Times — The Match" },
       {
         property: "og:description",
-        content: "Validação cruzada de placar entre capitães, com anulação automática em caso de conflito.",
+        content: "Confrontos entre times com súmula oficial, gols e cartões registrados pelo juiz.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: ConfrontosPage,
 });
 
-const statusLabel: Record<Confronto["status"], { text: string; className: string }> = {
-  pending: { text: "PARTIDA MARCADA", className: "bg-accent/20 text-accent-foreground" },
-  confirmed: { text: "PARTIDA ENCERRADA", className: "bg-primary/20 text-primary" },
-  conflict_nullified: { text: "PARTIDA ANULADA", className: "bg-destructive/20 text-destructive" },
+const statusStyle: Record<Confronto["status"], { text: string; className: string }> = {
+  pending: {
+    text: "MARCADO",
+    className: "border-primary/40 bg-primary/15 text-primary",
+  },
+  confirmed: {
+    text: "ENCERRADO",
+    className: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+  },
+  conflict_nullified: {
+    text: "ANULADO",
+    className: "border-destructive/40 bg-destructive/15 text-destructive",
+  },
 };
+
+function formatConfrontoDate(value: string) {
+  const date = new Date(value);
+  return date.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 function MatchEvents({
   confronto,
@@ -141,26 +162,38 @@ function MatchEvents({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-3 items-center rounded-2xl bg-surface-2 p-4 text-center">
-        <p className="truncate text-sm font-bold">{confronto.team_a?.name ?? "Time A"}</p>
-        <p className="text-display text-3xl font-extrabold text-primary">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-3xl border border-border/60 bg-surface-2/70 px-4 py-5">
+        <div className="flex min-w-0 flex-col items-center gap-2 text-center">
+          <PlayerAvatar name={confronto.team_a?.name ?? "A"} photoUrl={confronto.team_a?.shield_url ?? null} size="md" />
+          <p className="w-full truncate text-xs font-bold text-foreground">{confronto.team_a?.name ?? "Time A"}</p>
+        </div>
+        <p className="text-display px-2 text-center text-3xl font-extrabold text-primary">
           {match?.score_team_a ?? 0} × {match?.score_team_b ?? 0}
         </p>
-        <p className="truncate text-sm font-bold">{confronto.team_b?.name ?? "Time B"}</p>
+        <div className="flex min-w-0 flex-col items-center gap-2 text-center">
+          <PlayerAvatar name={confronto.team_b?.name ?? "B"} photoUrl={confronto.team_b?.shield_url ?? null} size="md" />
+          <p className="w-full truncate text-xs font-bold text-foreground">{confronto.team_b?.name ?? "Time B"}</p>
+        </div>
       </div>
 
       <div>
-        <h4 className="mb-2 text-sm font-bold text-foreground">Súmula</h4>
+        <h4 className="mb-2 text-[11px] font-bold tracking-[0.14em] text-muted-foreground uppercase">Súmula</h4>
         {(eventsQuery.data ?? []).length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+          <p className="rounded-2xl border border-dashed border-border p-4 text-center text-xs text-muted-foreground">
             Nenhum gol ou cartão registrado.
           </p>
         ) : (
           <ul className="space-y-2">
             {(eventsQuery.data ?? []).map((event) => (
-              <li key={event.id} className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
-                <span className={event.event_type === "yellow_card" ? "size-4 rounded-sm bg-warning" : event.event_type === "red_card" ? "size-4 rounded-sm bg-destructive" : "text-primary"}>
-                  {event.event_type === "goal" ? <Goal className="size-4" /> : null}
+              <li key={event.id} className="flex items-center gap-3 rounded-2xl border border-border/50 bg-surface-2/70 p-3">
+                <span className="grid size-8 shrink-0 place-items-center rounded-full bg-surface">
+                  {event.event_type === "yellow_card" ? (
+                    <span className="size-3.5 rounded-[3px] bg-warning" />
+                  ) : event.event_type === "red_card" ? (
+                    <span className="size-3.5 rounded-[3px] bg-destructive" />
+                  ) : (
+                    <Goal className="size-4 text-primary" />
+                  )}
                 </span>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold">{event.player?.nickname ?? event.player?.full_name ?? "Jogador"}</p>
@@ -178,26 +211,26 @@ function MatchEvents({
       </div>
 
       {isReferee && confronto.status === "pending" ? (
-        <div className="space-y-3 rounded-2xl border border-border p-3">
+        <div className="space-y-3 rounded-3xl border border-primary/25 bg-surface-2/70 p-4">
           <p className="flex items-center gap-2 text-sm font-bold"><Shield className="size-4 text-primary" /> Registrar evento</p>
           <div className="grid grid-cols-2 gap-2">
-            <select className="h-10 rounded-md border border-input bg-surface-2 px-3 text-sm" value={eventType} onChange={(e) => setEventType(e.target.value as MatchEventType)}>
+            <select className="h-11 rounded-xl border border-input bg-surface px-3 text-sm" value={eventType} onChange={(e) => setEventType(e.target.value as MatchEventType)}>
               <option value="goal">Gol</option><option value="yellow_card">Cartão amarelo</option><option value="red_card">Cartão vermelho</option>
             </select>
-            <select className="h-10 rounded-md border border-input bg-surface-2 px-3 text-sm" value={teamSide} onChange={(e) => { setTeamSide(e.target.value as TeamSide); setPlayerId(""); }}>
+            <select className="h-11 rounded-xl border border-input bg-surface px-3 text-sm" value={teamSide} onChange={(e) => { setTeamSide(e.target.value as TeamSide); setPlayerId(""); }}>
               <option value="A">Time A</option><option value="B">Time B</option>
             </select>
           </div>
           <div className="grid grid-cols-[1fr_5rem] gap-2">
-            <select className="h-10 min-w-0 rounded-md border border-input bg-surface-2 px-3 text-sm" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>
+            <select className="h-11 min-w-0 rounded-xl border border-input bg-surface px-3 text-sm" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>
               <option value="">Jogador</option>
               {visiblePlayers.map((participant) => <option key={participant.id} value={participant.user_id}>{participant.profile?.nickname ?? participant.profile?.full_name ?? "Jogador"}</option>)}
             </select>
-            <Input inputMode="numeric" placeholder="Min." value={minute} onChange={(e) => setMinute(e.target.value)} />
+            <Input inputMode="numeric" placeholder="Min." value={minute} onChange={(e) => setMinute(e.target.value)} className="h-11 rounded-xl bg-surface" />
           </div>
           <div className="flex gap-2">
-            <Button className="flex-1" disabled={addEvent.isPending || !playerId} onClick={() => addEvent.mutate()}>{addEvent.isPending ? <Loader2 className="size-4 animate-spin" /> : null} Registrar</Button>
-            <Button variant="outline" disabled={finish.isPending} onClick={() => finish.mutate()}><Flag className="size-4" /> Fim de jogo</Button>
+            <Button className="h-11 flex-1 rounded-xl" disabled={addEvent.isPending || !playerId} onClick={() => addEvent.mutate()}>{addEvent.isPending ? <Loader2 className="size-4 animate-spin" /> : null} Registrar</Button>
+            <Button variant="outline" className="h-11 rounded-xl" disabled={finish.isPending} onClick={() => finish.mutate()}><Flag className="size-4" /> Fim de jogo</Button>
           </div>
         </div>
       ) : null}
@@ -247,171 +280,179 @@ function ConfrontosPage() {
   const refresh = () => void queryClient.invalidateQueries({ queryKey: ["confrontos"] });
   const selectedConfronto = (confrontosQuery.data ?? []).find((item) => item.id === selectedId) ?? null;
 
+  const selectClass = "h-11 w-full rounded-xl border border-border/60 bg-surface-2/70 px-3 text-sm text-foreground";
+
   return (
-    <AppShell
-      title="Contras"
-      subtitle="Confrontos entre times com validação cruzada"
-      action={
-        <div className="flex gap-2">
-          <Button asChild size="sm" variant="ghost">
-            <Link to="/teams">
-              <ArrowLeft className="size-4" /> Times
-            </Link>
-          </Button>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" disabled={myTeams.length === 0}>
-                Marcar
+    <AppShell title="Contras" bare>
+      <div className="radar-immersive -mb-32 min-h-dvh overflow-x-clip pb-44">
+        <div className="mx-auto w-full max-w-2xl px-4">
+          <header className="pt-safe flex items-center justify-between gap-3 pb-5">
+            <div className="flex min-w-0 items-center gap-2.5">
+              <Button asChild size="icon" variant="secondary" className="press size-11 shrink-0 rounded-full border border-border/60 bg-surface/90 backdrop-blur-xl" aria-label="Voltar para Times">
+                <Link to="/teams"><ArrowLeft className="size-5" /></Link>
               </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle className="text-display text-2xl">Marcar contra</DialogTitle>
-              </DialogHeader>
-              <form className="space-y-3" onSubmit={form.handleSubmit((v) => create.mutate(v))}>
-                <div>
-                  <Label htmlFor="team-a">Seu time</Label>
-                  <select
-                    id="team-a"
-                    className="h-10 w-full rounded-md border border-input bg-surface-2 px-3 text-sm text-foreground"
-                    {...form.register("team_a_id")}
-                  >
-                    <option value="">Selecione</option>
-                    {myTeams.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
-                  <FieldError message={form.formState.errors.team_a_id?.message} />
-                </div>
-                <div>
-                  <Label htmlFor="team-b">Adversário</Label>
-                  <select
-                    id="team-b"
-                    className="h-10 w-full rounded-md border border-input bg-surface-2 px-3 text-sm text-foreground"
-                    {...form.register("team_b_id")}
-                  >
-                    <option value="">Selecione</option>
-                    {teams
-                      .filter((t) => t.captain_id !== user?.id)
-                      .map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.name}
-                        </option>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-primary uppercase">The Match</p>
+                <h1 className="text-display truncate text-2xl leading-none font-extrabold text-foreground">Contras</h1>
+              </div>
+            </div>
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button size="icon" className="press elevate-float size-11 rounded-full" aria-label="Marcar contra" disabled={myTeams.length === 0}>
+                  <Plus className="size-5" />
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-[92vw] rounded-3xl sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle className="text-display text-2xl">Marcar contra</DialogTitle>
+                  <DialogDescription>Time contra time, com juiz e súmula oficial.</DialogDescription>
+                </DialogHeader>
+                <form className="space-y-4 py-2" onSubmit={form.handleSubmit((v) => create.mutate(v))}>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="team-a" className="text-sm font-semibold">Seu time</Label>
+                    <select id="team-a" className={selectClass} {...form.register("team_a_id")}>
+                      <option value="">Selecione</option>
+                      {myTeams.map((t) => (
+                        <option key={t.id} value={t.id}>{t.name}</option>
                       ))}
-                  </select>
-                  <FieldError message={form.formState.errors.team_b_id?.message} />
-                </div>
-                <div>
-                  <Label htmlFor="venue">Quadra</Label>
-                  <select
-                    id="venue"
-                    className="h-10 w-full rounded-md border border-input bg-surface-2 px-3 text-sm text-foreground"
-                    {...form.register("venue_id")}
-                  >
-                    <option value="">Selecione</option>
-                    {venues.map((v) => (
-                      <option key={v.id} value={v.id}>
-                        {v.name}
-                      </option>
-                    ))}
-                  </select>
-                  <FieldError message={form.formState.errors.venue_id?.message} />
-                </div>
-                <div>
-                  <Label htmlFor="referee">Juiz</Label>
-                  <select id="referee" className="h-10 w-full rounded-md border border-input bg-surface-2 px-3 text-sm text-foreground" {...form.register("referee_id")}>
-                    <option value="">Buscar e selecionar usuário</option>
-                    {(profilesQuery.data ?? []).map((profile) => <option key={profile.id} value={profile.id}>{profile.nickname || profile.full_name}</option>)}
-                  </select>
-                  <FieldError message={form.formState.errors.referee_id?.message} />
-                </div>
-                <div>
-                  <Label htmlFor="date">Data e hora</Label>
-                  <Input id="date" type="datetime-local" {...form.register("scheduled_at")} />
-                  <FieldError message={form.formState.errors.scheduled_at?.message} />
-                </div>
-                <DialogFooter>
-                  <Button type="submit" className="w-full" disabled={create.isPending}>
-                    {create.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                    Marcar contra
-                  </Button>
-                </DialogFooter>
-              </form>
-            </DialogContent>
-          </Dialog>
+                    </select>
+                    <FieldError message={form.formState.errors.team_a_id?.message} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="team-b" className="text-sm font-semibold">Adversário</Label>
+                    <select id="team-b" className={selectClass} {...form.register("team_b_id")}>
+                      <option value="">Selecione</option>
+                      {teams
+                        .filter((t) => t.captain_id !== user?.id)
+                        .map((t) => (
+                          <option key={t.id} value={t.id}>{t.name}</option>
+                        ))}
+                    </select>
+                    <FieldError message={form.formState.errors.team_b_id?.message} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="venue" className="text-sm font-semibold">Quadra</Label>
+                    <select id="venue" className={selectClass} {...form.register("venue_id")}>
+                      <option value="">Selecione</option>
+                      {venues.map((v) => (
+                        <option key={v.id} value={v.id}>{v.name}</option>
+                      ))}
+                    </select>
+                    <FieldError message={form.formState.errors.venue_id?.message} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="referee" className="text-sm font-semibold">Juiz</Label>
+                    <select id="referee" className={selectClass} {...form.register("referee_id")}>
+                      <option value="">Buscar e selecionar usuário</option>
+                      {(profilesQuery.data ?? []).map((profile) => <option key={profile.id} value={profile.id}>{profile.nickname || profile.full_name}</option>)}
+                    </select>
+                    <FieldError message={form.formState.errors.referee_id?.message} />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="date" className="text-sm font-semibold">Data e hora</Label>
+                    <Input id="date" type="datetime-local" className="h-11 rounded-xl bg-surface-2" {...form.register("scheduled_at")} />
+                    <FieldError message={form.formState.errors.scheduled_at?.message} />
+                  </div>
+                  <DialogFooter>
+                    <Button type="submit" className="h-12 w-full rounded-xl text-base font-bold" disabled={create.isPending}>
+                      {create.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
+                      Marcar contra
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </header>
+
+          {confrontosQuery.isPending ? (
+            <ul className="space-y-3">
+              {[0, 1, 2].map((item) => (
+                <li key={item} className="h-36 animate-pulse rounded-3xl border border-border/50 bg-surface-2/50" />
+              ))}
+            </ul>
+          ) : confrontosQuery.isError ? (
+            <div className="rounded-3xl border border-destructive/30 bg-surface-2/60 p-6 text-center">
+              <p className="text-sm text-muted-foreground">{friendlyError(confrontosQuery.error)}</p>
+              <Button className="mt-4 rounded-xl" variant="outline" onClick={() => void confrontosQuery.refetch()}>Tentar novamente</Button>
+            </div>
+          ) : (confrontosQuery.data ?? []).length === 0 ? (
+            <div className="flex flex-col items-center rounded-3xl border border-border/50 bg-surface-2/50 px-6 py-14 text-center">
+              <span className="grid size-16 place-items-center rounded-full bg-primary/10 text-primary">
+                <Swords className="size-8" />
+              </span>
+              <h2 className="text-display mt-4 text-xl font-extrabold text-foreground">Nenhum contra marcado</h2>
+              <p className="mt-1 max-w-xs text-sm text-muted-foreground">
+                Capitães podem marcar confrontos entre times, com juiz e súmula de gols e cartões.
+              </p>
+            </div>
+          ) : (
+            <ul className="space-y-3">
+              {(confrontosQuery.data ?? []).map((confronto) => {
+                const status = statusStyle[confronto.status];
+                const finished = confronto.status === "confirmed";
+                const scoreA = confronto.match?.score_team_a ?? confronto.reported_score_a_by_a ?? 0;
+                const scoreB = confronto.match?.score_team_b ?? confronto.reported_score_b_by_a ?? 0;
+
+                return (
+                  <li key={confronto.id}>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedId(confronto.id)}
+                      className="press block w-full rounded-3xl border border-border/50 bg-surface-2/60 p-4 text-left backdrop-blur-xl transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] ${status.className}`}>
+                          {status.text}
+                        </span>
+                        {confronto.scheduled_at ? (
+                          <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                            <CalendarClock className="size-3.5" />
+                            {formatConfrontoDate(confronto.scheduled_at)}
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className="mt-4 grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                        <div className="flex min-w-0 flex-col items-center gap-2 text-center">
+                          <div className="grid size-14 place-items-center overflow-hidden rounded-2xl border border-border/50 bg-surface p-1.5">
+                            <PlayerAvatar name={confronto.team_a?.name ?? "A"} photoUrl={confronto.team_a?.shield_url ?? null} size="sm" />
+                          </div>
+                          <p className="w-full truncate text-xs font-bold text-foreground">{confronto.team_a?.name ?? "Time A"}</p>
+                        </div>
+                        <p className={`text-display px-2 text-center font-extrabold ${finished ? "text-3xl text-primary" : "text-xl text-muted-foreground"}`}>
+                          {finished ? `${scoreA} × ${scoreB}` : "VS"}
+                        </p>
+                        <div className="flex min-w-0 flex-col items-center gap-2 text-center">
+                          <div className="grid size-14 place-items-center overflow-hidden rounded-2xl border border-border/50 bg-surface p-1.5">
+                            <PlayerAvatar name={confronto.team_b?.name ?? "B"} photoUrl={confronto.team_b?.shield_url ?? null} size="sm" />
+                          </div>
+                          <p className="w-full truncate text-xs font-bold text-foreground">{confronto.team_b?.name ?? "Time B"}</p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+                        {confronto.venue?.name ? (
+                          <span className="flex min-w-0 items-center gap-1">
+                            <MapPin className="size-3.5 shrink-0" />
+                            <span className="truncate">{confronto.venue.name}</span>
+                          </span>
+                        ) : null}
+                        <span className="flex min-w-0 items-center gap-1">
+                          <Shield className="size-3.5 shrink-0" />
+                          <span className="truncate">Juiz: {confronto.referee?.nickname ?? confronto.referee?.full_name ?? "Não definido"}</span>
+                        </span>
+                      </div>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </div>
-      }
-    >
-      {confrontosQuery.isPending ? (
-        <ListSkeleton />
-      ) : confrontosQuery.isError ? (
-        <ErrorState
-          message={friendlyError(confrontosQuery.error)}
-          onRetry={() => void confrontosQuery.refetch()}
-        />
-      ) : (confrontosQuery.data ?? []).length === 0 ? (
-        <EmptyState
-          icon={<Swords className="size-7" />}
-          title="Nenhum contra marcado"
-          description="Capitães podem marcar confrontos entre times e validar o placar em dupla checagem."
-        />
-      ) : (
-        <ul className="space-y-3">
-          {(confrontosQuery.data ?? []).map((confronto) => {
-            const status = statusLabel[confronto.status];
+      </div>
 
-            return (
-              <li key={confronto.id} role="button" tabIndex={0} onClick={() => setSelectedId(confronto.id)} onKeyDown={(event) => { if (event.key === "Enter" || event.key === " ") setSelectedId(confronto.id); }} className="card-glow cursor-pointer rounded-2xl border border-border bg-card p-4 outline-none focus-visible:ring-2 focus-visible:ring-primary">
-                <div className="flex items-center justify-between gap-3">
-                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                    <PlayerAvatar name={confronto.team_a?.name ?? "A"} photoUrl={confronto.team_a?.shield_url ?? null} size="sm" />
-                    <span className="truncate text-sm font-semibold text-foreground">
-                      {confronto.team_a?.name ?? "Time A"}
-                    </span>
-                  </div>
-                  <span className="text-display text-lg text-muted-foreground">x</span>
-                  <div className="flex min-w-0 flex-1 items-center justify-end gap-2">
-                    <span className="truncate text-sm font-semibold text-foreground">
-                      {confronto.team_b?.name ?? "Time B"}
-                    </span>
-                    <PlayerAvatar name={confronto.team_b?.name ?? "B"} photoUrl={confronto.team_b?.shield_url ?? null} size="sm" />
-                  </div>
-                </div>
-
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Badge className={status.className}>{status.text}</Badge>
-                  {confronto.scheduled_at ? (
-                    <span className="text-xs text-muted-foreground">
-                      {new Date(confronto.scheduled_at).toLocaleString("pt-BR", {
-                        day: "2-digit",
-                        month: "short",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
-                  ) : null}
-                  {confronto.venue?.name ? (
-                    <span className="text-xs text-muted-foreground">· {confronto.venue.name}</span>
-                  ) : null}
-                  <span className="text-xs text-muted-foreground">· Juiz: {confronto.referee?.nickname ?? confronto.referee?.full_name ?? "Não definido"}</span>
-                </div>
-
-                {confronto.status === "confirmed" ? (
-                  <p className="text-display mt-3 text-center text-3xl font-extrabold text-primary">
-                    {confronto.match?.score_team_a ?? confronto.reported_score_a_by_a ?? 0}–{confronto.match?.score_team_b ?? confronto.reported_score_b_by_a ?? 0}
-                  </p>
-                ) : null}
-
-                <p className="mt-3 text-xs text-muted-foreground">Toque para abrir a súmula, ver gols e cartões.</p>
-              </li>
-            );
-          })}
-        </ul>
-      )}
       <Dialog open={Boolean(selectedConfronto)} onOpenChange={(value) => { if (!value) setSelectedId(null); }}>
-        <DialogContent className="max-h-[88dvh] overflow-y-auto sm:max-w-lg">
+        <DialogContent className="max-h-[88dvh] max-w-[92vw] overflow-y-auto rounded-3xl sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="text-display text-xl">{selectedConfronto?.team_a?.name ?? "Time A"} × {selectedConfronto?.team_b?.name ?? "Time B"}</DialogTitle>
           </DialogHeader>
