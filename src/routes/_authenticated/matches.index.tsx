@@ -512,9 +512,20 @@ function MatchesPage() {
             </p>
           ) : null}
 
-          {/* RESUMO */}
-          <div className="mt-5 rounded-2xl bg-surface-2 p-4">
-            <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Resumo</p>
+          {/* RESUMO — toque para ajustar jogadores e duração */}
+          <button
+            type="button"
+            onClick={() => setConfigOpen(true)}
+            aria-label="Ajustar número de jogadores e tempo de partida"
+            className="press mt-5 w-full rounded-2xl bg-surface-2 p-4 text-left transition-colors hover:bg-surface-2/80"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Resumo</p>
+              <span className="flex items-center gap-1 rounded-full bg-primary/15 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-primary">
+                <Settings2 className="size-3" />
+                Ajustar
+              </span>
+            </div>
             <p className="text-display mt-1 break-words text-lg font-bold text-foreground">
               {matchName.trim() || "Partida sem nome"}
             </p>
@@ -528,11 +539,13 @@ function MatchesPage() {
                 month: "long",
               })}
               {slotHour != null
-                ? ` • ${String(slotHour).padStart(2, "0")}:00 — ${String(slotHour + 1).padStart(2, "0")}:00`
+                ? ` • ${String(slotHour).padStart(2, "0")}:00 — ${String(Math.floor((slotHour * 60 + durationMin) / 60) % 24).padStart(2, "0")}:${String((slotHour * 60 + durationMin) % 60).padStart(2, "0")}`
                 : " • escolha um horário"}
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">1/10 jogadores ao criar</p>
-          </div>
+            <p className="mt-1 text-xs text-muted-foreground">
+              1/{playersCount} jogadores ao criar • {durationMin} min de jogo
+            </p>
+          </button>
 
           <Button
             size="lg"
