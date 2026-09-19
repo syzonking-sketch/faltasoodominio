@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, Flag, Loader2, MapPin, Users, Eye, Ban, ShieldCheck, X } from "lucide-react";
+import { CheckCircle2, Flag, Loader2, MapPin, Users, Eye, Ban, ShieldCheck, X, Goal, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 
@@ -26,8 +26,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
+  addMatchEvent,
   cancelMatch,
   assignMatchScorekeeper,
+  fetchMatchEvents,
+  removeMatchEvent,
   fetchMatch,
   autoFinishIfExpired,
   fetchRatingsByEvaluator,
