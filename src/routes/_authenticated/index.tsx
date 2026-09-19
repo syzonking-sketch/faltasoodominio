@@ -240,10 +240,10 @@ function MapPage() {
               <Bell className="size-5 text-foreground" />
             </Link>
           </div>
-          <h1 className="text-display mt-7 text-[2.1rem] leading-[1.06] font-extrabold tracking-tight text-foreground">
-            {greeting}
+          <h1 className="text-display mt-7 text-[2.35rem] leading-[1.04] font-extrabold tracking-tight text-foreground">
+            <span className="text-primary">{greeting}</span>
             <br />
-            <span className="text-primary">{displayName}</span>
+            {displayName}
           </h1>
         </header>
 
