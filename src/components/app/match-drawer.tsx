@@ -58,6 +58,8 @@ export function MatchDrawer({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<Profile | null>(null);
+  const [cardPlayerA, setCardPlayerA] = useState("");
+  const [cardPlayerB, setCardPlayerB] = useState("");
 
   // Com o painel de detalhes aberto, a navegação inferior sai de cena e
   // volta quando o painel é fechado.
@@ -104,8 +106,44 @@ export function MatchDrawer({
   const distance = myCoords && venueCoords ? distanceMeters(myCoords, venueCoords) : null;
   const withinRadius = distance !== null && distance <= GPS_CHECKIN_RADIUS;
 
+  const eventsQuery = useQuery({
+    queryKey: ["match-events", matchId],
+    enabled: Boolean(matchId),
+    queryFn: () => fetchMatchEvents(matchId!),
+  });
+  const events = eventsQuery.data ?? [];
+
+  const addEvent = useMutation({
+    mutationFn: (input: { playerId: string; teamSide: TeamSide; eventType: "yellow_card" | "red_card" }) => {
+      if (!matchId) throw new Error("Partida não carregada.");
+      return addMatchEvent({
+        match_id: matchId,
+        player_id: input.playerId,
+        team_side: input.teamSide,
+        event_type: input.eventType,
+      });
+    },
+    onSuccess: (_, input) => {
+      toast.success(input.eventType === "yellow_card" ? "Cartão amarelo aplicado." : "Cartão vermelho aplicado.");
+      if (input.teamSide === "A") setCardPlayerA("");
+      else setCardPlayerB("");
+      invalidate();
+    },
+    onError: (error) => toast.error(friendlyError(error)),
+  });
+
+  const removeEvent = useMutation({
+    mutationFn: removeMatchEvent,
+    onSuccess: () => {
+      toast.success("Evento removido da súmula.");
+      invalidate();
+    },
+    onError: (error) => toast.error(friendlyError(error)),
+  });
+
   const invalidate = () => {
     void queryClient.invalidateQueries({ queryKey: ["match", matchId] });
+    void queryClient.invalidateQueries({ queryKey: ["match-events", matchId] });
     void queryClient.invalidateQueries({ queryKey: ["matches"] });
     void queryClient.invalidateQueries({ queryKey: ["ranking"] });
   };
