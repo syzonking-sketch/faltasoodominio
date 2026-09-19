@@ -51,19 +51,19 @@ const scopes: { value: RankingScope; label: string }[] = [
 ];
 
 const podiumStyles = {
-  0: {
+  1: {
     ring: "border-primary/80 bg-primary/15 shadow-[0_0_34px_color-mix(in_oklab,var(--primary)_28%,transparent)]",
     badge: "bg-primary text-primary-foreground",
     height: "h-28",
     tone: "text-primary",
   },
-  1: {
+  2: {
     ring: "border-border/80 bg-card",
     badge: "bg-secondary text-foreground",
     height: "h-20",
     tone: "text-silver",
   },
-  2: {
+  3: {
     ring: "border-border/80 bg-card",
     badge: "bg-secondary text-foreground",
     height: "h-16",
@@ -94,7 +94,7 @@ function RankingSkeleton() {
 }
 
 function PodiumPlayer({ row, position }: { row: RankingRow; position: 1 | 2 | 3 }) {
-  const style = podiumStyles[position - 1];
+  const style = podiumStyles[position];
   const isLeader = position === 1;
 
   return (
