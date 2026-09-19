@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, Flag, Loader2, MapPin, Users, Eye, Ban, ShieldCheck, X } from "lucide-react";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { PlayerProfileDialog } from "@/components/app/player-profile-dialog";
@@ -41,6 +41,7 @@ import { useAuth } from "@/lib/auth";
 import { distanceMeters, GPS_CHECKIN_RADIUS, type Coords } from "@/lib/geo";
 import { friendlyError } from "@/lib/supabase";
 import type { MatchParticipant, Profile, TeamSide } from "@/lib/types";
+import { setNavHidden } from "@/lib/nav-visibility";
 
 export function MatchDrawer({
   matchId,
@@ -54,6 +55,14 @@ export function MatchDrawer({
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<Profile | null>(null);
+
+  // Com o painel de detalhes aberto, a navegação inferior sai de cena e
+  // volta quando o painel é fechado.
+  useEffect(() => {
+    if (!matchId) return;
+    setNavHidden(true);
+    return () => setNavHidden(false);
+  }, [matchId]);
 
   const matchQuery = useQuery({
     queryKey: ["match", matchId],
@@ -263,7 +272,7 @@ export function MatchDrawer({
           </Button>
         </DrawerClose>
 
-        <div className="mx-auto min-h-0 w-full max-w-2xl flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-[calc(7.5rem+env(safe-area-inset-bottom,0px))]">
+        <div className="mx-auto min-h-0 w-full max-w-2xl flex-1 touch-pan-y overflow-y-auto overscroll-contain px-4 pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
           <DrawerHeader className="border-b border-border/60 px-0 pb-4 pr-14 pt-3 text-left">
             <div className="mb-1 flex items-center gap-2">
               <span className="size-2 rounded-full bg-primary shadow-[0_0_14px_var(--primary)]" />
