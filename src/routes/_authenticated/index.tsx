@@ -227,7 +227,9 @@ function MapPage() {
 
   return (
     <AppShell title="Radar" bare>
+      <div className="radar-immersive -mb-32 min-h-dvh pb-32">
       <div className="mx-auto w-full max-w-2xl overflow-x-clip px-4">
+
         <header className="pt-safe pb-6">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <div className="flex min-w-0 items-center gap-2">
@@ -461,6 +463,8 @@ function MapPage() {
           </ul>
         )}
       </div>
+      </div>
+
 
       <MatchDrawer
         matchId={detailMatch}
