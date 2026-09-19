@@ -44,7 +44,7 @@ export type NewMatchValues = z.infer<typeof newMatchSchema>;
 
 export const teamSchema = z.object({
   name: z.string().min(3, "Nome do time"),
-  shield_url: z.string().url("Link do escudo (https://...)"),
+  shield_url: z.string().optional().default(""),
   city: z.string().min(2, "Cidade"),
   state: z.string().length(2, "Sigla do estado"),
 });

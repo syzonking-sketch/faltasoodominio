@@ -16,11 +16,12 @@ import {
   Swords,
   Trash2,
   Trophy,
+  Upload,
   UserPlus,
   Users,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -64,8 +65,9 @@ import {
   setMemberStatus,
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { compressProfileImage } from "@/lib/profile-image";
 import { teamSchema, type TeamValues } from "@/lib/schemas";
-import { friendlyError } from "@/lib/supabase";
+import { friendlyError, supabase } from "@/lib/supabase";
 import type { Confronto, Profile, Team } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/teams/")({
@@ -124,6 +126,10 @@ function TeamsPage() {
   const [open, setOpen] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
   const [selectedPlayer, setSelectedPlayer] = useState<Profile | null>(null);
+  const [shieldBlob, setShieldBlob] = useState<Blob | null>(null);
+  const [shieldPreview, setShieldPreview] = useState<string | null>(null);
+  const [compressingShield, setCompressingShield] = useState(false);
+  const shieldInputRef = useRef<HTMLInputElement>(null);
 
   const teamsQuery = useQuery({ queryKey: ["teams"], queryFn: fetchTeams });
   const confrontosQuery = useQuery({ queryKey: ["confrontos"], queryFn: fetchConfrontos });
@@ -208,11 +214,21 @@ function TeamsPage() {
   const create = useMutation({
     mutationFn: async (values: TeamValues) => {
       if (!user?.id) throw new Error("Sessão não carregada. Tente fazer login novamente.");
-      return createTeam({ ...values, state: values.state.toUpperCase(), captain_id: user.id });
+      if (!shieldBlob) throw new Error("Escolha uma imagem para o escudo do time.");
+      const shieldPath = `${user.id}/team-shields/${crypto.randomUUID()}.webp`;
+      const { error: uploadError } = await supabase.storage
+        .from("avatars")
+        .upload(shieldPath, shieldBlob, { contentType: "image/webp", cacheControl: "31536000", upsert: false });
+      if (uploadError) throw uploadError;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(shieldPath);
+      return createTeam({ ...values, shield_url: data.publicUrl, state: values.state.toUpperCase(), captain_id: user.id });
     },
     onSuccess: () => {
       toast.success("Time fundado! Agora chame o elenco.");
       setOpen(false);
+      if (shieldPreview) URL.revokeObjectURL(shieldPreview);
+      setShieldBlob(null);
+      setShieldPreview(null);
       form.reset();
       invalidate();
     },
@@ -270,6 +286,23 @@ function TeamsPage() {
     }
   };
 
+  const selectShield = async (file: File | undefined) => {
+    if (!file) return;
+    setCompressingShield(true);
+    try {
+      const compressed = await compressProfileImage(file);
+      if (shieldPreview) URL.revokeObjectURL(shieldPreview);
+      setShieldBlob(compressed);
+      setShieldPreview(URL.createObjectURL(compressed));
+      form.clearErrors("shield_url");
+    } catch (error) {
+      toast.error(friendlyError(error));
+    } finally {
+      setCompressingShield(false);
+      if (shieldInputRef.current) shieldInputRef.current.value = "";
+    }
+  };
+
   return (
     <AppShell title="Times" bare>
       <div className="radar-immersive -mb-32 min-h-dvh overflow-x-clip pb-44">
@@ -301,9 +334,41 @@ function TeamsPage() {
                       <Input id="team-name" placeholder="Ex: Topa do Ouro Preto" {...form.register("name")} className="h-12 bg-surface-2" />
                       <FieldError message={form.formState.errors.name?.message} />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label htmlFor="shield" className="text-sm font-semibold">Escudo (URL da imagem)</Label>
-                      <Input id="shield" placeholder="https://..." {...form.register("shield_url")} className="h-12 bg-surface-2" />
+                    <div className="space-y-2">
+                      <Label htmlFor="shield" className="text-sm font-semibold">Escudo do time</Label>
+                      <input
+                        ref={shieldInputRef}
+                        id="shield"
+                        type="file"
+                        accept="image/*"
+                        className="sr-only"
+                        onChange={(event) => void selectShield(event.target.files?.[0])}
+                      />
+                      <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface-2 p-3">
+                        <div className="grid size-16 shrink-0 place-items-center overflow-hidden rounded-2xl bg-surface">
+                          {shieldPreview ? (
+                            <img src={shieldPreview} alt="Prévia do escudo" className="size-full object-contain p-1" />
+                          ) : (
+                            <Shield className="size-8 text-primary" />
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-foreground">{shieldPreview ? "Escudo pronto" : "Adicionar escudo"}</p>
+                          <p className="text-xs text-muted-foreground">A imagem será recortada e comprimida automaticamente.</p>
+                        </div>
+                        <Button
+                          type="button"
+                          size="icon"
+                          variant="secondary"
+                          className="size-11 shrink-0 rounded-full"
+                          disabled={compressingShield}
+                          onClick={() => shieldInputRef.current?.click()}
+                          aria-label={shieldPreview ? "Trocar escudo" : "Adicionar escudo"}
+                        >
+                          {compressingShield ? <Loader2 className="size-5 animate-spin" /> : <Upload className="size-5" />}
+                        </Button>
+                      </div>
+                      <input type="hidden" {...form.register("shield_url")} />
                       <FieldError message={form.formState.errors.shield_url?.message} />
                     </div>
                     <div className="grid grid-cols-3 gap-3">
@@ -319,7 +384,7 @@ function TeamsPage() {
                       </div>
                     </div>
                     <DialogFooter>
-                      <Button type="submit" disabled={create.isPending} className="h-12 w-full rounded-full text-base font-bold">
+                      <Button type="submit" disabled={create.isPending || compressingShield} className="h-12 w-full rounded-full text-base font-bold">
                         {create.isPending ? <Loader2 className="size-5 animate-spin" /> : <Plus className="size-5" />} Criar time
                       </Button>
                     </DialogFooter>
