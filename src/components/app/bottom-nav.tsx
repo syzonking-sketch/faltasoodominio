@@ -77,7 +77,7 @@ export function BottomNav() {
                       className={`text-display overflow-hidden text-[10px] leading-none font-bold whitespace-nowrap transition-[width,opacity,margin] duration-300 min-[360px]:text-[11px] ${
                         isActive
                           ? longLabel
-                            ? "mr-1.5 w-auto opacity-100 min-[360px]:mr-1"
+                            ? "mr-2 w-auto opacity-100 min-[360px]:mr-3"
                             : "mr-2 w-auto opacity-100 min-[360px]:mr-2"
                           : "m-0 w-0 opacity-0"
                       }`}
