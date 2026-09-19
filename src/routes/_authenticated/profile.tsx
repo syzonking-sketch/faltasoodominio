@@ -151,7 +151,7 @@ function MatchHero({ match, onOpen }: { match: MatchWithRelations; onOpen: () =>
         <p className="text-xs font-bold tracking-wider text-primary uppercase">
           {match.match_type === "campeonato" ? "Campeonato" : "Pelada"}
         </p>
-        <h2 className="text-display mt-1 text-4xl leading-none font-bold text-foreground">
+        <h2 className="text-display mt-1 w-full whitespace-normal break-words text-2xl leading-tight font-bold text-foreground [overflow-wrap:anywhere] sm:text-4xl">
           {matchLabel(match)}
         </h2>
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-foreground/85">
