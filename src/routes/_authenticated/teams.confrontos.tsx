@@ -1,7 +1,21 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, CalendarClock, Flag, Goal, Loader2, MapPin, Plus, Shield, Swords, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarClock,
+  Copy,
+  Flag,
+  Goal,
+  Link2,
+  Loader2,
+  MapPin,
+  Plus,
+  Repeat2,
+  Shield,
+  Swords,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -24,11 +38,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   addMatchEvent,
+  confrontoRefereeLink,
   createConfronto,
   fetchConfrontos,
   fetchMatch,
   fetchMatchEvents,
-  fetchProfiles,
   fetchTeams,
   fetchVenues,
   finishRefereedMatch,
@@ -96,6 +110,7 @@ function MatchEvents({
   const [eventType, setEventType] = useState<MatchEventType>("goal");
   const [teamSide, setTeamSide] = useState<TeamSide>("A");
   const [playerId, setPlayerId] = useState("");
+  const [relatedPlayerId, setRelatedPlayerId] = useState("");
   const [minute, setMinute] = useState("");
   const matchQuery = useQuery({
     queryKey: ["match", confronto.match_id],
@@ -115,17 +130,20 @@ function MatchEvents({
   const addEvent = useMutation({
     mutationFn: () => {
       if (!confronto.match_id || !playerId) throw new Error("Selecione o jogador.");
+      if (eventType === "substitution" && !relatedPlayerId) throw new Error("Selecione quem entra.");
       return addMatchEvent({
         match_id: confronto.match_id,
         player_id: playerId,
         team_side: teamSide,
         event_type: eventType,
         minute: minute ? Number(minute) : null,
+        related_player_id: eventType === "substitution" ? relatedPlayerId : null,
       });
     },
     onSuccess: () => {
       toast.success("Evento registrado na súmula.");
       setPlayerId("");
+      setRelatedPlayerId("");
       setMinute("");
       void matchQuery.refetch();
       void eventsQuery.refetch();
@@ -159,7 +177,28 @@ function MatchEvents({
     goal: "Gol",
     yellow_card: "Cartão amarelo",
     red_card: "Cartão vermelho",
+    substitution: "Substituição",
   };
+
+  const refereeLabel =
+    confronto.referee?.nickname ??
+    confronto.referee?.full_name ??
+    confronto.referee_name ??
+    (confronto.referee_token ? "Convite enviado — aguardando o juiz" : "Não definido");
+
+  const copyLink = useMutation({
+    mutationFn: () => confrontoRefereeLink(confronto.id),
+    onSuccess: async (token) => {
+      const url = `${window.location.origin}/juiz/${token}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link do juiz copiado!");
+      } catch {
+        toast.success(url);
+      }
+    },
+    onError: (error) => toast.error(friendlyError(error)),
+  });
 
   return (
     <div className="space-y-4">
@@ -197,6 +236,28 @@ function MatchEvents({
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border/50 bg-surface-2/60 p-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold tracking-[0.14em] text-primary uppercase">
+            Jogo {confronto.match_number != null ? `#${confronto.match_number}` : "—"}
+          </p>
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            <Shield className="size-4 shrink-0 text-primary" />
+            <span className="truncate">Juiz: {refereeLabel}</span>
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-9 shrink-0 rounded-xl"
+          disabled={copyLink.isPending}
+          onClick={() => copyLink.mutate()}
+        >
+          {copyLink.isPending ? <Loader2 className="size-4 animate-spin" /> : <Link2 className="size-4" />}
+          Link do juiz
+        </Button>
+      </div>
+
       <div>
         <h4 className="mb-2 text-[11px] font-bold tracking-[0.14em] text-muted-foreground uppercase">Súmula</h4>
         {(eventsQuery.data ?? []).length === 0 ? (
@@ -212,12 +273,19 @@ function MatchEvents({
                     <span className="size-3.5 rounded-[3px] bg-warning" />
                   ) : event.event_type === "red_card" ? (
                     <span className="size-3.5 rounded-[3px] bg-destructive" />
+                  ) : event.event_type === "substitution" ? (
+                    <Repeat2 className="size-4 text-accent" />
                   ) : (
                     <Goal className="size-4 text-primary" />
                   )}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{event.player?.nickname ?? event.player?.full_name ?? "Jogador"}</p>
+                  <p className="truncate text-sm font-semibold">
+                    {event.player?.nickname ?? event.player?.full_name ?? "Jogador"}
+                    {event.event_type === "substitution" && event.related_player
+                      ? ` → ${event.related_player.nickname ?? event.related_player.full_name ?? "Jogador"}`
+                      : ""}
+                  </p>
                   <p className="text-xs text-muted-foreground">{eventLabel[event.event_type]} · Time {event.team_side}{event.minute != null ? ` · ${event.minute}'` : ""}</p>
                 </div>
                 {isReferee && confronto.status === "pending" ? (
@@ -235,20 +303,28 @@ function MatchEvents({
         <div className="space-y-3 rounded-3xl border border-primary/25 bg-surface-2/70 p-4">
           <p className="flex items-center gap-2 text-sm font-bold"><Shield className="size-4 text-primary" /> Registrar evento</p>
           <div className="grid grid-cols-2 gap-2">
-            <select className="h-11 rounded-xl border border-input bg-surface px-3 text-sm" value={eventType} onChange={(e) => setEventType(e.target.value as MatchEventType)}>
-              <option value="goal">Gol</option><option value="yellow_card">Cartão amarelo</option><option value="red_card">Cartão vermelho</option>
+            <select className="h-11 rounded-xl border border-input bg-surface px-3 text-sm" value={eventType} onChange={(e) => { setEventType(e.target.value as MatchEventType); setRelatedPlayerId(""); }}>
+              <option value="goal">Gol</option><option value="yellow_card">Cartão amarelo</option><option value="red_card">Cartão vermelho</option><option value="substitution">Substituição</option>
             </select>
-            <select className="h-11 rounded-xl border border-input bg-surface px-3 text-sm" value={teamSide} onChange={(e) => { setTeamSide(e.target.value as TeamSide); setPlayerId(""); }}>
+            <select className="h-11 rounded-xl border border-input bg-surface px-3 text-sm" value={teamSide} onChange={(e) => { setTeamSide(e.target.value as TeamSide); setPlayerId(""); setRelatedPlayerId(""); }}>
               <option value="A">Time A</option><option value="B">Time B</option>
             </select>
           </div>
           <div className="grid grid-cols-[1fr_5rem] gap-2">
             <select className="h-11 min-w-0 rounded-xl border border-input bg-surface px-3 text-sm" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>
-              <option value="">Jogador</option>
+              <option value="">{eventType === "substitution" ? "Quem sai" : "Jogador"}</option>
               {visiblePlayers.map((participant) => <option key={participant.id} value={participant.user_id}>{participant.profile?.nickname ?? participant.profile?.full_name ?? "Jogador"}</option>)}
             </select>
             <Input inputMode="numeric" placeholder="Min." value={minute} onChange={(e) => setMinute(e.target.value)} className="h-11 rounded-xl bg-surface" />
           </div>
+          {eventType === "substitution" ? (
+            <select className="h-11 w-full min-w-0 rounded-xl border border-input bg-surface px-3 text-sm" value={relatedPlayerId} onChange={(e) => setRelatedPlayerId(e.target.value)}>
+              <option value="">Quem entra</option>
+              {visiblePlayers
+                .filter((participant) => participant.user_id !== playerId)
+                .map((participant) => <option key={participant.id} value={participant.user_id}>{participant.profile?.nickname ?? participant.profile?.full_name ?? "Jogador"}</option>)}
+            </select>
+          ) : null}
           <div className="flex gap-2">
             <Button className="h-11 flex-1 rounded-xl" disabled={addEvent.isPending || !playerId} onClick={() => addEvent.mutate()}>{addEvent.isPending ? <Loader2 className="size-4 animate-spin" /> : null} Registrar</Button>
             <Button variant="outline" className="h-11 rounded-xl" disabled={finish.isPending} onClick={() => finish.mutate()}><Flag className="size-4" /> Fim de jogo</Button>
@@ -264,11 +340,12 @@ function ConfrontosPage() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [refereeMode, setRefereeMode] = useState<"player" | "link">("player");
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
 
   const confrontosQuery = useQuery({ queryKey: ["confrontos"], queryFn: fetchConfrontos });
   const teamsQuery = useQuery({ queryKey: ["teams"], queryFn: fetchTeams });
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
-  const profilesQuery = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
 
   const teams = teamsQuery.data ?? [];
   const venues = venuesQuery.data ?? [];
@@ -279,6 +356,27 @@ function ConfrontosPage() {
     defaultValues: { team_a_id: "", team_b_id: "", venue_id: "", referee_id: "", scheduled_at: "" },
   });
 
+  const teamAId = form.watch("team_a_id");
+  const teamBId = form.watch("team_b_id");
+  const refereeCandidates = (() => {
+    const selected = teams.filter((team) => team.id === teamAId || team.id === teamBId);
+    const seen = new Set<string>();
+    const list: { id: string; name: string; team: string }[] = [];
+    for (const team of selected) {
+      for (const member of team.members ?? []) {
+        const id = member.user_id;
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        list.push({
+          id,
+          name: member.profile?.nickname || member.profile?.full_name || "Jogador",
+          team: team.name,
+        });
+      }
+    }
+    return list;
+  })();
+
   const create = useMutation({
     mutationFn: (values: ConfrontoValues) =>
       createConfronto({
@@ -286,12 +384,23 @@ function ConfrontosPage() {
         team_b_id: values.team_b_id,
         venue_id: values.venue_id,
         scheduled_at: new Date(values.scheduled_at).toISOString(),
-        referee_id: values.referee_id,
+        referee_id: refereeMode === "player" ? values.referee_id || null : null,
+        invite_link: refereeMode === "link",
       }),
-    onSuccess: () => {
+    onSuccess: async (created) => {
       toast.success("Contra marcado! Agora é só aparecer.");
       setOpen(false);
       form.reset();
+      if (refereeMode === "link" && created.referee_token) {
+        const url = `${window.location.origin}/juiz/${created.referee_token}`;
+        setInviteLink(url);
+        try {
+          await navigator.clipboard.writeText(url);
+          toast.success("Link do juiz copiado!");
+        } catch {
+          /* o link continua visível na tela */
+        }
+      }
       void queryClient.invalidateQueries({ queryKey: ["confrontos"] });
       void queryClient.invalidateQueries({ queryKey: ["matches"] });
     },
@@ -328,7 +437,16 @@ function ConfrontosPage() {
                   <DialogTitle className="text-display text-2xl">Marcar contra</DialogTitle>
                   <DialogDescription>Time contra time, com juiz e súmula oficial.</DialogDescription>
                 </DialogHeader>
-                <form className="space-y-4 py-2" onSubmit={form.handleSubmit((v) => create.mutate(v))}>
+                <form
+                  className="space-y-4 py-2"
+                  onSubmit={form.handleSubmit((v) => {
+                    if (refereeMode === "player" && !v.referee_id) {
+                      toast.error("Selecione o juiz ou convide por link.");
+                      return;
+                    }
+                    create.mutate(v);
+                  })}
+                >
                   <div className="space-y-1.5">
                     <Label htmlFor="team-a" className="text-sm font-semibold">Seu time</Label>
                     <select id="team-a" className={selectClass} {...form.register("team_a_id")}>
@@ -361,13 +479,45 @@ function ConfrontosPage() {
                     </select>
                     <FieldError message={form.formState.errors.venue_id?.message} />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="referee" className="text-sm font-semibold">Juiz</Label>
-                    <select id="referee" className={selectClass} {...form.register("referee_id")}>
-                      <option value="">Buscar e selecionar usuário</option>
-                      {(profilesQuery.data ?? []).map((profile) => <option key={profile.id} value={profile.id}>{profile.nickname || profile.full_name}</option>)}
-                    </select>
-                    <FieldError message={form.formState.errors.referee_id?.message} />
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">Juiz</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant={refereeMode === "player" ? "default" : "outline"}
+                        className="h-11 rounded-xl text-xs font-bold"
+                        onClick={() => setRefereeMode("player")}
+                      >
+                        Jogador dos times
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={refereeMode === "link" ? "default" : "outline"}
+                        className="h-11 rounded-xl text-xs font-bold"
+                        onClick={() => setRefereeMode("link")}
+                      >
+                        <Link2 className="size-4" /> Convidar por link
+                      </Button>
+                    </div>
+                    {refereeMode === "player" ? (
+                      <>
+                        <select id="referee" className={selectClass} {...form.register("referee_id")}>
+                          <option value="">
+                            {refereeCandidates.length === 0 ? "Escolha os dois times primeiro" : "Selecione o jogador"}
+                          </option>
+                          {refereeCandidates.map((candidate) => (
+                            <option key={candidate.id} value={candidate.id}>
+                              {candidate.name} · {candidate.team}
+                            </option>
+                          ))}
+                        </select>
+                        <FieldError message={form.formState.errors.referee_id?.message} />
+                      </>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Você recebe um link para enviar ao juiz. Ele não precisa ter conta: entra, coloca o nome e apita o jogo.
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="date" className="text-sm font-semibold">Data e hora</Label>
