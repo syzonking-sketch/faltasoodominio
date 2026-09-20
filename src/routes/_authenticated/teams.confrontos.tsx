@@ -303,20 +303,28 @@ function MatchEvents({
         <div className="space-y-3 rounded-3xl border border-primary/25 bg-surface-2/70 p-4">
           <p className="flex items-center gap-2 text-sm font-bold"><Shield className="size-4 text-primary" /> Registrar evento</p>
           <div className="grid grid-cols-2 gap-2">
-            <select className="h-11 rounded-xl border border-input bg-surface px-3 text-sm" value={eventType} onChange={(e) => setEventType(e.target.value as MatchEventType)}>
-              <option value="goal">Gol</option><option value="yellow_card">Cartão amarelo</option><option value="red_card">Cartão vermelho</option>
+            <select className="h-11 rounded-xl border border-input bg-surface px-3 text-sm" value={eventType} onChange={(e) => { setEventType(e.target.value as MatchEventType); setRelatedPlayerId(""); }}>
+              <option value="goal">Gol</option><option value="yellow_card">Cartão amarelo</option><option value="red_card">Cartão vermelho</option><option value="substitution">Substituição</option>
             </select>
-            <select className="h-11 rounded-xl border border-input bg-surface px-3 text-sm" value={teamSide} onChange={(e) => { setTeamSide(e.target.value as TeamSide); setPlayerId(""); }}>
+            <select className="h-11 rounded-xl border border-input bg-surface px-3 text-sm" value={teamSide} onChange={(e) => { setTeamSide(e.target.value as TeamSide); setPlayerId(""); setRelatedPlayerId(""); }}>
               <option value="A">Time A</option><option value="B">Time B</option>
             </select>
           </div>
           <div className="grid grid-cols-[1fr_5rem] gap-2">
             <select className="h-11 min-w-0 rounded-xl border border-input bg-surface px-3 text-sm" value={playerId} onChange={(e) => setPlayerId(e.target.value)}>
-              <option value="">Jogador</option>
+              <option value="">{eventType === "substitution" ? "Quem sai" : "Jogador"}</option>
               {visiblePlayers.map((participant) => <option key={participant.id} value={participant.user_id}>{participant.profile?.nickname ?? participant.profile?.full_name ?? "Jogador"}</option>)}
             </select>
             <Input inputMode="numeric" placeholder="Min." value={minute} onChange={(e) => setMinute(e.target.value)} className="h-11 rounded-xl bg-surface" />
           </div>
+          {eventType === "substitution" ? (
+            <select className="h-11 w-full min-w-0 rounded-xl border border-input bg-surface px-3 text-sm" value={relatedPlayerId} onChange={(e) => setRelatedPlayerId(e.target.value)}>
+              <option value="">Quem entra</option>
+              {visiblePlayers
+                .filter((participant) => participant.user_id !== playerId)
+                .map((participant) => <option key={participant.id} value={participant.user_id}>{participant.profile?.nickname ?? participant.profile?.full_name ?? "Jogador"}</option>)}
+            </select>
+          ) : null}
           <div className="flex gap-2">
             <Button className="h-11 flex-1 rounded-xl" disabled={addEvent.isPending || !playerId} onClick={() => addEvent.mutate()}>{addEvent.isPending ? <Loader2 className="size-4 animate-spin" /> : null} Registrar</Button>
             <Button variant="outline" className="h-11 rounded-xl" disabled={finish.isPending} onClick={() => finish.mutate()}><Flag className="size-4" /> Fim de jogo</Button>
