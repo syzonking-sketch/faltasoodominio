@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import campoConfronto from "@/assets/confronto-campo.png.asset.json";
 import { AppShell } from "@/components/app/app-shell";
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { FieldError } from "@/components/app/states";
@@ -162,17 +163,37 @@ function MatchEvents({
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3 rounded-3xl border border-border/60 bg-surface-2/70 px-4 py-5">
-        <div className="flex min-w-0 flex-col items-center gap-2 text-center">
-          <PlayerAvatar name={confronto.team_a?.name ?? "A"} photoUrl={confronto.team_a?.shield_url ?? null} size="md" />
-          <p className="w-full truncate text-xs font-bold text-foreground">{confronto.team_a?.name ?? "Time A"}</p>
-        </div>
-        <p className="text-display px-2 text-center text-3xl font-extrabold text-primary">
-          {match?.score_team_a ?? 0} × {match?.score_team_b ?? 0}
-        </p>
-        <div className="flex min-w-0 flex-col items-center gap-2 text-center">
-          <PlayerAvatar name={confronto.team_b?.name ?? "B"} photoUrl={confronto.team_b?.shield_url ?? null} size="md" />
-          <p className="w-full truncate text-xs font-bold text-foreground">{confronto.team_b?.name ?? "Time B"}</p>
+      <div className="relative isolate aspect-[2.08/1] w-full overflow-hidden rounded-3xl border border-primary/30 bg-surface-2 shadow-raised">
+        <img src={campoConfronto.url} alt="Campo de futebol" className="absolute inset-0 size-full object-cover" />
+        <div className="absolute inset-0 bg-background/20" />
+        <div className="relative grid size-full grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 sm:gap-4 sm:px-6">
+          <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
+            <span className="grid size-12 place-items-center overflow-hidden rounded-2xl border border-primary-foreground/50 bg-background/80 p-1 shadow-raised backdrop-blur-sm sm:size-16">
+              <PlayerAvatar name={confronto.team_a?.name ?? "A"} photoUrl={confronto.team_a?.shield_url ?? null} size="md" />
+            </span>
+            <p className="line-clamp-2 w-full text-[10px] leading-tight font-extrabold text-primary-foreground drop-shadow-md sm:text-xs">
+              {confronto.team_a?.name ?? "Time A"}
+            </p>
+          </div>
+
+          <div className="flex shrink-0 items-center rounded-2xl border border-primary-foreground/35 bg-background/85 px-3 py-2 shadow-raised backdrop-blur-md sm:px-5">
+            <span className="text-display min-w-5 text-center text-3xl leading-none font-extrabold text-foreground sm:text-4xl">
+              {match?.score_team_a ?? 0}
+            </span>
+            <span className="px-1.5 text-sm font-bold text-primary sm:px-2">×</span>
+            <span className="text-display min-w-5 text-center text-3xl leading-none font-extrabold text-foreground sm:text-4xl">
+              {match?.score_team_b ?? 0}
+            </span>
+          </div>
+
+          <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
+            <span className="grid size-12 place-items-center overflow-hidden rounded-2xl border border-primary-foreground/50 bg-background/80 p-1 shadow-raised backdrop-blur-sm sm:size-16">
+              <PlayerAvatar name={confronto.team_b?.name ?? "B"} photoUrl={confronto.team_b?.shield_url ?? null} size="md" />
+            </span>
+            <p className="line-clamp-2 w-full text-[10px] leading-tight font-extrabold text-primary-foreground drop-shadow-md sm:text-xs">
+              {confronto.team_b?.name ?? "Time B"}
+            </p>
+          </div>
         </div>
       </div>
 
