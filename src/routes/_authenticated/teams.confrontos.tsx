@@ -437,7 +437,16 @@ function ConfrontosPage() {
                   <DialogTitle className="text-display text-2xl">Marcar contra</DialogTitle>
                   <DialogDescription>Time contra time, com juiz e súmula oficial.</DialogDescription>
                 </DialogHeader>
-                <form className="space-y-4 py-2" onSubmit={form.handleSubmit((v) => create.mutate(v))}>
+                <form
+                  className="space-y-4 py-2"
+                  onSubmit={form.handleSubmit((v) => {
+                    if (refereeMode === "player" && !v.referee_id) {
+                      toast.error("Selecione o juiz ou convide por link.");
+                      return;
+                    }
+                    create.mutate(v);
+                  })}
+                >
                   <div className="space-y-1.5">
                     <Label htmlFor="team-a" className="text-sm font-semibold">Seu time</Label>
                     <select id="team-a" className={selectClass} {...form.register("team_a_id")}>
