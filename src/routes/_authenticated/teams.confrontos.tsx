@@ -340,11 +340,12 @@ function ConfrontosPage() {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [refereeMode, setRefereeMode] = useState<"player" | "link">("player");
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
 
   const confrontosQuery = useQuery({ queryKey: ["confrontos"], queryFn: fetchConfrontos });
   const teamsQuery = useQuery({ queryKey: ["teams"], queryFn: fetchTeams });
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
-  const profilesQuery = useQuery({ queryKey: ["profiles"], queryFn: fetchProfiles });
 
   const teams = teamsQuery.data ?? [];
   const venues = venuesQuery.data ?? [];
@@ -355,6 +356,27 @@ function ConfrontosPage() {
     defaultValues: { team_a_id: "", team_b_id: "", venue_id: "", referee_id: "", scheduled_at: "" },
   });
 
+  const teamAId = form.watch("team_a_id");
+  const teamBId = form.watch("team_b_id");
+  const refereeCandidates = (() => {
+    const selected = teams.filter((team) => team.id === teamAId || team.id === teamBId);
+    const seen = new Set<string>();
+    const list: { id: string; name: string; team: string }[] = [];
+    for (const team of selected) {
+      for (const member of team.members ?? []) {
+        const id = member.user_id;
+        if (!id || seen.has(id)) continue;
+        seen.add(id);
+        list.push({
+          id,
+          name: member.profile?.nickname || member.profile?.full_name || "Jogador",
+          team: team.name,
+        });
+      }
+    }
+    return list;
+  })();
+
   const create = useMutation({
     mutationFn: (values: ConfrontoValues) =>
       createConfronto({
@@ -362,12 +384,23 @@ function ConfrontosPage() {
         team_b_id: values.team_b_id,
         venue_id: values.venue_id,
         scheduled_at: new Date(values.scheduled_at).toISOString(),
-        referee_id: values.referee_id,
+        referee_id: refereeMode === "player" ? values.referee_id || null : null,
+        invite_link: refereeMode === "link",
       }),
-    onSuccess: () => {
+    onSuccess: async (created) => {
       toast.success("Contra marcado! Agora é só aparecer.");
       setOpen(false);
       form.reset();
+      if (refereeMode === "link" && created.referee_token) {
+        const url = `${window.location.origin}/juiz/${created.referee_token}`;
+        setInviteLink(url);
+        try {
+          await navigator.clipboard.writeText(url);
+          toast.success("Link do juiz copiado!");
+        } catch {
+          /* o link continua visível na tela */
+        }
+      }
       void queryClient.invalidateQueries({ queryKey: ["confrontos"] });
       void queryClient.invalidateQueries({ queryKey: ["matches"] });
     },
