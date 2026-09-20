@@ -4,7 +4,7 @@ export type ParticipantRole = "player" | "spectator";
 export type TeamSide = "A" | "B";
 export type MemberStatus = "invited" | "pending_approval" | "active";
 export type ConfrontoStatus = "pending" | "confirmed" | "conflict_nullified";
-export type MatchEventType = "goal" | "yellow_card" | "red_card";
+export type MatchEventType = "goal" | "yellow_card" | "red_card" | "substitution";
 
 export interface Profile {
   id: string;
@@ -72,9 +72,11 @@ export interface MatchEvent {
   team_side: TeamSide;
   event_type: MatchEventType;
   minute: number | null;
-  created_by: string;
+  created_by: string | null;
+  related_player_id?: string | null;
   created_at: string;
   player?: Profile | null;
+  related_player?: Profile | null;
 }
 
 export interface Rating {
@@ -114,6 +116,9 @@ export interface Confronto {
   match_id: string | null;
   venue_id: string | null;
   referee_id: string | null;
+  referee_token?: string | null;
+  referee_name?: string | null;
+  match_number?: number | null;
   team_a_id: string;
   team_b_id: string;
   scheduled_at: string | null;

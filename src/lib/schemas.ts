@@ -54,7 +54,7 @@ export const confrontoSchema = z.object({
   team_a_id: z.string().uuid("Selecione seu time"),
   team_b_id: z.string().uuid("Selecione o adversário"),
   venue_id: z.string().uuid("Selecione a quadra"),
-  referee_id: z.string().uuid("Selecione o juiz"),
+  referee_id: z.string().optional(),
   scheduled_at: z.string().min(1, "Escolha data e hora"),
 });
 export type ConfrontoValues = z.infer<typeof confrontoSchema>;
