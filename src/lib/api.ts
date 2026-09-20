@@ -310,14 +310,25 @@ export async function addMatchEvent(input: {
   team_side: TeamSide;
   event_type: MatchEventType;
   minute?: number | null;
+  related_player_id?: string | null;
 }): Promise<string> {
-  return unwrap<string>(await supabase.rpc("add_match_event", {
+  const base = {
     _match_id: input.match_id,
     _player_id: input.player_id,
     _team_side: input.team_side,
     _event_type: input.event_type,
     _minute: input.minute ?? null,
-  }));
+  };
+  const response = await supabase.rpc("add_match_event", {
+    ...base,
+    _related_player_id: input.related_player_id ?? null,
+  });
+  if (!response.error) return response.data as string;
+  // Banco ainda sem a atualização de substituições: usa a versão anterior.
+  if (/_related_player_id|function .*add_match_event/i.test(response.error.message)) {
+    return unwrap<string>(await supabase.rpc("add_match_event", base));
+  }
+  throw new Error(response.error.message);
 }
 
 export async function removeMatchEvent(eventId: string): Promise<void> {
