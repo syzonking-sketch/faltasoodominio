@@ -470,13 +470,45 @@ function ConfrontosPage() {
                     </select>
                     <FieldError message={form.formState.errors.venue_id?.message} />
                   </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="referee" className="text-sm font-semibold">Juiz</Label>
-                    <select id="referee" className={selectClass} {...form.register("referee_id")}>
-                      <option value="">Buscar e selecionar usuário</option>
-                      {(profilesQuery.data ?? []).map((profile) => <option key={profile.id} value={profile.id}>{profile.nickname || profile.full_name}</option>)}
-                    </select>
-                    <FieldError message={form.formState.errors.referee_id?.message} />
+                  <div className="space-y-2">
+                    <Label className="text-sm font-semibold">Juiz</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant={refereeMode === "player" ? "default" : "outline"}
+                        className="h-11 rounded-xl text-xs font-bold"
+                        onClick={() => setRefereeMode("player")}
+                      >
+                        Jogador dos times
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={refereeMode === "link" ? "default" : "outline"}
+                        className="h-11 rounded-xl text-xs font-bold"
+                        onClick={() => setRefereeMode("link")}
+                      >
+                        <Link2 className="size-4" /> Convidar por link
+                      </Button>
+                    </div>
+                    {refereeMode === "player" ? (
+                      <>
+                        <select id="referee" className={selectClass} {...form.register("referee_id")}>
+                          <option value="">
+                            {refereeCandidates.length === 0 ? "Escolha os dois times primeiro" : "Selecione o jogador"}
+                          </option>
+                          {refereeCandidates.map((candidate) => (
+                            <option key={candidate.id} value={candidate.id}>
+                              {candidate.name} · {candidate.team}
+                            </option>
+                          ))}
+                        </select>
+                        <FieldError message={form.formState.errors.referee_id?.message} />
+                      </>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">
+                        Você recebe um link para enviar ao juiz. Ele não precisa ter conta: entra, coloca o nome e apita o jogo.
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="date" className="text-sm font-semibold">Data e hora</Label>
