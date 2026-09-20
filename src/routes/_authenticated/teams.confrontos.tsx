@@ -236,6 +236,28 @@ function MatchEvents({
         </div>
       </div>
 
+      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border/50 bg-surface-2/60 p-3">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold tracking-[0.14em] text-primary uppercase">
+            Jogo {confronto.match_number != null ? `#${confronto.match_number}` : "—"}
+          </p>
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-foreground">
+            <Shield className="size-4 shrink-0 text-primary" />
+            <span className="truncate">Juiz: {refereeLabel}</span>
+          </p>
+        </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="h-9 shrink-0 rounded-xl"
+          disabled={copyLink.isPending}
+          onClick={() => copyLink.mutate()}
+        >
+          {copyLink.isPending ? <Loader2 className="size-4 animate-spin" /> : <Link2 className="size-4" />}
+          Link do juiz
+        </Button>
+      </div>
+
       <div>
         <h4 className="mb-2 text-[11px] font-bold tracking-[0.14em] text-muted-foreground uppercase">Súmula</h4>
         {(eventsQuery.data ?? []).length === 0 ? (
