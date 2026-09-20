@@ -501,20 +501,119 @@ export async function fetchConfrontos(): Promise<Confronto[]> {
   );
 }
 
+export interface CreatedConfronto {
+  id: string;
+  match_id?: string | null;
+  match_number?: number | null;
+  referee_token?: string | null;
+}
+
 export async function createConfronto(input: {
   team_a_id: string;
   team_b_id: string;
   venue_id: string;
   scheduled_at: string;
-  referee_id: string;
-}): Promise<string> {
-  return unwrap<string>(await supabase.rpc("create_team_confronto", {
+  referee_id?: string | null;
+  invite_link?: boolean;
+}): Promise<CreatedConfronto> {
+  const base = {
     _team_a_id: input.team_a_id,
     _team_b_id: input.team_b_id,
     _venue_id: input.venue_id,
     _scheduled_at: input.scheduled_at,
-    _referee_id: input.referee_id,
+    _referee_id: input.referee_id ?? null,
+  };
+  const response = await supabase.rpc("create_team_confronto", {
+    ...base,
+    _invite_link: input.invite_link ?? false,
+  });
+  if (!response.error) {
+    const data = response.data as CreatedConfronto | string;
+    return typeof data === "string" ? { id: data } : data;
+  }
+  if (/_invite_link|function .*create_team_confronto/i.test(response.error.message)) {
+    if (!input.referee_id) {
+      throw new Error(
+        "O convite por link ainda não está ativo no banco. Rode o script supabase_confronto_referee_link.sql.",
+      );
+    }
+    return { id: unwrap<string>(await supabase.rpc("create_team_confronto", base)) };
+  }
+  throw new Error(response.error.message);
+}
+
+/** Gera (ou reaproveita) o link público do juiz convidado. */
+export async function confrontoRefereeLink(confrontoId: string): Promise<string> {
+  return unwrap<string>(await supabase.rpc("confronto_referee_link", { _confronto_id: confrontoId }));
+}
+
+/* ----------------------------- Juiz por link ------------------------------ */
+
+export interface RefereeBoardPlayer {
+  id: string;
+  name: string | null;
+  photo_url: string | null;
+  team_side: TeamSide | null;
+}
+
+export interface RefereeBoardEvent {
+  id: string;
+  event_type: MatchEventType;
+  team_side: TeamSide;
+  minute: number | null;
+  player_name: string | null;
+  related_player_name: string | null;
+}
+
+export interface RefereeBoard {
+  confronto: {
+    id: string;
+    match_id: string | null;
+    match_number: number | null;
+    referee_name: string | null;
+    status: ConfrontoStatus;
+    scheduled_at: string | null;
+    team_a: { id: string; name: string; shield_url: string | null } | null;
+    team_b: { id: string; name: string; shield_url: string | null } | null;
+    venue: { id: string; name: string; address: string | null } | null;
+  };
+  match: { id: string; status: string; score_team_a: number; score_team_b: number; name: string | null } | null;
+  players: RefereeBoardPlayer[];
+  events: RefereeBoardEvent[];
+}
+
+export async function fetchRefereeBoard(token: string): Promise<RefereeBoard> {
+  return unwrap<RefereeBoard>(await supabase.rpc("referee_board", { _token: token }));
+}
+
+export async function setRefereeName(token: string, name: string): Promise<void> {
+  unwrap<unknown>(await supabase.rpc("referee_set_name", { _token: token, _name: name }));
+}
+
+export async function refereeAddEvent(input: {
+  token: string;
+  player_id: string;
+  team_side: TeamSide;
+  event_type: MatchEventType;
+  minute?: number | null;
+  related_player_id?: string | null;
+}): Promise<string> {
+  return unwrap<string>(await supabase.rpc("referee_add_event", {
+    _token: input.token,
+    _player_id: input.player_id,
+    _team_side: input.team_side,
+    _event_type: input.event_type,
+    _minute: input.minute ?? null,
+    _related_player_id: input.related_player_id ?? null,
   }));
+}
+
+export async function refereeRemoveEvent(token: string, eventId: string): Promise<void> {
+  unwrap<unknown>(await supabase.rpc("referee_remove_event", { _token: token, _event_id: eventId }));
+}
+
+export async function refereeFinish(token: string): Promise<void> {
+  unwrap<unknown>(await supabase.rpc("referee_finish", { _token: token }));
 }
 
 /**
