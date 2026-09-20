@@ -1,7 +1,21 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowLeft, CalendarClock, Flag, Goal, Loader2, MapPin, Plus, Shield, Swords, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  CalendarClock,
+  Copy,
+  Flag,
+  Goal,
+  Link2,
+  Loader2,
+  MapPin,
+  Plus,
+  Repeat2,
+  Shield,
+  Swords,
+  Trash2,
+} from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -24,11 +38,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   addMatchEvent,
+  confrontoRefereeLink,
   createConfronto,
   fetchConfrontos,
   fetchMatch,
   fetchMatchEvents,
-  fetchProfiles,
   fetchTeams,
   fetchVenues,
   finishRefereedMatch,
