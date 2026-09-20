@@ -164,7 +164,7 @@ function MatchEvents({
   return (
     <div className="space-y-4">
       <div className="relative isolate aspect-[2.08/1] w-full overflow-hidden rounded-3xl border border-primary/30 bg-surface-2 shadow-raised">
-        <img src={campoConfronto.url} alt="Campo de futebol" className="absolute -inset-[6%] size-[112%] object-cover" />
+        <img src={campoConfronto.url} alt="Campo de futebol" className="absolute inset-0 size-full object-cover" />
         <div className="absolute inset-0 bg-background/15" />
         <div className="relative grid size-full grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 sm:gap-4 sm:px-6">
           <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
