@@ -273,12 +273,19 @@ function MatchEvents({
                     <span className="size-3.5 rounded-[3px] bg-warning" />
                   ) : event.event_type === "red_card" ? (
                     <span className="size-3.5 rounded-[3px] bg-destructive" />
+                  ) : event.event_type === "substitution" ? (
+                    <Repeat2 className="size-4 text-accent" />
                   ) : (
                     <Goal className="size-4 text-primary" />
                   )}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{event.player?.nickname ?? event.player?.full_name ?? "Jogador"}</p>
+                  <p className="truncate text-sm font-semibold">
+                    {event.player?.nickname ?? event.player?.full_name ?? "Jogador"}
+                    {event.event_type === "substitution" && event.related_player
+                      ? ` → ${event.related_player.nickname ?? event.related_player.full_name ?? "Jogador"}`
+                      : ""}
+                  </p>
                   <p className="text-xs text-muted-foreground">{eventLabel[event.event_type]} · Time {event.team_side}{event.minute != null ? ` · ${event.minute}'` : ""}</p>
                 </div>
                 {isReferee && confronto.status === "pending" ? (
