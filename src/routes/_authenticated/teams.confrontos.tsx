@@ -110,6 +110,7 @@ function MatchEvents({
   const [eventType, setEventType] = useState<MatchEventType>("goal");
   const [teamSide, setTeamSide] = useState<TeamSide>("A");
   const [playerId, setPlayerId] = useState("");
+  const [relatedPlayerId, setRelatedPlayerId] = useState("");
   const [minute, setMinute] = useState("");
   const matchQuery = useQuery({
     queryKey: ["match", confronto.match_id],
@@ -129,17 +130,20 @@ function MatchEvents({
   const addEvent = useMutation({
     mutationFn: () => {
       if (!confronto.match_id || !playerId) throw new Error("Selecione o jogador.");
+      if (eventType === "substitution" && !relatedPlayerId) throw new Error("Selecione quem entra.");
       return addMatchEvent({
         match_id: confronto.match_id,
         player_id: playerId,
         team_side: teamSide,
         event_type: eventType,
         minute: minute ? Number(minute) : null,
+        related_player_id: eventType === "substitution" ? relatedPlayerId : null,
       });
     },
     onSuccess: () => {
       toast.success("Evento registrado na súmula.");
       setPlayerId("");
+      setRelatedPlayerId("");
       setMinute("");
       void matchQuery.refetch();
       void eventsQuery.refetch();
@@ -173,7 +177,28 @@ function MatchEvents({
     goal: "Gol",
     yellow_card: "Cartão amarelo",
     red_card: "Cartão vermelho",
+    substitution: "Substituição",
   };
+
+  const refereeLabel =
+    confronto.referee?.nickname ??
+    confronto.referee?.full_name ??
+    confronto.referee_name ??
+    (confronto.referee_token ? "Convite enviado — aguardando o juiz" : "Não definido");
+
+  const copyLink = useMutation({
+    mutationFn: () => confrontoRefereeLink(confronto.id),
+    onSuccess: async (token) => {
+      const url = `${window.location.origin}/juiz/${token}`;
+      try {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link do juiz copiado!");
+      } catch {
+        toast.success(url);
+      }
+    },
+    onError: (error) => toast.error(friendlyError(error)),
+  });
 
   return (
     <div className="space-y-4">
