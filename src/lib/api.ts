@@ -336,14 +336,19 @@ export async function removeMatchEvent(eventId: string): Promise<void> {
 }
 
 export async function fetchMatchEvents(matchId: string): Promise<MatchEvent[]> {
-  return unwrap<MatchEvent[]>(
-    await supabase
+  const query = (select: string) =>
+    supabase
       .from("match_events")
-      .select("*, player:profiles!match_events_player_id_fkey(*)")
+      .select(select)
       .eq("match_id", matchId)
       .order("minute", { ascending: true, nullsFirst: false })
-      .order("created_at", { ascending: true }),
+      .order("created_at", { ascending: true });
+
+  const response = await query(
+    "*, player:profiles!match_events_player_id_fkey(*), related_player:profiles!match_events_related_player_id_fkey(*)",
   );
+  if (!response.error) return response.data as unknown as MatchEvent[];
+  return unwrap<MatchEvent[]>(await query("*, player:profiles!match_events_player_id_fkey(*)"));
 }
 
 export async function finishRefereedMatch(matchId: string): Promise<void> {
