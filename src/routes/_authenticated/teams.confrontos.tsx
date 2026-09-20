@@ -168,8 +168,8 @@ function MatchEvents({
         <div className="absolute inset-0 bg-background/15" />
         <div className="relative grid size-full grid-cols-[1fr_auto_1fr] items-center gap-2 px-3 sm:gap-4 sm:px-6">
           <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
-            <span className="grid size-12 place-items-center overflow-hidden rounded-2xl border border-primary-foreground/50 bg-background/80 p-1 shadow-raised backdrop-blur-sm sm:size-16">
-              <PlayerAvatar name={confronto.team_a?.name ?? "A"} photoUrl={confronto.team_a?.shield_url ?? null} size="md" />
+            <span className="grid size-14 place-items-center overflow-hidden rounded-full border-2 border-primary-foreground/60 bg-background/80 shadow-raised backdrop-blur-sm sm:size-16">
+              <PlayerAvatar name={confronto.team_a?.name ?? "A"} photoUrl={confronto.team_a?.shield_url ?? null} size="md" className="size-full border-0" />
             </span>
             <p className="line-clamp-2 w-full text-[10px] leading-tight font-extrabold text-primary-foreground drop-shadow-md sm:text-xs">
               {confronto.team_a?.name ?? "Time A"}
@@ -187,8 +187,8 @@ function MatchEvents({
           </div>
 
           <div className="flex min-w-0 flex-col items-center gap-1.5 text-center">
-            <span className="grid size-12 place-items-center overflow-hidden rounded-2xl border border-primary-foreground/50 bg-background/80 p-1 shadow-raised backdrop-blur-sm sm:size-16">
-              <PlayerAvatar name={confronto.team_b?.name ?? "B"} photoUrl={confronto.team_b?.shield_url ?? null} size="md" />
+            <span className="grid size-14 place-items-center overflow-hidden rounded-full border-2 border-primary-foreground/60 bg-background/80 shadow-raised backdrop-blur-sm sm:size-16">
+              <PlayerAvatar name={confronto.team_b?.name ?? "B"} photoUrl={confronto.team_b?.shield_url ?? null} size="md" className="size-full border-0" />
             </span>
             <p className="line-clamp-2 w-full text-[10px] leading-tight font-extrabold text-primary-foreground drop-shadow-md sm:text-xs">
               {confronto.team_b?.name ?? "Time B"}
