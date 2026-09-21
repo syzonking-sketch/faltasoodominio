@@ -14,6 +14,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as AuthenticatedRankingRouteImport } from './routes/_authenticated/ranking'
+import { Route as JuizTokenRouteImport } from './routes/juiz.$token'
 import { Route as AuthenticatedMatchesIndexRouteImport } from './routes/_authenticated/matches.index'
 import { Route as AuthenticatedMatchesNewRouteImport } from './routes/_authenticated/matches.new'
 import { Route as AuthenticatedTeamsIndexRouteImport } from './routes/_authenticated/teams.index'
@@ -43,6 +44,11 @@ const AuthenticatedRankingRoute = AuthenticatedRankingRouteImport.update({
   path: '/ranking',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const JuizTokenRoute = JuizTokenRouteImport.update({
+  id: '/juiz/$token',
+  path: '/juiz/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedMatchesIndexRoute =
   AuthenticatedMatchesIndexRouteImport.update({
     id: '/matches/',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ranking': typeof AuthenticatedRankingRoute
+  '/juiz/$token': typeof JuizTokenRoute
   '/matches/new': typeof AuthenticatedMatchesNewRoute
   '/teams/confrontos': typeof AuthenticatedTeamsConfrontosRoute
   '/matches/': typeof AuthenticatedMatchesIndexRoute
@@ -80,6 +87,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/ranking': typeof AuthenticatedRankingRoute
+  '/juiz/$token': typeof JuizTokenRoute
   '/': typeof AuthenticatedIndexRoute
   '/matches/new': typeof AuthenticatedMatchesNewRoute
   '/teams/confrontos': typeof AuthenticatedTeamsConfrontosRoute
@@ -92,6 +100,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/_authenticated/ranking': typeof AuthenticatedRankingRoute
+  '/juiz/$token': typeof JuizTokenRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/matches/new': typeof AuthenticatedMatchesNewRoute
   '/_authenticated/teams/confrontos': typeof AuthenticatedTeamsConfrontosRoute
@@ -105,6 +114,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/profile'
     | '/ranking'
+    | '/juiz/$token'
     | '/matches/new'
     | '/teams/confrontos'
     | '/matches/'
@@ -114,6 +124,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/profile'
     | '/ranking'
+    | '/juiz/$token'
     | '/'
     | '/matches/new'
     | '/teams/confrontos'
@@ -125,6 +136,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/_authenticated/profile'
     | '/_authenticated/ranking'
+    | '/juiz/$token'
     | '/_authenticated/'
     | '/_authenticated/matches/new'
     | '/_authenticated/teams/confrontos'
@@ -135,6 +147,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  JuizTokenRoute: typeof JuizTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -173,6 +186,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/ranking'
       preLoaderRoute: typeof AuthenticatedRankingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/juiz/$token': {
+      id: '/juiz/$token'
+      path: '/juiz/$token'
+      fullPath: '/juiz/$token'
+      preLoaderRoute: typeof JuizTokenRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/matches/': {
       id: '/_authenticated/matches/'
@@ -231,6 +251,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  JuizTokenRoute: JuizTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
