@@ -535,6 +535,29 @@ function ConfrontosPage() {
             </Dialog>
           </header>
 
+          <Dialog open={Boolean(inviteLink)} onOpenChange={(value) => !value && setInviteLink(null)}>
+            <DialogContent className="max-w-[92vw] rounded-3xl sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle className="text-display text-2xl">Link do juiz</DialogTitle>
+                <DialogDescription>Envie para quem vai apitar. Não precisa de conta.</DialogDescription>
+              </DialogHeader>
+              <p className="rounded-2xl border border-border/60 bg-surface-2/70 p-3 text-xs break-all text-muted-foreground">
+                {inviteLink}
+              </p>
+              <DialogFooter>
+                <Button
+                  className="h-12 w-full rounded-xl text-base font-bold"
+                  onClick={() => {
+                    if (inviteLink) void navigator.clipboard.writeText(inviteLink).then(() => toast.success("Link copiado!"));
+                  }}
+                >
+                  <Copy className="size-4" /> Copiar link
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+
           {confrontosQuery.isPending ? (
             <ul className="space-y-3">
               {[0, 1, 2].map((item) => (
@@ -572,8 +595,15 @@ function ConfrontosPage() {
                       className="press block w-full rounded-3xl border border-border/50 bg-surface-2/60 p-4 text-left backdrop-blur-xl transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] ${status.className}`}>
-                          {status.text}
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] ${status.className}`}>
+                            {status.text}
+                          </span>
+                          {confronto.match_number != null ? (
+                            <span className="text-[10px] font-bold tracking-[0.12em] text-primary uppercase">
+                              Jogo #{confronto.match_number}
+                            </span>
+                          ) : null}
                         </span>
                         {confronto.scheduled_at ? (
                           <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -610,7 +640,13 @@ function ConfrontosPage() {
                         ) : null}
                         <span className="flex min-w-0 items-center gap-1">
                           <Shield className="size-3.5 shrink-0" />
-                          <span className="truncate">Juiz: {confronto.referee?.nickname ?? confronto.referee?.full_name ?? "Não definido"}</span>
+                          <span className="truncate">
+                            Juiz:{" "}
+                            {confronto.referee?.nickname ??
+                              confronto.referee?.full_name ??
+                              confronto.referee_name ??
+                              (confronto.referee_token ? "Convite por link" : "Não definido")}
+                          </span>
                         </span>
                       </div>
                     </button>
