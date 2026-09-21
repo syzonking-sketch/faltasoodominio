@@ -595,8 +595,15 @@ function ConfrontosPage() {
                       className="press block w-full rounded-3xl border border-border/50 bg-surface-2/60 p-4 text-left backdrop-blur-xl transition-colors outline-none focus-visible:ring-2 focus-visible:ring-primary"
                     >
                       <div className="flex items-center justify-between gap-2">
-                        <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] ${status.className}`}>
-                          {status.text}
+                        <span className="flex min-w-0 items-center gap-2">
+                          <span className={`rounded-full border px-2.5 py-1 text-[10px] font-bold tracking-[0.12em] ${status.className}`}>
+                            {status.text}
+                          </span>
+                          {confronto.match_number != null ? (
+                            <span className="text-[10px] font-bold tracking-[0.12em] text-primary uppercase">
+                              Jogo #{confronto.match_number}
+                            </span>
+                          ) : null}
                         </span>
                         {confronto.scheduled_at ? (
                           <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
@@ -633,7 +640,13 @@ function ConfrontosPage() {
                         ) : null}
                         <span className="flex min-w-0 items-center gap-1">
                           <Shield className="size-3.5 shrink-0" />
-                          <span className="truncate">Juiz: {confronto.referee?.nickname ?? confronto.referee?.full_name ?? "Não definido"}</span>
+                          <span className="truncate">
+                            Juiz:{" "}
+                            {confronto.referee?.nickname ??
+                              confronto.referee?.full_name ??
+                              confronto.referee_name ??
+                              (confronto.referee_token ? "Convite por link" : "Não definido")}
+                          </span>
                         </span>
                       </div>
                     </button>
