@@ -47,6 +47,8 @@ export interface Match {
   updated_at: string;
 }
 
+export type LineupRole = "gk" | "starter" | "bench";
+
 export interface MatchParticipant {
   id: string;
   match_id: string;
@@ -55,6 +57,7 @@ export interface MatchParticipant {
   team_side: TeamSide | null;
   checked_in_gps: boolean;
   created_at: string;
+  lineup_role?: LineupRole | null;
   profile?: Profile | null;
 }
 
