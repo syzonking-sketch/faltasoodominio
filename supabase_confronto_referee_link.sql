@@ -3,8 +3,8 @@
 -- (sem conta). Cada Contra recebe um número de jogo único e a súmula aceita
 -- gols (com autor), cartões e substituições.
 
--- Habilita pgcrypto (necessária para gen_random_bytes).
-CREATE EXTENSION IF NOT EXISTS pgcrypto;
+-- O token usa apenas funções nativas do PostgreSQL para funcionar mesmo quando
+-- pgcrypto está instalado fora do search_path das funções SECURITY DEFINER.
 
 /* ------------------------------ Colunas novas ------------------------------ */
 
@@ -80,7 +80,7 @@ BEGIN
   SELECT name INTO team_b_name FROM teams WHERE id = _team_b_id;
   new_number := nextval('public.confronto_number_seq');
   IF _referee_id IS NULL OR _invite_link THEN
-    new_token := encode(gen_random_bytes(16), 'hex');
+    new_token := md5(random()::text || clock_timestamp()::text || new_number::text || auth.uid()::text);
   END IF;
 
   INSERT INTO matches (
@@ -136,7 +136,7 @@ BEGIN
 
   SELECT referee_token INTO tok FROM match_confrontos WHERE id = _confronto_id;
   IF tok IS NULL THEN
-    tok := encode(gen_random_bytes(16), 'hex');
+    tok := md5(random()::text || clock_timestamp()::text || _confronto_id::text || auth.uid()::text);
     UPDATE match_confrontos SET referee_token = tok, updated_at = now() WHERE id = _confronto_id;
   END IF;
   RETURN tok;
