@@ -22,6 +22,7 @@ import { toast } from "sonner";
 
 import campoConfronto from "@/assets/confronto-campo.png.asset.json";
 import { AppShell } from "@/components/app/app-shell";
+import { LineupBoard } from "@/components/app/lineup-board";
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { FieldError } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
@@ -257,6 +258,8 @@ function MatchEvents({
           Link do juiz
         </Button>
       </div>
+
+      <LineupBoard confronto={confronto} />
 
       <div>
         <h4 className="mb-2 text-[11px] font-bold tracking-[0.14em] text-muted-foreground uppercase">Súmula</h4>
