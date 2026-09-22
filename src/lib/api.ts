@@ -3,6 +3,7 @@ import { effectiveStatus, isExpired, isFull, maxPlayers, playerCount } from "./m
 import type {
   Confronto,
   ConfrontoStatus,
+  LineupRole,
   MatchEvent,
   MatchParticipant,
   MatchEventType,
