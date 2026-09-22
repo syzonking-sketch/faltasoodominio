@@ -3,6 +3,9 @@
 -- (sem conta). Cada Contra recebe um número de jogo único e a súmula aceita
 -- gols (com autor), cartões e substituições.
 
+-- Habilita pgcrypto (necessária para gen_random_bytes).
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 /* ------------------------------ Colunas novas ------------------------------ */
 
 ALTER TABLE public.match_confrontos
