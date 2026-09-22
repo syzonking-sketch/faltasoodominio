@@ -552,6 +552,27 @@ export async function confrontoRefereeLink(confrontoId: string): Promise<string>
   return unwrap<string>(await supabase.rpc("confronto_referee_link", { _confronto_id: confrontoId }));
 }
 
+/** Escalação do time (goleiro, titulares e reservas) definida pelo capitão. */
+export async function setConfrontoLineup(input: {
+  confronto_id: string;
+  team_side: TeamSide;
+  entries: { user_id: string; lineup_role: LineupRole }[];
+}): Promise<void> {
+  const response = await supabase.rpc("set_confronto_lineup", {
+    _confronto_id: input.confronto_id,
+    _team_side: input.team_side,
+    _entries: input.entries,
+  });
+  if (response.error) {
+    if (/set_confronto_lineup|lineup_role/i.test(response.error.message)) {
+      throw new Error(
+        "A escalação ainda não está ativa no banco. Rode o script supabase_confronto_lineups.sql no Supabase.",
+      );
+    }
+    throw new Error(response.error.message);
+  }
+}
+
 /* ----------------------------- Juiz por link ------------------------------ */
 
 export interface RefereeBoardPlayer {
