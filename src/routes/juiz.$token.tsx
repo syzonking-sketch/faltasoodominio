@@ -119,10 +119,13 @@ function RefereePage() {
     return (
       <main className="grid min-h-dvh place-items-center bg-background p-6 text-center">
         <div className="max-w-sm space-y-2">
-          <h1 className="text-display text-2xl font-extrabold">Link inválido</h1>
+          <h1 className="text-display text-2xl font-extrabold">Não foi possível abrir a súmula</h1>
           <p className="text-sm text-muted-foreground">
-            Este convite de juiz não existe mais. Peça um novo link para o capitão.
+            {boardQuery.error ? friendlyError(boardQuery.error) : "Peça um novo link para o capitão."}
           </p>
+          <Button className="rounded-xl" variant="outline" onClick={() => void boardQuery.refetch()}>
+            Tentar novamente
+          </Button>
         </div>
       </main>
     );

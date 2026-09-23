@@ -172,7 +172,7 @@ BEGIN
               FROM matches m WHERE m.id = c.match_id),
     'players', COALESCE((
       SELECT jsonb_agg(jsonb_build_object(
-        'id', p.id, 'name', COALESCE(NULLIF(p.nickname, ''), p.full_name), 'photo_url', p.photo_url, 'team_side', mp.team_side
+        'id', p.id, 'name', COALESCE(NULLIF(p.nickname, ''), p.full_name), 'photo_url', p.avatar_url, 'team_side', mp.team_side
       ) ORDER BY mp.team_side, COALESCE(NULLIF(p.nickname, ''), p.full_name))
       FROM match_participants mp JOIN profiles p ON p.id = mp.user_id
       WHERE mp.match_id = c.match_id AND mp.role = 'player'
