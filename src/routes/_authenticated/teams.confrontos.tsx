@@ -370,7 +370,29 @@ function ConfrontosPage() {
   const [refereeMode, setRefereeMode] = useState<"player" | "link">("player");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
-  const confrontosQuery = useQuery({ queryKey: ["confrontos"], queryFn: fetchConfrontos });
+  const confrontosQuery = useQuery({
+    queryKey: ["confrontos"],
+    queryFn: fetchConfrontos,
+    refetchInterval: 60_000,
+  });
+
+  // Encerramento automático: ao carregar a lista, contras cujo horário já passou
+  // têm a partida vinculada finalizada no banco.
+  const confrontos = confrontosQuery.data;
+  useEffect(() => {
+    const expired = (confrontos ?? []).filter(
+      (item) => isConfrontoOver(item) && item.match,
+    );
+    if (expired.length === 0) return;
+    void Promise.allSettled(
+      expired.map((item) =>
+        autoFinishIfExpired({
+          ...(item.match as never),
+          status: "active",
+        }),
+      ),
+    );
+  }, [confrontos]);
   const teamsQuery = useQuery({ queryKey: ["teams"], queryFn: fetchTeams });
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
 
