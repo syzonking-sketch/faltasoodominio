@@ -386,10 +386,9 @@ function ConfrontosPage() {
     if (expired.length === 0) return;
     void Promise.allSettled(
       expired.map((item) =>
-        autoFinishIfExpired({
-          ...(item.match as unknown as Record<string, unknown>),
-          status: "active",
-        } as never),
+        autoFinishIfExpired(
+          Object.assign({}, item.match, { status: "active" }) as never,
+        ),
       ),
     );
   }, [confrontos]);
