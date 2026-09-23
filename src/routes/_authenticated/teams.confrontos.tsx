@@ -50,6 +50,7 @@ import {
   removeMatchEvent,
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { DEFAULT_DURATION_MINUTES } from "@/lib/match-utils";
 import { confrontoSchema, type ConfrontoValues } from "@/lib/schemas";
 import { friendlyError } from "@/lib/supabase";
 import type { Confronto, MatchEventType, TeamSide } from "@/lib/types";
