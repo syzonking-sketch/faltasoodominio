@@ -631,8 +631,14 @@ function ConfrontosPage() {
           ) : (
             <ul className="space-y-3">
               {(confrontosQuery.data ?? []).map((confronto) => {
-                const status = statusStyle[confronto.status];
-                const finished = confronto.status === "confirmed";
+                const over = isConfrontoOver(confronto);
+                const status = over
+                  ? {
+                      text: "ENCERRADO",
+                      className: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+                    }
+                  : statusStyle[confronto.status];
+                const finished = confronto.status === "confirmed" || over;
                 const scoreA = confronto.match?.score_team_a ?? confronto.reported_score_a_by_a ?? 0;
                 const scoreB = confronto.match?.score_team_b ?? confronto.reported_score_b_by_a ?? 0;
 
