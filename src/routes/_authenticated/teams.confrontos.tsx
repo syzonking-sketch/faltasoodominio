@@ -16,7 +16,7 @@ import {
   Swords,
   Trash2,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -39,6 +39,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   addMatchEvent,
+  autoFinishIfExpired,
   confrontoRefereeLink,
   createConfronto,
   fetchConfrontos,
@@ -50,6 +51,7 @@ import {
   removeMatchEvent,
 } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { DEFAULT_DURATION_MINUTES } from "@/lib/match-utils";
 import { confrontoSchema, type ConfrontoValues } from "@/lib/schemas";
 import { friendlyError } from "@/lib/supabase";
 import type { Confronto, MatchEventType, TeamSide } from "@/lib/types";
@@ -98,6 +100,28 @@ function formatConfrontoDate(value: string) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+/**
+ * Horário real de término do contra: usa `finished_at` da partida vinculada
+ * quando existir, senão a data marcada + duração padrão. Instantes absolutos,
+ * comparados com o relógio local (fuso respeitado automaticamente).
+ */
+function confrontoEnd(confronto: Confronto): Date | null {
+  const match = confronto.match as { finished_at?: string | null } | null | undefined;
+  if (match?.finished_at) return new Date(match.finished_at);
+  const base = confronto.scheduled_at ?? null;
+  if (!base) return null;
+  const start = new Date(base);
+  if (Number.isNaN(start.getTime())) return null;
+  return new Date(start.getTime() + DEFAULT_DURATION_MINUTES * 60_000);
+}
+
+/** True quando o horário do contra já passou e ele ainda consta como marcado. */
+function isConfrontoOver(confronto: Confronto): boolean {
+  if (confronto.status !== "pending") return false;
+  const end = confrontoEnd(confronto);
+  return end !== null && end.getTime() <= Date.now();
 }
 
 function MatchEvents({
@@ -346,7 +370,28 @@ function ConfrontosPage() {
   const [refereeMode, setRefereeMode] = useState<"player" | "link">("player");
   const [inviteLink, setInviteLink] = useState<string | null>(null);
 
-  const confrontosQuery = useQuery({ queryKey: ["confrontos"], queryFn: fetchConfrontos });
+  const confrontosQuery = useQuery({
+    queryKey: ["confrontos"],
+    queryFn: fetchConfrontos,
+    refetchInterval: 60_000,
+  });
+
+  // Encerramento automático: ao carregar a lista, contras cujo horário já passou
+  // têm a partida vinculada finalizada no banco.
+  const confrontos = confrontosQuery.data;
+  useEffect(() => {
+    const expired = (confrontos ?? []).filter(
+      (item) => isConfrontoOver(item) && item.match,
+    );
+    if (expired.length === 0) return;
+    void Promise.allSettled(
+      expired.map((item) =>
+        autoFinishIfExpired(
+          Object.assign({}, item.match, { status: "active" }) as never,
+        ),
+      ),
+    );
+  }, [confrontos]);
   const teamsQuery = useQuery({ queryKey: ["teams"], queryFn: fetchTeams });
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
 
@@ -585,8 +630,14 @@ function ConfrontosPage() {
           ) : (
             <ul className="space-y-3">
               {(confrontosQuery.data ?? []).map((confronto) => {
-                const status = statusStyle[confronto.status];
-                const finished = confronto.status === "confirmed";
+                const over = isConfrontoOver(confronto);
+                const status = over
+                  ? {
+                      text: "ENCERRADO",
+                      className: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+                    }
+                  : statusStyle[confronto.status];
+                const finished = confronto.status === "confirmed" || over;
                 const scoreA = confronto.match?.score_team_a ?? confronto.reported_score_a_by_a ?? 0;
                 const scoreB = confronto.match?.score_team_b ?? confronto.reported_score_b_by_a ?? 0;
 
