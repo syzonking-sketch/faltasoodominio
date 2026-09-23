@@ -102,6 +102,28 @@ function formatConfrontoDate(value: string) {
   });
 }
 
+/**
+ * Horário real de término do contra: usa `finished_at` da partida vinculada
+ * quando existir, senão a data marcada + duração padrão. Instantes absolutos,
+ * comparados com o relógio local (fuso respeitado automaticamente).
+ */
+function confrontoEnd(confronto: Confronto): Date | null {
+  const match = confronto.match as { finished_at?: string | null } | null | undefined;
+  if (match?.finished_at) return new Date(match.finished_at);
+  const base = confronto.scheduled_at ?? null;
+  if (!base) return null;
+  const start = new Date(base);
+  if (Number.isNaN(start.getTime())) return null;
+  return new Date(start.getTime() + DEFAULT_DURATION_MINUTES * 60_000);
+}
+
+/** True quando o horário do contra já passou e ele ainda consta como marcado. */
+function isConfrontoOver(confronto: Confronto): boolean {
+  if (confronto.status !== "pending") return false;
+  const end = confrontoEnd(confronto);
+  return end !== null && end.getTime() <= Date.now();
+}
+
 function MatchEvents({
   confronto,
   onDone,
