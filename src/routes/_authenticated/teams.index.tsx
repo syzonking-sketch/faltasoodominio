@@ -150,12 +150,13 @@ function TeamsPage() {
     ?? null;
 
   const filteredDiscover = useMemo(() => {
-    const term = teamSearch.trim().toLowerCase();
+    const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const term = normalize(teamSearch.trim());
     if (!term) return categorized.discover;
-    return categorized.discover.filter((team) =>
-      [team.name, team.city, team.state].filter(Boolean).join(" ").toLowerCase().includes(term),
+    return teams.filter((team) =>
+      normalize([team.name, team.city, team.state].filter(Boolean).join(" ")).includes(term),
     );
-  }, [categorized.discover, teamSearch]);
+  }, [categorized.discover, teams, teamSearch]);
 
   const primaryConfrontos = useMemo(
     () => primaryTeam ? confrontos.filter((item) => teamInConfronto(item, primaryTeam.id)) : [],
