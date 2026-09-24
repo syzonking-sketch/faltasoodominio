@@ -550,7 +550,7 @@ function TeamsPage() {
                     </button>
                   ) : null}
                 </div>
-                {categorized.discover.length === 0 ? (
+                {categorized.discover.length === 0 && !teamSearch.trim() ? (
                   <div className="rounded-[1.75rem] border border-dashed border-border bg-surface/60 p-6 text-center"><Users className="mx-auto size-7 text-primary" /><p className="mt-2 font-bold">Nenhum outro time disponível</p><p className="mt-1 text-xs text-muted-foreground">Novos times da comunidade aparecerão aqui.</p></div>
                 ) : filteredDiscover.length === 0 ? (
                   <div className="rounded-[1.75rem] border border-dashed border-border bg-surface/60 p-6 text-center"><Search className="mx-auto size-7 text-primary" /><p className="mt-2 font-bold">Nenhum time encontrado</p><p className="mt-1 text-xs text-muted-foreground">Tente buscar por outro nome ou cidade.</p></div>
