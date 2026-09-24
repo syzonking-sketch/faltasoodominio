@@ -10,6 +10,7 @@ import {
   Loader2,
   MapPin,
   Plus,
+  Search,
   Shield,
   Sparkles,
   Star,
@@ -119,6 +120,7 @@ function TeamsPage() {
   const [shieldBlob, setShieldBlob] = useState<Blob | null>(null);
   const [shieldPreview, setShieldPreview] = useState<string | null>(null);
   const [compressingShield, setCompressingShield] = useState(false);
+  const [teamSearch, setTeamSearch] = useState("");
   const shieldInputRef = useRef<HTMLInputElement>(null);
 
   const teamsQuery = useQuery({ queryKey: ["teams"], queryFn: fetchTeams });
@@ -146,6 +148,14 @@ function TeamsPage() {
   const primaryTeam = categorized.mine.find((team) => team.captain_id === user?.id)
     ?? categorized.mine.find((team) => team.members?.some((member) => member.user_id === user?.id && member.status === "active"))
     ?? null;
+
+  const filteredDiscover = useMemo(() => {
+    const term = teamSearch.trim().toLowerCase();
+    if (!term) return categorized.discover;
+    return categorized.discover.filter((team) =>
+      [team.name, team.city, team.state].filter(Boolean).join(" ").toLowerCase().includes(term),
+    );
+  }, [categorized.discover, teamSearch]);
 
   const primaryConfrontos = useMemo(
     () => primaryTeam ? confrontos.filter((item) => teamInConfronto(item, primaryTeam.id)) : [],
@@ -524,11 +534,28 @@ function TeamsPage() {
 
               <section id="descobrir-times" className="mt-10 scroll-mt-6">
                 <div className="mb-4"><p className="text-[10px] font-bold tracking-[0.16em] text-primary uppercase">Futebol na região</p><h2 className="text-display text-2xl font-extrabold">Descobrir times</h2></div>
+                <div className="relative mb-4">
+                  <Search className="absolute top-1/2 left-4 size-5 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    value={teamSearch}
+                    onChange={(e) => setTeamSearch(e.target.value)}
+                    placeholder="Buscar times por nome ou cidade..."
+                    aria-label="Buscar times"
+                    className="elevate-soft h-14 rounded-full border-border/60 bg-surface pl-12 text-base"
+                  />
+                  {teamSearch ? (
+                    <button type="button" aria-label="Limpar busca" onClick={() => setTeamSearch("")} className="absolute top-1/2 right-3 grid size-8 -translate-y-1/2 place-items-center rounded-full bg-surface-2 text-muted-foreground">
+                      <X className="size-4" />
+                    </button>
+                  ) : null}
+                </div>
                 {categorized.discover.length === 0 ? (
                   <div className="rounded-[1.75rem] border border-dashed border-border bg-surface/60 p-6 text-center"><Users className="mx-auto size-7 text-primary" /><p className="mt-2 font-bold">Nenhum outro time disponível</p><p className="mt-1 text-xs text-muted-foreground">Novos times da comunidade aparecerão aqui.</p></div>
+                ) : filteredDiscover.length === 0 ? (
+                  <div className="rounded-[1.75rem] border border-dashed border-border bg-surface/60 p-6 text-center"><Search className="mx-auto size-7 text-primary" /><p className="mt-2 font-bold">Nenhum time encontrado</p><p className="mt-1 text-xs text-muted-foreground">Tente buscar por outro nome ou cidade.</p></div>
                 ) : (
                   <ul className="space-y-3">
-                    {categorized.discover.map((team) => (
+                    {filteredDiscover.map((team) => (
                       <li key={team.id} className="elevate-soft rounded-[1.75rem] border border-border/60 bg-card p-4">
                         <div className="flex items-center gap-3">
                           <button type="button" onClick={() => setSelectedTeamId(team.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
