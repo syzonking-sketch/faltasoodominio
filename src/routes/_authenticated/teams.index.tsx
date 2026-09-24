@@ -556,17 +556,25 @@ function TeamsPage() {
                   <div className="rounded-[1.75rem] border border-dashed border-border bg-surface/60 p-6 text-center"><Search className="mx-auto size-7 text-primary" /><p className="mt-2 font-bold">Nenhum time encontrado</p><p className="mt-1 text-xs text-muted-foreground">Tente buscar por outro nome ou cidade.</p></div>
                 ) : (
                   <ul className="space-y-3">
-                    {filteredDiscover.map((team) => (
-                      <li key={team.id} className="elevate-soft rounded-[1.75rem] border border-border/60 bg-card p-4">
-                        <div className="flex items-center gap-3">
-                          <button type="button" onClick={() => setSelectedTeamId(team.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
-                            <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-surface-2 p-2">{team.shield_url ? <img src={team.shield_url} alt={`Escudo ${team.name}`} className="size-full object-contain" /> : <Shield className="size-7 text-primary" />}</div>
-                            <div className="min-w-0"><p className="text-display truncate text-lg font-extrabold">{team.name}</p><p className="mt-1 truncate text-xs text-muted-foreground">{activeMembers(team).length} jogadores • {[team.city, team.state].filter(Boolean).join(" • ") || "Local não informado"}</p></div>
-                          </button>
-                          <Button size="sm" className="shrink-0 rounded-full" disabled={join.isPending} onClick={() => join.mutate(team.id)}>{join.isPending && join.variables === team.id ? <Loader2 className="size-4 animate-spin" /> : <UserPlus className="size-4" />} Entrar</Button>
-                        </div>
-                      </li>
-                    ))}
+                    {filteredDiscover.map((team) => {
+                      const myMembership = team.members?.find((member) => member.user_id === user?.id);
+                      const isMine = team.captain_id === user?.id || Boolean(myMembership);
+                      return (
+                        <li key={team.id} className="elevate-soft rounded-[1.75rem] border border-border/60 bg-card p-4">
+                          <div className="flex items-center gap-3">
+                            <button type="button" onClick={() => setSelectedTeamId(team.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                              <div className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-2xl bg-surface-2 p-2">{team.shield_url ? <img src={team.shield_url} alt={`Escudo ${team.name}`} className="size-full object-contain" /> : <Shield className="size-7 text-primary" />}</div>
+                              <div className="min-w-0"><p className="text-display truncate text-lg font-extrabold">{team.name}</p><p className="mt-1 truncate text-xs text-muted-foreground">{activeMembers(team).length} jogadores • {[team.city, team.state].filter(Boolean).join(" • ") || "Local não informado"}</p></div>
+                            </button>
+                            {isMine ? (
+                              <Badge variant="secondary" className="shrink-0">{team.captain_id === user?.id ? "Capitão" : myMembership?.status === "active" ? "No elenco" : "Aguardando"}</Badge>
+                            ) : (
+                              <Button size="sm" className="shrink-0 rounded-full" disabled={join.isPending} onClick={() => join.mutate(team.id)}>{join.isPending && join.variables === team.id ? <Loader2 className="size-4 animate-spin" /> : <UserPlus className="size-4" />} Entrar</Button>
+                            )}
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </section>
