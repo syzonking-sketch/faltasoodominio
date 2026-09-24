@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/lib/auth";
+import { IosInstallPrompt } from "@/components/app/ios-install-prompt";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -126,6 +127,7 @@ function RootComponent() {
       <AuthProvider>
         <Outlet />
       </AuthProvider>
+      <IosInstallPrompt />
       <Toaster position="top-center" />
     </QueryClientProvider>
   );
