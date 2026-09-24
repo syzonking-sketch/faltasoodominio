@@ -153,9 +153,11 @@ function TeamsPage() {
     const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
     const term = normalize(teamSearch.trim());
     if (!term) return categorized.discover;
-    return teams.filter((team) =>
-      normalize([team.name, team.city, team.state].filter(Boolean).join(" ")).includes(term),
-    );
+    return teams.filter((team) => {
+      const name = normalize(team.name ?? "");
+      if (name.startsWith(term)) return true;
+      return name.split(/\s+/).some((word) => word.startsWith(term));
+    });
   }, [categorized.discover, teams, teamSearch]);
 
   const primaryConfrontos = useMemo(
