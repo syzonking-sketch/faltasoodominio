@@ -24,12 +24,12 @@ const MapRadar = lazy(() => import("@/components/app/map-radar"));
 export const Route = createFileRoute("/_authenticated/matches/new")({
   head: () => ({
     meta: [
-      { title: "Criar Partida — The Match" },
+      { title: "Criar Partida — The Matches" },
       {
         name: "description",
         content: "Abra uma pelada ou campeonato na sua quadra, escolha o local no mapa e chame a galera.",
       },
-      { property: "og:title", content: "Criar Partida — The Match" },
+      { property: "og:title", content: "Criar Partida — The Matches" },
       {
         property: "og:description",
         content: "Escolha a quadra no mapa e coloque a bola pra rolar em segundos.",
