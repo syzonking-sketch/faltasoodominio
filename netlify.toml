@@ -1,3 +1,7 @@
 [build]
   command = "npm run build"
-  publish = ".output/public"
+  publish = "dist"
+
+[build.environment]
+  NITRO_PRESET = "netlify"
+  NODE_VERSION = "22"
