@@ -1,8 +1,8 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { Loader2, ShieldAlert } from "lucide-react";
+import { Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
-import logoAsset from "@/assets/logo.jpg.asset.json";
+import footballImage from "@/assets/matches-hero.jpg";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -32,6 +32,8 @@ export const Route = createFileRoute("/auth")({
         property: "og:description",
         content: "A plataforma do futebol amador em tempo real: radar de partidas, times e ranking.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: AuthPage,
@@ -41,6 +43,9 @@ function AuthPage() {
   const navigate = useNavigate();
   const { session, loading } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [activeTab, setActiveTab] = useState("signin");
 
   useEffect(() => {
     if (!loading && session) void navigate({ to: "/", replace: true });
@@ -136,155 +141,116 @@ function AuthPage() {
   }
 
   return (
-    <div className="bg-field flex min-h-dvh flex-col items-center justify-center px-4 py-10">
-      <div className="w-full max-w-md">
-        <div className="mb-6 text-center">
-          <span className="text-display inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-            A Elite da Várzea
-          </span>
-          <img src={logoAsset.url} alt="Logo" className="mx-auto mb-4 size-24 rounded-2xl border-2 border-primary/20 shadow-lg shadow-primary/10" />
-          <h1 className="text-display mt-4 text-6xl leading-none font-extrabold tracking-tight text-foreground italic">
-            THE <span className="text-primary">MATCH</span>
-          </h1>
-          <p className="mt-2 text-sm font-medium text-muted-foreground uppercase tracking-widest">
-            Radar Pro · Notas Reais · Ranking Elite
-          </p>
-        </div>
+    <div className="dark flex min-h-dvh items-center justify-center bg-nav text-foreground md:p-6">
+      <main className="relative isolate flex min-h-dvh w-full max-w-[420px] flex-col overflow-hidden bg-background md:min-h-[min(780px,calc(100dvh-48px))] md:rounded-[32px] md:border md:border-border md:shadow-2xl">
+        <img src={footballImage} alt="" className="pointer-events-none absolute inset-0 -z-20 size-full object-cover object-[center_40%]" />
+        <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/35 via-background/55 to-background" />
 
-        {!isSupabaseConfigured ? (
-          <div className="mb-4 flex items-start gap-3 rounded-2xl border border-accent/40 bg-accent/10 p-4">
-            <ShieldAlert className="mt-0.5 size-5 shrink-0 text-accent" />
-            <p className="text-xs text-foreground">
-              Falta a chave pública do seu projeto Supabase. Preencha
-              <code className="mx-1 rounded bg-surface-2 px-1">VITE_SUPABASE_ANON_KEY</code>
-              para liberar login e dados.
-            </p>
+        <header className="flex flex-col items-start px-7 pt-[clamp(54px,11dvh,102px)] pb-9 sm:px-8">
+          <div className="flex items-center gap-3">
+            <img src="/logo.webp" alt="TM" className="size-12 shrink-0 rounded-xl object-cover" />
+            <span className="text-display text-[25px] font-extrabold leading-none text-foreground">THE MATCH</span>
           </div>
-        ) : null}
+          <p className="mt-2 text-[10px] font-bold uppercase text-foreground/80">RADAR PRO · NOTAS REAIS · RANKING ELITE</p>
+        </header>
 
-        <div className="card-glow rounded-3xl border border-border bg-card p-5">
-          <Tabs defaultValue="signin">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Entrar</TabsTrigger>
-              <TabsTrigger value="signup">Criar conta</TabsTrigger>
+        <section className="mt-auto rounded-t-[28px] border-t border-border/70 bg-background/90 px-6 pt-6 pb-[max(28px,env(safe-area-inset-bottom))] backdrop-blur-xl sm:px-7 md:rounded-b-[32px]">
+          <h1 className="text-display text-[38px] leading-[0.95] font-extrabold italic text-foreground sm:text-[42px]">
+            ENTRE NO<br /><span className="text-primary">THE MATCH</span>
+          </h1>
+          <p className="mt-2 text-xs text-foreground/85">Encontre sua próxima partida.</p>
+
+          {!isSupabaseConfigured ? (
+            <div className="mt-4 flex items-start gap-2 rounded-lg border border-accent/40 bg-accent/10 p-3">
+              <ShieldAlert className="size-4 shrink-0 text-accent" />
+              <p className="text-xs">Conexão com o servidor não configurada.</p>
+            </div>
+          ) : null}
+
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-5">
+            <TabsList className="grid h-10 w-full grid-cols-2 rounded-full border border-border bg-surface-2 p-0.5">
+              <TabsTrigger value="signin" className="h-full rounded-full text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-primary data-[state=active]:font-semibold data-[state=active]:text-primary-foreground">Entrar</TabsTrigger>
+              <TabsTrigger value="signup" className="h-full rounded-full text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-primary data-[state=active]:font-semibold data-[state=active]:text-primary-foreground">Criar conta</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="signin" className="mt-5">
-              <form className="space-y-4" onSubmit={signIn.handleSubmit(handleSignIn)}>
+            <TabsContent value="signin" className="mt-4">
+              <form className="space-y-3" onSubmit={signIn.handleSubmit(handleSignIn)}>
                 <div>
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input id="email" type="email" autoComplete="email" {...signIn.register("email")} />
+                  <Label htmlFor="email" className="mb-1.5 block text-xs font-semibold text-foreground">E-mail</Label>
+                  <div className="relative">
+                    <Mail aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input id="email" type="email" autoComplete="email" placeholder="seu@email.com" className="h-11 rounded-full border-border bg-surface-2/90 pl-11 text-[16px] placeholder:text-muted-foreground focus-visible:ring-primary" {...signIn.register("email")} />
+                  </div>
                   <FieldError message={signIn.formState.errors.email?.message} />
                 </div>
                 <div>
-                  <Label htmlFor="password">Senha</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    autoComplete="current-password"
-                    {...signIn.register("password")}
-                  />
+                  <Label htmlFor="password" className="mb-1.5 block text-xs font-semibold text-foreground">Senha</Label>
+                  <div className="relative">
+                    <LockKeyhole aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input id="password" type={showSignInPassword ? "text" : "password"} autoComplete="current-password" placeholder="Digite sua senha" className="h-11 rounded-full border-border bg-surface-2/90 pr-11 pl-11 text-[16px] placeholder:text-muted-foreground focus-visible:ring-primary" {...signIn.register("password")} />
+                    <Button type="button" variant="ghost" size="icon" aria-label={showSignInPassword ? "Ocultar senha" : "Mostrar senha"} title={showSignInPassword ? "Ocultar senha" : "Mostrar senha"} onClick={() => setShowSignInPassword((value) => !value)} className="absolute top-1/2 right-1.5 size-9 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-transparent hover:text-foreground">
+                      {showSignInPassword ? <EyeOff /> : <Eye />}
+                    </Button>
+                  </div>
                   <FieldError message={signIn.formState.errors.password?.message} />
                 </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-                  CONVOCAR JOGADOR
+                <Button type="submit" className="mt-4 h-12 w-full rounded-full text-sm font-bold" disabled={submitting}>
+                  {submitting ? <Loader2 className="animate-spin" /> : null}ENTRAR
                 </Button>
               </form>
+              <p className="mt-4 text-center text-xs text-muted-foreground">Ainda não tem conta? <Button type="button" variant="link" onClick={() => setActiveTab("signup")} className="h-auto p-0 text-xs font-bold text-primary">Criar conta</Button></p>
             </TabsContent>
 
-            <TabsContent value="signup" className="mt-5">
-              <form className="space-y-4" onSubmit={signUp.handleSubmit(handleSignUp)}>
-                <div className="flex flex-col gap-4 rounded-2xl bg-surface-2 p-4 border border-border/50">
-                  <div className="flex items-center gap-4">
-                    <PlayerAvatar
-                      name={signUp.watch("full_name") || "Novo boleiro"}
-                      nickname={nicknamePreview}
-                      photoUrl={avatarPreview}
-                      size="lg"
-                    />
-                    <div className="space-y-1">
-                      <p className="text-sm font-bold text-foreground italic">ESCOLHA SEU AVATAR</p>
-                      <p className="text-[11px] leading-relaxed text-muted-foreground">
-                        Selecione um dos avatares da galera ou cole um link se preferir algo único.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-6 gap-2">
-                    {GENERIC_AVATARS.map((avatar) => (
-                      <button
-                        key={avatar.id}
-                        type="button"
-                        onClick={() => signUp.setValue("avatar_url", avatar.url)}
-                        className={cn(
-                          "relative size-10 overflow-hidden rounded-full border-2 transition-all hover:scale-110",
-                          avatarPreview === avatar.url 
-                            ? "border-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]" 
-                            : "border-border hover:border-primary/50"
-                        )}
-                      >
-                        <img src={avatar.url} alt={avatar.label} className="size-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="avatar_url" className="text-[10px] uppercase tracking-tighter opacity-70">Ou cole um link de imagem</Label>
-                    <Input 
-                      id="avatar_url" 
-                      className="h-8 text-xs" 
-                      placeholder="https://..." 
-                      {...signUp.register("avatar_url")} 
-                    />
-                  </div>
-                </div>
+            <TabsContent value="signup" className="mt-4">
+              <form className="space-y-3" onSubmit={signUp.handleSubmit(handleSignUp)}>
                 <div>
-                  <Label htmlFor="full_name">Nome completo</Label>
-                  <Input id="full_name" {...signUp.register("full_name")} />
+                  <Label htmlFor="full_name" className="mb-1 block text-xs font-semibold">Nome completo</Label>
+                  <Input id="full_name" autoComplete="name" className="h-10 rounded-full bg-surface-2/90 px-4 text-[16px]" {...signUp.register("full_name")} />
                   <FieldError message={signUp.formState.errors.full_name?.message} />
                 </div>
                 <div>
-                  <Label htmlFor="nickname">Apelido de quadra</Label>
-                  <Input id="nickname" placeholder="Ronaldinho da Vila" {...signUp.register("nickname")} />
+                  <Label htmlFor="nickname" className="mb-1 block text-xs font-semibold">Apelido de quadra</Label>
+                  <Input id="nickname" placeholder="Ronaldinho da Vila" className="h-10 rounded-full bg-surface-2/90 px-4 text-[16px]" {...signUp.register("nickname")} />
                   <FieldError message={signUp.formState.errors.nickname?.message} />
                 </div>
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="col-span-2">
-                    <Label htmlFor="city">Cidade</Label>
-                    <Input id="city" {...signUp.register("city")} />
-                    <FieldError message={signUp.formState.errors.city?.message} />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">UF</Label>
-                    <Input id="state" maxLength={2} placeholder="SP" {...signUp.register("state")} />
-                    <FieldError message={signUp.formState.errors.state?.message} />
-                  </div>
+                <div className="grid grid-cols-[minmax(0,1fr)_72px] gap-3">
+                  <div className="min-w-0"><Label htmlFor="city" className="mb-1 block text-xs font-semibold">Cidade</Label><Input id="city" className="h-10 rounded-full bg-surface-2/90 px-4 text-[16px]" {...signUp.register("city")} /><FieldError message={signUp.formState.errors.city?.message} /></div>
+                  <div><Label htmlFor="state" className="mb-1 block text-xs font-semibold">UF</Label><Input id="state" maxLength={2} placeholder="SP" className="h-10 rounded-full bg-surface-2/90 px-4 text-[16px]" {...signUp.register("state")} /><FieldError message={signUp.formState.errors.state?.message} /></div>
                 </div>
                 <div>
-                  <Label htmlFor="signup-email">E-mail</Label>
-                  <Input id="signup-email" type="email" {...signUp.register("email")} />
+                  <Label htmlFor="signup-email" className="mb-1 block text-xs font-semibold">E-mail</Label>
+                  <div className="relative"><Mail aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" /><Input id="signup-email" type="email" autoComplete="email" placeholder="seu@email.com" className="h-10 rounded-full bg-surface-2/90 pr-4 pl-11 text-[16px]" {...signUp.register("email")} /></div>
                   <FieldError message={signUp.formState.errors.email?.message} />
                 </div>
                 <div>
-                  <Label htmlFor="signup-password">Senha</Label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    autoComplete="new-password"
-                    {...signUp.register("password")}
-                  />
+                  <Label htmlFor="signup-password" className="mb-1 block text-xs font-semibold">Senha</Label>
+                  <div className="relative"><LockKeyhole aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" /><Input id="signup-password" type={showSignUpPassword ? "text" : "password"} autoComplete="new-password" className="h-10 rounded-full bg-surface-2/90 pr-11 pl-11 text-[16px]" {...signUp.register("password")} /><Button type="button" variant="ghost" size="icon" aria-label={showSignUpPassword ? "Ocultar senha" : "Mostrar senha"} title={showSignUpPassword ? "Ocultar senha" : "Mostrar senha"} onClick={() => setShowSignUpPassword((value) => !value)} className="absolute top-1/2 right-1 size-8 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-transparent hover:text-foreground">{showSignUpPassword ? <EyeOff /> : <Eye />}</Button></div>
                   <FieldError message={signUp.formState.errors.password?.message} />
                 </div>
-                <Button type="submit" className="w-full" disabled={submitting}>
-                  {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-                  REGISTRAR NO ELENCO
+                <div className="rounded-xl border border-border bg-surface-2/70 p-3">
+                  <div className="flex items-center gap-3">
+                    <PlayerAvatar name={signUp.watch("full_name") || "Novo boleiro"} nickname={nicknamePreview} photoUrl={avatarPreview} size="md" />
+                    <div><p className="text-xs font-semibold">Escolha seu avatar</p><p className="text-[11px] text-muted-foreground">Selecione um jogador ou use um link.</p></div>
+                  </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {GENERIC_AVATARS.map((avatar) => (
+                      <Button key={avatar.id} type="button" variant="ghost" size="icon" aria-label={avatar.label} aria-pressed={avatarPreview === avatar.url} onClick={() => signUp.setValue("avatar_url", avatar.url)} className={cn("size-9 rounded-full border-2 p-0", avatarPreview === avatar.url ? "border-primary" : "border-border")}>
+                        <img src={avatar.url} alt="" className="size-full rounded-full object-cover" />
+                      </Button>
+                    ))}
+                  </div>
+                  <Label htmlFor="avatar_url" className="mt-3 mb-1 block text-[11px] text-muted-foreground">Ou cole um link de imagem</Label>
+                  <Input id="avatar_url" placeholder="https://..." className="h-9 rounded-full bg-surface-2 px-4 text-xs" {...signUp.register("avatar_url")} />
+                  <FieldError message={signUp.formState.errors.avatar_url?.message} />
+                </div>
+                <Button type="submit" className="mt-3 h-12 w-full rounded-full text-sm font-bold" disabled={submitting}>
+                  {submitting ? <Loader2 className="animate-spin" /> : null}CRIAR CONTA
                 </Button>
               </form>
             </TabsContent>
           </Tabs>
-        </div>
-      </div>
+        </section>
+      </main>
     </div>
   );
 }

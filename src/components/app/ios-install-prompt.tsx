@@ -29,6 +29,7 @@ export function IosInstallPrompt() {
       const timer = window.setTimeout(() => setVisible(true), 900);
       return () => window.clearTimeout(timer);
     }
+    return undefined;
   }, []);
 
   if (!visible) return null;
