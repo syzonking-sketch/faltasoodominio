@@ -45,6 +45,7 @@ function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [activeTab, setActiveTab] = useState("signin");
 
   useEffect(() => {
     if (!loading && session) void navigate({ to: "/", replace: true });
@@ -166,7 +167,7 @@ function AuthPage() {
             </div>
           ) : null}
 
-          <Tabs defaultValue="signin" className="mt-5">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-5">
             <TabsList className="grid h-10 w-full grid-cols-2 rounded-full border border-border bg-surface-2 p-0.5">
               <TabsTrigger value="signin" className="h-full rounded-full text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-primary data-[state=active]:font-semibold data-[state=active]:text-primary-foreground">Entrar</TabsTrigger>
               <TabsTrigger value="signup" className="h-full rounded-full text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-primary data-[state=active]:font-semibold data-[state=active]:text-primary-foreground">Criar conta</TabsTrigger>
@@ -197,7 +198,7 @@ function AuthPage() {
                   {submitting ? <Loader2 className="animate-spin" /> : null}ENTRAR
                 </Button>
               </form>
-              <p className="mt-4 text-center text-xs text-muted-foreground">Ainda não tem conta? <TabsTrigger value="signup" className="h-auto p-0 font-bold text-primary shadow-none hover:text-primary/80 data-[state=active]:bg-transparent">Criar conta</TabsTrigger></p>
+              <p className="mt-4 text-center text-xs text-muted-foreground">Ainda não tem conta? <Button type="button" variant="link" onClick={() => setActiveTab("signup")} className="h-auto p-0 text-xs font-bold text-primary">Criar conta</Button></p>
             </TabsContent>
 
             <TabsContent value="signup" className="mt-4">
