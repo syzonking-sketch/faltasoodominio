@@ -187,7 +187,7 @@ function AuthPage() {
                   <div className="relative">
                     <LockKeyhole aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input id="password" type={showSignInPassword ? "text" : "password"} autoComplete="current-password" placeholder="Digite sua senha" className="h-11 rounded-full border-border bg-surface-2/90 pr-11 pl-11 text-[16px] placeholder:text-muted-foreground focus-visible:ring-primary" {...signIn.register("password")} />
-                    <Button type="button" variant="ghost" size="icon" aria-label={showSignInPassword ? "Ocultar senha" : "Mostrar senha"} title={showSignInPassword ? "Ocultar senha" : "Mostrar senha" onClick={() => setShowSignInPassword((value) => !value)} className="absolute top-1/2 right-1.5 size-9 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-transparent hover:text-foreground">
+                    <Button type="button" variant="ghost" size="icon" aria-label={showSignInPassword ? "Ocultar senha" : "Mostrar senha"} title={showSignInPassword ? "Ocultar senha" : "Mostrar senha"} onClick={() => setShowSignInPassword((value) => !value)} className="absolute top-1/2 right-1.5 size-9 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-transparent hover:text-foreground">
                       {showSignInPassword ? <EyeOff /> : <Eye />}
                     </Button>
                   </div>
@@ -223,7 +223,7 @@ function AuthPage() {
                 </div>
                 <div>
                   <Label htmlFor="signup-password" className="mb-1 block text-xs font-semibold">Senha</Label>
-                  <div className="relative"><LockKeyhole aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" /><Input id="signup-password" type={showSignUpPassword ? "text" : "password"} autoComplete="new-password" className="h-10 rounded-full bg-surface-2/90 pr-11 pl-11 text-[16px]" {...signUp.register("password")} /><Button type="button" variant="ghost" size="icon" aria-label={showSignUpPassword ? "Ocultar senha" : "Mostrar senha"} title={showSignUpPassword ? "Ocultar senha" : "Mostrar senha" onClick={() => setShowSignUpPassword((value) => !value)} className="absolute top-1/2 right-1 size-8 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-transparent hover:text-foreground">{showSignUpPassword ? <EyeOff /> : <Eye />}</Button></div>
+                  <div className="relative"><LockKeyhole aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted-foreground" /><Input id="signup-password" type={showSignUpPassword ? "text" : "password"} autoComplete="new-password" className="h-10 rounded-full bg-surface-2/90 pr-11 pl-11 text-[16px]" {...signUp.register("password")} /><Button type="button" variant="ghost" size="icon" aria-label={showSignUpPassword ? "Ocultar senha" : "Mostrar senha"} title={showSignUpPassword ? "Ocultar senha" : "Mostrar senha"} onClick={() => setShowSignUpPassword((value) => !value)} className="absolute top-1/2 right-1 size-8 -translate-y-1/2 rounded-full text-muted-foreground hover:bg-transparent hover:text-foreground">{showSignUpPassword ? <EyeOff /> : <Eye />}</Button></div>
                   <FieldError message={signUp.formState.errors.password?.message} />
                 </div>
                 <div className="rounded-xl border border-border bg-surface-2/70 p-3">
