@@ -2,7 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Eye, EyeOff, Loader2, LockKeyhole, Mail, ShieldAlert } from "lucide-react";
 import { useEffect, useState } from "react";
-import footballImage from "@/assets/matches-hero.jpg";
+import footballImage from "@/assets/auth-football.jpg";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -142,20 +142,20 @@ function AuthPage() {
 
   return (
     <div className="dark flex min-h-dvh items-center justify-center bg-nav text-foreground md:p-6">
-      <main className="relative isolate flex min-h-dvh w-full max-w-[420px] flex-col overflow-hidden bg-background md:min-h-[min(780px,calc(100dvh-48px))] md:rounded-[32px] md:border md:border-border md:shadow-2xl">
-        <img src={footballImage} alt="" className="pointer-events-none absolute inset-0 -z-20 size-full object-cover object-[center_40%]" />
-        <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-b from-background/35 via-background/55 to-background" />
+      <main className="relative isolate flex min-h-dvh w-full max-w-[375px] flex-col overflow-hidden bg-background md:min-h-[min(780px,calc(100dvh-48px))] md:rounded-[32px] md:border md:border-border md:shadow-2xl">
+        <img src={footballImage} alt="" width={768} height={1280} className="pointer-events-none absolute inset-x-0 top-0 -z-20 h-[54%] w-full object-cover object-[center_72%]" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[57%] bg-gradient-to-b from-background/30 via-background/10 to-background" />
 
-        <header className="flex flex-col items-start px-7 pt-[clamp(54px,11dvh,102px)] pb-9 sm:px-8">
+        <header className="flex flex-col items-start px-6 pt-[clamp(70px,13dvh,100px)] pb-9">
           <div className="flex items-center gap-3">
-            <img src="/logo.webp" alt="TM" className="size-12 shrink-0 rounded-xl object-cover" />
+            <img src="/logo.webp" alt="TM" className="size-10 shrink-0 rounded-lg object-cover" />
             <span className="text-display text-[25px] font-extrabold leading-none text-foreground">THE MATCH</span>
           </div>
-          <p className="mt-2 text-[10px] font-bold uppercase text-foreground/80">RADAR PRO · NOTAS REAIS · RANKING ELITE</p>
+          <p className="mt-2 text-[9px] font-bold uppercase text-foreground/80">RADAR PRO · NOTAS REAIS · RANKING ELITE</p>
         </header>
 
-        <section className="mt-auto rounded-t-[28px] border-t border-border/70 bg-background/90 px-6 pt-6 pb-[max(28px,env(safe-area-inset-bottom))] backdrop-blur-xl sm:px-7 md:rounded-b-[32px]">
-          <h1 className="text-display text-[38px] leading-[0.95] font-extrabold italic text-foreground sm:text-[42px]">
+        <section className="mt-auto rounded-t-[28px] border-t border-border/70 bg-background/95 px-6 pt-6 pb-[max(22px,env(safe-area-inset-bottom))] md:rounded-b-[32px]">
+          <h1 className="text-display text-[38px] leading-[0.95] font-extrabold italic text-foreground">
             ENTRE NO<br /><span className="text-primary">THE MATCH</span>
           </h1>
           <p className="mt-2 text-xs text-foreground/85">Encontre sua próxima partida.</p>
@@ -169,12 +169,12 @@ function AuthPage() {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-5">
             <TabsList className="grid h-10 w-full grid-cols-2 rounded-full border border-border bg-surface-2 p-0.5">
-              <TabsTrigger value="signin" className="h-full rounded-full text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-primary data-[state=active]:font-semibold data-[state=active]:text-primary-foreground">Entrar</TabsTrigger>
-              <TabsTrigger value="signup" className="h-full rounded-full text-xs font-medium text-muted-foreground shadow-none data-[state=active]:bg-primary data-[state=active]:font-semibold data-[state=active]:text-primary-foreground">Criar conta</TabsTrigger>
+              <TabsTrigger value="signin" className="h-full rounded-full text-xs font-medium text-muted-foreground shadow-none data-[state=active]:!bg-primary data-[state=active]:font-semibold data-[state=active]:!text-primary-foreground data-[state=inactive]:!bg-transparent">Entrar</TabsTrigger>
+              <TabsTrigger value="signup" className="h-full rounded-full text-xs font-medium text-muted-foreground shadow-none data-[state=active]:!bg-primary data-[state=active]:font-semibold data-[state=active]:!text-primary-foreground data-[state=inactive]:!bg-transparent">Criar conta</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin" className="mt-4">
-              <form className="space-y-3" onSubmit={signIn.handleSubmit(handleSignIn)}>
+               <form className="space-y-3" onSubmit={signIn.handleSubmit(handleSignIn)}>
                 <div>
                   <Label htmlFor="email" className="mb-1.5 block text-xs font-semibold text-foreground">E-mail</Label>
                   <div className="relative">
@@ -192,9 +192,9 @@ function AuthPage() {
                       {showSignInPassword ? <EyeOff /> : <Eye />}
                     </Button>
                   </div>
-                  <FieldError message={signIn.formState.errors.password?.message} />
+                   <FieldError message={signIn.formState.errors.password?.message} />
                 </div>
-                <Button type="submit" className="mt-4 h-12 w-full rounded-full text-sm font-bold" disabled={submitting}>
+                 <Button type="submit" className="mt-4 h-11 w-full rounded-full text-sm font-bold" disabled={submitting}>
                   {submitting ? <Loader2 className="animate-spin" /> : null}ENTRAR
                 </Button>
               </form>
