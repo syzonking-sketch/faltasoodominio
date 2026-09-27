@@ -28,13 +28,13 @@ const MapRadar = lazy(() => import("@/components/app/map-radar"));
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Radar de Peladas — The Match" },
+      { title: "Radar de Peladas — The Matches" },
       {
         name: "description",
         content:
           "Mapa ao vivo das quadras e campos com partidas acontecendo agora perto de você. Entre como jogador ou telespectador.",
       },
-      { property: "og:title", content: "Radar de Peladas — The Match" },
+      { property: "og:title", content: "Radar de Peladas — The Matches" },
       { property: "og:type", content: "website" },
       {
         property: "og:description",
