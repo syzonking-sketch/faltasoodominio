@@ -2,35 +2,29 @@ import { useState } from "react";
 import authImage from "@/assets/auth-football.jpg";
 import matchesImage from "@/assets/matches-hero.jpg";
 import radarImage from "@/assets/radar-football.jpg";
-import { GENERIC_AVATARS } from "@/components/app/player-avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const SLIDES = [
   {
     image: authImage,
-    pill: "PARTIDAS PERTO DE VOCÊ",
     title: ["ACHE O", "PRÓXIMO", "JOGO"],
     subtitle:
       "Descubra partidas no seu bairro, veja horários reais e entre em quadra quando quiser.",
   },
   {
     image: radarImage,
-    pill: "NOTAS REAIS",
     title: ["AVALIE", "QUEM", "JOGOU"],
     subtitle:
       "Dê notas de verdade depois do jogo e construa sua reputação na várzea.",
   },
   {
     image: matchesImage,
-    pill: "RANKING ELITE",
     title: ["SUBA NO", "RANKING", "DA VÁRZEA"],
     subtitle:
       "Evolua a cada partida e dispute o topo do ranking da sua região.",
   },
 ];
-
-const PILL_AVATARS = GENERIC_AVATARS.slice(0, 3);
 
 export function Onboarding({ onFinish }: { onFinish: () => void }) {
   const [index, setIndex] = useState(0);
