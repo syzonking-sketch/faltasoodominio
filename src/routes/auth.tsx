@@ -6,6 +6,7 @@ import footballImage from "@/assets/auth-football.jpg";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { Onboarding } from "@/components/app/onboarding";
 import { PlayerAvatar, GENERIC_AVATARS } from "@/components/app/player-avatar";
 import { FieldError } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
@@ -46,6 +47,22 @@ function AuthPage() {
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
+  const [onboardingDone, setOnboardingDone] = useState(() => {
+    try {
+      return localStorage.getItem("the-match-onboarding-seen") === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  function finishOnboarding() {
+    try {
+      localStorage.setItem("the-match-onboarding-seen", "1");
+    } catch {
+      // localStorage indisponível: apenas segue para o acesso
+    }
+    setOnboardingDone(true);
+  }
 
   useEffect(() => {
     if (!loading && session) void navigate({ to: "/", replace: true });
@@ -138,6 +155,10 @@ function AuthPage() {
     }
     toast.success("Carteira do boleiro criada. Boa sorte!");
     void navigate({ to: "/", replace: true });
+  }
+
+  if (!loading && !session && !onboardingDone) {
+    return <Onboarding onFinish={finishOnboarding} />;
   }
 
   return (
