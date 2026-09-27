@@ -157,6 +157,10 @@ function AuthPage() {
     void navigate({ to: "/", replace: true });
   }
 
+  if (!loading && !session && !onboardingDone) {
+    return <Onboarding onFinish={finishOnboarding} />;
+  }
+
   return (
     <div className="dark flex min-h-dvh items-center justify-center bg-nav text-foreground md:p-6">
       <main className="relative isolate flex min-h-dvh w-full max-w-[375px] flex-col overflow-hidden bg-background md:min-h-[min(780px,calc(100dvh-48px))] md:rounded-[32px] md:border md:border-border md:shadow-2xl">
