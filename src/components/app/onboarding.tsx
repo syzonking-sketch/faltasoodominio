@@ -34,7 +34,7 @@ const PILL_AVATARS = GENERIC_AVATARS.slice(0, 3);
 
 export function Onboarding({ onFinish }: { onFinish: () => void }) {
   const [index, setIndex] = useState(0);
-  const slide = SLIDES[index];
+  const slide = SLIDES[index] ?? SLIDES[0]!;
   const isLast = index === SLIDES.length - 1;
 
   return (
