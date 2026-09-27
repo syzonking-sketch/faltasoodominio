@@ -6,6 +6,7 @@ import footballImage from "@/assets/auth-football.jpg";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
+import { Onboarding } from "@/components/app/onboarding";
 import { PlayerAvatar, GENERIC_AVATARS } from "@/components/app/player-avatar";
 import { FieldError } from "@/components/app/states";
 import { Button } from "@/components/ui/button";
