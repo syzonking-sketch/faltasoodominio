@@ -47,6 +47,22 @@ function AuthPage() {
   const [showSignInPassword, setShowSignInPassword] = useState(false);
   const [showSignUpPassword, setShowSignUpPassword] = useState(false);
   const [activeTab, setActiveTab] = useState("signin");
+  const [onboardingDone, setOnboardingDone] = useState(() => {
+    try {
+      return localStorage.getItem("the-match-onboarding-seen") === "1";
+    } catch {
+      return false;
+    }
+  });
+
+  function finishOnboarding() {
+    try {
+      localStorage.setItem("the-match-onboarding-seen", "1");
+    } catch {
+      // localStorage indisponível: apenas segue para o acesso
+    }
+    setOnboardingDone(true);
+  }
 
   useEffect(() => {
     if (!loading && session) void navigate({ to: "/", replace: true });
