@@ -2,27 +2,31 @@ import { useState } from "react";
 import authImage from "@/assets/auth-football.jpg";
 import matchesImage from "@/assets/matches-hero.jpg";
 import radarImage from "@/assets/radar-football.jpg";
+import { GENERIC_AVATARS } from "@/components/app/player-avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+const PILL_AVATARS = GENERIC_AVATARS.slice(0, 3);
 
 const SLIDES = [
   {
     image: authImage,
     title: ["ACHE O", "PRÓXIMO", "JOGO"],
+    pill: "PARTIDAS PERTO DE VOCÊ",
     subtitle:
       "Descubra partidas no seu bairro, veja horários reais e entre em quadra quando quiser.",
   },
   {
     image: radarImage,
     title: ["AVALIE", "QUEM", "JOGOU"],
-    subtitle:
-      "Dê notas de verdade depois do jogo e construa sua reputação na várzea.",
+    pill: "NOTAS DE JOGADORES REAIS",
+    subtitle: "Dê notas de verdade depois do jogo e construa sua reputação na várzea.",
   },
   {
     image: matchesImage,
     title: ["SUBA NO", "RANKING", "DA VÁRZEA"],
-    subtitle:
-      "Evolua a cada partida e dispute o topo do ranking da sua região.",
+    pill: "RANKING DA SUA REGIÃO",
+    subtitle: "Evolua a cada partida e dispute o topo do ranking da sua região.",
   },
 ];
 
@@ -52,10 +56,7 @@ export function Onboarding({ onFinish }: { onFinish: () => void }) {
       </header>
 
       <div className="relative z-10 mt-auto flex flex-col px-6 pb-[max(28px,env(safe-area-inset-bottom))]">
-        <div
-          key={`content-${index}`}
-          className="onboarding-fade flex flex-col items-center"
-        >
+        <div key={`content-${index}`} className="onboarding-fade flex flex-col items-center">
           <div className="flex items-center gap-2 rounded-full bg-black/45 py-1.5 pr-4 pl-2 ring-1 ring-white/15 backdrop-blur-sm">
             <div className="flex -space-x-2">
               {PILL_AVATARS.map((avatar) => (
