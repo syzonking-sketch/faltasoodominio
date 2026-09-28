@@ -1,6 +1,6 @@
 {
-  "name": "The Match",
-  "short_name": "The Match",
+  "name": "The Matches",
+  "short_name": "The Matches",
   "description": "Organize e gerencie suas partidas de futebol com facilidade.",
   "start_url": "/",
   "display": "standalone",

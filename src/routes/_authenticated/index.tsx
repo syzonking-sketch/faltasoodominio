@@ -28,13 +28,13 @@ const MapRadar = lazy(() => import("@/components/app/map-radar"));
 export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
-      { title: "Radar de Peladas — The Match" },
+      { title: "Radar de Peladas — The Matches" },
       {
         name: "description",
         content:
           "Mapa ao vivo das quadras e campos com partidas acontecendo agora perto de você. Entre como jogador ou telespectador.",
       },
-      { property: "og:title", content: "Radar de Peladas — The Match" },
+      { property: "og:title", content: "Radar de Peladas — The Matches" },
       { property: "og:type", content: "website" },
       {
         property: "og:description",
@@ -217,8 +217,8 @@ function MapPage() {
         <header className="pt-safe pb-6">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <div className="flex min-w-0 items-center gap-2">
-              <img src={logoAsset.url} alt="The Match" className="size-7 shrink-0 rounded-lg object-cover" />
-              <span className="text-display truncate text-sm font-bold tracking-tight text-foreground">The Match</span>
+              <img src={logoAsset.url} alt="The Matches" className="size-7 shrink-0 rounded-lg object-cover" />
+              <span className="text-display truncate text-sm font-bold tracking-tight text-foreground">The Matches</span>
             </div>
             <NotificationsBell className="size-11 shrink-0 border-border/50 bg-surface/90" />
           </div>

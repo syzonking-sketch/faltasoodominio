@@ -38,7 +38,7 @@ export function IosInstallPrompt() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Instale o The Match no seu iPhone"
+      aria-label="Instale o The Matches no seu iPhone"
       className="fixed inset-0 z-[120] flex items-end justify-center bg-black/70 px-4 pb-[max(env(safe-area-inset-bottom),1rem)] backdrop-blur-sm animate-in fade-in duration-200 sm:items-center"
       onClick={() => setVisible(false)}
     >
@@ -58,12 +58,12 @@ export function IosInstallPrompt() {
 
           <img
             src={logoAsset.url}
-            alt="Logo do The Match"
+            alt="Logo do The Matches"
             className="size-20 rounded-3xl border border-border object-cover shadow-lg"
           />
 
           <h2 className="text-display mt-4 text-2xl font-extrabold leading-tight">
-            Adicione o The Match à sua Tela de Início
+            Adicione o The Matches à sua Tela de Início
           </h2>
           <p className="mt-1.5 text-sm text-muted-foreground">
             Instale o app no seu iPhone para ter a experiência completa.

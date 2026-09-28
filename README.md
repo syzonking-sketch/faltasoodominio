@@ -1,14 +1,14 @@
-# Remix of The Match
+# Remix of The Matches
 
 Atue como Senior Software Architect, Full-Stack Developer, Product Manager, UX/UI Designer, PWA Specialist, React/TypeScript Specialist, Supabase/PostgreSQL Specialist e Security Engineer. 
 
-Construa uma aplicação web mobile-first completa chamada "The Match", projetada estritamente como um PWA (Progressive Web App) instalável, responsiva de 320px até telas ultrawide desktop, utilizando React, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, React Hook Form, Zod e Supabase.
+Construa uma aplicação web mobile-first completa chamada "The Matches", projetada estritamente como um PWA (Progressive Web App) instalável, responsiva de 320px até telas ultrawide desktop, utilizando React, TypeScript, Vite, Tailwind CSS, shadcn/ui, TanStack Query, React Hook Form, Zod e Supabase.
 
 ---
 
 ### 1. CONCEITO E OBJETIVO DO APLICATIVO
 
-"The Match" é a plataforma definitiva de futebol amador e de várzea em tempo real. Funciona com um mapa interativo estilo GPS/Pokémon GO onde quadras e campos exibem partidas ativas criadas e encerradas pelos próprios usuários. O app integra:
+"The Matches" é a plataforma definitiva de futebol amador e de várzea em tempo real. Funciona com um mapa interativo estilo GPS/Pokémon GO onde quadras e campos exibem partidas ativas criadas e encerradas pelos próprios usuários. O app integra:
 
 - Mapeamento de partidas ao vivo com separação de papéis (Jogadores e Telespectadores).
 

@@ -1,5 +1,5 @@
 -- ============================================================================
--- The Match — Escalação do Contra (titulares, reservas e goleiro)
+-- The Matches — Escalação do Contra (titulares, reservas e goleiro)
 -- Rode este arquivo UMA VEZ no SQL Editor do Supabase.
 -- ============================================================================
 

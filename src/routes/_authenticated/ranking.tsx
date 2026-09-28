@@ -27,12 +27,12 @@ type RankingMode = "players" | "teams";
 export const Route = createFileRoute("/_authenticated/ranking")({
   head: () => ({
     meta: [
-      { title: "Ranking — The Match" },
+      { title: "Ranking — The Matches" },
       {
         name: "description",
-        content: "Acompanhe os jogadores mais bem avaliados do The Match e encontre sua posição no ranking.",
+        content: "Acompanhe os jogadores mais bem avaliados do The Matches e encontre sua posição no ranking.",
       },
-      { property: "og:title", content: "Ranking — The Match" },
+      { property: "og:title", content: "Ranking — The Matches" },
       {
         property: "og:description",
         content: "O pódio dos jogadores mais bem avaliados do futebol amador.",
@@ -207,7 +207,7 @@ function RankingPage() {
                   className="border-primary/60"
                 />
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold tracking-wider text-primary uppercase">The Match</p>
+                  <p className="text-xs font-semibold tracking-wider text-primary uppercase">The Matches</p>
                   <h1 className="text-display truncate text-3xl leading-none font-bold text-foreground">Ranking</h1>
                 </div>
               </div>
@@ -236,7 +236,7 @@ function RankingPage() {
                   </div>
                   <h2 className="text-display mt-5 text-2xl font-bold text-foreground">Ranking de times em preparação</h2>
                   <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
-                    A classificação aparecerá quando o The Match tiver uma pontuação oficial de equipes. Nenhum resultado será estimado.
+                    A classificação aparecerá quando o The Matches tiver uma pontuação oficial de equipes. Nenhum resultado será estimado.
                   </p>
                   <Button type="button" variant="secondary" className="mt-6 h-11 rounded-full px-5" onClick={() => setMode("players")}>
                     Ver jogadores <ChevronRight className="size-4" />
