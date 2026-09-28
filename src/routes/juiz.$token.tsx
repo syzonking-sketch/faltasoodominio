@@ -20,9 +20,9 @@ import type { MatchEventType, TeamSide } from "@/lib/types";
 export const Route = createFileRoute("/juiz/$token")({
   head: () => ({
     meta: [
-      { title: "Súmula do juiz — The Match" },
+      { title: "Súmula do juiz — The Matches" },
       { name: "description", content: "Registre gols, cartões e substituições do contra em tempo real." },
-      { property: "og:title", content: "Súmula do juiz — The Match" },
+      { property: "og:title", content: "Súmula do juiz — The Matches" },
       { property: "og:description", content: "Registre gols, cartões e substituições do contra em tempo real." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

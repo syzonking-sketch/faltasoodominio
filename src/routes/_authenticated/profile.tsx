@@ -49,15 +49,15 @@ import type { MatchWithRelations } from "@/lib/types";
 export const Route = createFileRoute("/_authenticated/profile")({
   head: () => ({
     meta: [
-      { title: "Perfil do jogador — The Match" },
+      { title: "Perfil do jogador — The Matches" },
       {
         name: "description",
-        content: "Seu perfil no The Match com partidas, nota, gols e cartões registrados.",
+        content: "Seu perfil no The Matches com partidas, nota, gols e cartões registrados.",
       },
-      { property: "og:title", content: "Perfil do jogador — The Match" },
+      { property: "og:title", content: "Perfil do jogador — The Matches" },
       {
         property: "og:description",
-        content: "Partidas e desempenho real do jogador no The Match.",
+        content: "Partidas e desempenho real do jogador no The Matches.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

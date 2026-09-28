@@ -59,13 +59,13 @@ import type { Confronto, MatchEventType, TeamSide } from "@/lib/types";
 export const Route = createFileRoute("/_authenticated/teams/confrontos")({
   head: () => ({
     meta: [
-      { title: "Contras entre Times — The Match" },
+      { title: "Contras entre Times — The Matches" },
       {
         name: "description",
         content:
           "Agende confrontos entre times e acompanhe placar, gols e cartões com súmula validada pelo juiz.",
       },
-      { property: "og:title", content: "Contras entre Times — The Match" },
+      { property: "og:title", content: "Contras entre Times — The Matches" },
       {
         property: "og:description",
         content: "Confrontos entre times com súmula oficial, gols e cartões registrados pelo juiz.",
@@ -470,7 +470,7 @@ function ConfrontosPage() {
                 <Link to="/teams"><ArrowLeft className="size-5" /></Link>
               </Button>
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold tracking-[0.18em] text-primary uppercase">The Match</p>
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-primary uppercase">The Matches</p>
                 <h1 className="text-display truncate text-2xl leading-none font-extrabold text-foreground">Contras</h1>
               </div>
             </div>

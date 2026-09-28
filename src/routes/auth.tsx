@@ -22,13 +22,13 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Entrar no The Match — Futebol de várzea ao vivo" },
+      { title: "Entrar no The Matches — Futebol de várzea ao vivo" },
       {
         name: "description",
         content:
-          "Crie sua conta no The Match e encontre peladas ao vivo perto de você, avalie jogadores e dispute o ranking da várzea.",
+          "Crie sua conta no The Matches e encontre peladas ao vivo perto de você, avalie jogadores e dispute o ranking da várzea.",
       },
-      { property: "og:title", content: "Entrar no The Match" },
+      { property: "og:title", content: "Entrar no The Matches" },
       {
         property: "og:description",
         content: "A plataforma do futebol amador em tempo real: radar de partidas, times e ranking.",
@@ -170,14 +170,14 @@ function AuthPage() {
         <header className="flex flex-col items-start px-6 pt-[clamp(70px,13dvh,100px)] pb-9">
           <div className="flex items-center gap-3">
             <img src="/logo.webp" alt="TM" className="size-10 shrink-0 rounded-lg object-cover" />
-            <span className="text-display text-[25px] font-extrabold leading-none text-foreground">THE MATCH</span>
+            <span className="text-display text-[25px] font-extrabold leading-none text-foreground">THE MATCHES</span>
           </div>
           <p className="mt-2 text-[9px] font-bold uppercase text-foreground/80">RADAR PRO · NOTAS REAIS · RANKING ELITE</p>
         </header>
 
         <section className="mt-auto rounded-t-[28px] border-t border-border/70 bg-background/95 px-6 pt-6 pb-[max(22px,env(safe-area-inset-bottom))] md:rounded-b-[32px]">
           <h1 className="text-display text-[38px] leading-[0.95] font-extrabold italic text-foreground">
-            ENTRE NO<br /><span className="text-primary">THE MATCH</span>
+            ENTRE NO<br /><span className="text-primary">THE MATCHES</span>
           </h1>
           <p className="mt-2 text-xs text-foreground/85">Encontre sua próxima partida.</p>
 

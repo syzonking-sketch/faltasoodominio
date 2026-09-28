@@ -63,15 +63,15 @@ import type { Confronto, Profile, Team } from "@/lib/types";
 export const Route = createFileRoute("/_authenticated/teams/")({
   head: () => ({
     meta: [
-      { title: "Times — The Match" },
+      { title: "Times — The Matches" },
       {
         name: "description",
         content: "Gerencie seu elenco, acompanhe o desempenho e encontre times de futebol perto de você.",
       },
-      { property: "og:title", content: "Times — The Match" },
+      { property: "og:title", content: "Times — The Matches" },
       {
         property: "og:description",
-        content: "Sua central de times, elencos e confrontos no The Match.",
+        content: "Sua central de times, elencos e confrontos no The Matches.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -313,9 +313,9 @@ function TeamsPage() {
         <div className="mx-auto w-full max-w-2xl px-4">
           <header className="pt-safe flex items-center justify-between gap-3 pb-5">
             <div className="flex min-w-0 items-center gap-2.5">
-              <img src={logoAsset.url} alt="The Match" className="size-9 rounded-xl object-cover" />
+              <img src={logoAsset.url} alt="The Matches" className="size-9 rounded-xl object-cover" />
               <div className="min-w-0">
-                <p className="text-[10px] font-semibold tracking-[0.18em] text-primary uppercase">The Match</p>
+                <p className="text-[10px] font-semibold tracking-[0.18em] text-primary uppercase">The Matches</p>
                 <h1 className="text-display truncate text-2xl leading-none font-extrabold text-foreground">Times</h1>
               </div>
             </div>
