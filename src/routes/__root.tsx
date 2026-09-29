@@ -82,6 +82,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" },
       { title: "The Matches" },
       { name: "description", content: "O app premium da galera do bairro: veja quem está jogando perto de você e entre em campo agora!" },
+      { name: "theme-color", content: "#101812" },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "The Matches" },
       { property: "og:description", content: "O app premium da galera do bairro: veja quem está jogando perto de você e entre em campo agora!" },
