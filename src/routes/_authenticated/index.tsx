@@ -9,7 +9,6 @@ import { AppShell } from "@/components/app/app-shell";
 import { ClientOnly } from "@/components/app/client-only";
 import { MatchDrawer } from "@/components/app/match-drawer";
 import { RadarMatchCard } from "@/components/app/radar-match-card";
-import logoAsset from "@/assets/logo.jpg.asset.json";
 
 
 import type { RadarPin } from "@/components/app/map-radar";
@@ -217,7 +216,7 @@ function MapPage() {
         <header className="pt-safe pb-6">
           <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
             <div className="flex min-w-0 items-center gap-2">
-              <img src={logoAsset.url} alt="The Matches" className="size-7 shrink-0 rounded-lg object-cover" />
+              <img src="/logo.webp" alt="The Matches" className="size-7 shrink-0 rounded-lg object-cover" />
               <span className="text-display truncate text-sm font-bold tracking-tight text-foreground">The Matches</span>
             </div>
             <NotificationsBell className="size-11 shrink-0 border-border/50 bg-surface/90" />

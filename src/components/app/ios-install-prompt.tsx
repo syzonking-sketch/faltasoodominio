@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Share, PlusSquare, X } from "lucide-react";
-import logoAsset from "@/assets/logo.jpg.asset.json";
 
 function isIosDevice(): boolean {
   if (typeof navigator === "undefined") return false;
@@ -57,7 +56,7 @@ export function IosInstallPrompt() {
           </button>
 
           <img
-            src={logoAsset.url}
+             src="/logo.webp"
             alt="Logo do The Matches"
             className="size-20 rounded-3xl border border-border object-cover shadow-lg"
           />
