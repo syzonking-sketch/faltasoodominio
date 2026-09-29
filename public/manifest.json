@@ -1,23 +1,45 @@
 {
   "name": "The Matches",
   "short_name": "The Matches",
-  "description": "Organize e gerencie suas partidas de futebol com facilidade.",
+  "description": "Encontre partidas de futebol perto de você, jogue com a galera do bairro e acompanhe seus times e ranking.",
+  "id": "/",
   "start_url": "/",
+  "scope": "/",
+  "lang": "pt-BR",
   "display": "standalone",
-  "background_color": "#020617",
-  "theme_color": "#d4af37",
+  "background_color": "#101812",
+  "theme_color": "#101812",
   "icons": [
     {
       "src": "/icons/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
+  ],
+  "screenshots": [
+    { "src": "/screenshots/radar.webp", "sizes": "720x1252", "type": "image/webp", "form_factor": "narrow", "label": "Radar: partidas perto de você" },
+    { "src": "/screenshots/partidas.webp", "sizes": "706x1280", "type": "image/webp", "form_factor": "narrow", "label": "Partidas: escolha onde e quando jogar" },
+    { "src": "/screenshots/times.webp", "sizes": "720x1191", "type": "image/webp", "form_factor": "narrow", "label": "Times: acompanhe seu elenco" },
+    { "src": "/screenshots/perfil.webp", "sizes": "720x1241", "type": "image/webp", "form_factor": "narrow", "label": "Perfil: seus jogos" },
+    { "src": "/screenshots/ranking.webp", "sizes": "720x1211", "type": "image/webp", "form_factor": "narrow", "label": "Ranking: melhores jogadores" }
   ]
 }
