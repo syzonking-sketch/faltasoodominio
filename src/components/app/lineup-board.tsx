@@ -3,7 +3,6 @@ import { Loader2, Shirt, UserPlus } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import campoConfronto from "@/assets/confronto-campo.png.asset.json";
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -164,7 +163,7 @@ export function LineupBoard({ confronto }: { confronto: Confronto }) {
 
       <div className="relative isolate aspect-[3/4] w-full overflow-hidden rounded-3xl border border-primary/30 bg-surface-2 shadow-raised">
         <img
-          src={campoConfronto.url}
+           src="/images/confronto-campo.png"
           alt="Campo de futebol"
           className="absolute inset-0 size-full rotate-90 scale-[1.34] object-cover"
         />

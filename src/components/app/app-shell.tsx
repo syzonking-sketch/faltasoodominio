@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import logoAsset from "@/assets/logo.jpg.asset.json";
 import { BottomNav } from "./bottom-nav";
 
 export function AppShell({
@@ -22,7 +21,7 @@ export function AppShell({
           <div className="mx-auto flex max-w-2xl items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
               <img
-                src={logoAsset.url}
+                 src="/logo.webp"
                 alt="Logo"
                 className="size-9 rounded-xl border border-border object-cover"
               />

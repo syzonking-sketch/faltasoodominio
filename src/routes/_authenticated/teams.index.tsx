@@ -27,7 +27,6 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import fallbackFootballImage from "@/assets/matches-hero.jpg";
-import logoAsset from "@/assets/logo.jpg.asset.json";
 import { AppShell } from "@/components/app/app-shell";
 import { PlayerAvatar } from "@/components/app/player-avatar";
 import { ErrorState, FieldError } from "@/components/app/states";
@@ -313,7 +312,7 @@ function TeamsPage() {
         <div className="mx-auto w-full max-w-2xl px-4">
           <header className="pt-safe flex items-center justify-between gap-3 pb-5">
             <div className="flex min-w-0 items-center gap-2.5">
-              <img src={logoAsset.url} alt="The Matches" className="size-9 rounded-xl object-cover" />
+              <img src="/logo.webp" alt="The Matches" className="size-9 rounded-xl object-cover" />
               <div className="min-w-0">
                 <p className="text-[10px] font-semibold tracking-[0.18em] text-primary uppercase">The Matches</p>
                 <h1 className="text-display truncate text-2xl leading-none font-extrabold text-foreground">Times</h1>

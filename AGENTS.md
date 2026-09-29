@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Keep the installable PWA manifest and its screenshots/icons as static `public/` files so all assets resolve on Netlify and Lovable; do not add an app-shell service worker without an offline requirement.
+- Keep shared brand and field imagery under `public/` with file extensions matching their actual formats, and use local root-relative URLs; Netlify does not serve Lovable's `/__l5e/assets-v1/` routes.
