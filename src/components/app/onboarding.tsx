@@ -26,7 +26,7 @@ const SLIDES = [
     pill: "RANKING DA SUA REGIÃO",
     subtitle: "Evolua a cada partida e dispute o topo do ranking da sua região.",
   },
-];
+] as const;
 
 const PILL_AVATARS = GENERIC_AVATARS.slice(0, 3);
 
