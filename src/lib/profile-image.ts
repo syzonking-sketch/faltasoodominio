@@ -35,7 +35,9 @@ async function loadPhoto(file: File): Promise<LoadedImage> {
       // Import only when needed: the decoder is large and must never run during SSR.
       const { default: heic2any } = await import("heic2any");
       const converted = await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 });
-      return await loadImage(Array.isArray(converted) ? converted[0] : converted);
+      const imageBlob = Array.isArray(converted) ? converted[0] : converted;
+      if (!imageBlob) throw new Error("Foto vazia.");
+      return await loadImage(imageBlob);
     } catch {
       throw new Error("Não foi possível abrir esta foto do iPhone. Tente salvar como JPEG e enviar novamente.");
     }
