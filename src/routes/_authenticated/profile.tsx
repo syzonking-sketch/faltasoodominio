@@ -354,7 +354,7 @@ function ProfilePage() {
                     <Button type="button" size="icon" aria-label="Alterar foto do perfil" disabled={compressingAvatar} onClick={() => avatarInputRef.current?.click()} className="absolute -right-1 -bottom-1 size-8 rounded-full border-2 border-background shadow-raised">
                       <Camera className="size-4" />
                     </Button>
-                    <input ref={avatarInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/heic,image/heif" className="sr-only" onChange={(event) => void selectAvatar(event.target.files?.[0])} />
+                    <input ref={avatarInputRef} type="file" accept="image/*,.heic,.heif,.heics,.heifs" className="sr-only" onChange={(event) => void selectAvatar(event.target.files?.[0])} />
                   </div>
 <NotificationsBell />
                 </div>
