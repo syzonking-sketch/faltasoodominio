@@ -37,7 +37,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
 
 function PrivacyPage() {
   return (
-    <div className="min-h-dvh bg-background">
+    <div className="dark min-h-dvh bg-background text-foreground">
       <main className="mx-auto max-w-2xl px-4 pt-10 pb-16">
         <Link to="/auth" className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground">
           ← Voltar
