@@ -25,7 +25,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { createMatch, createVenue, fetchMatches, fetchVenues } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { distanceMeters, formatDistance, GPS_CHECKIN_RADIUS, reverseGeocode, useGeolocation, type Coords } from "@/lib/geo";
+import { distanceMeters, formatDistance, GPS_CHECKIN_RADIUS, isWithinRadius, reverseGeocode, useGeolocation, type Coords } from "@/lib/geo";
 import { effectiveStatus, matchStart } from "@/lib/match-utils";
 import { friendlyError } from "@/lib/supabase";
 import type { MatchWithRelations } from "@/lib/types";
@@ -133,7 +133,10 @@ function MatchesPage() {
   });
   const venuesQuery = useQuery({ queryKey: ["venues", ""], queryFn: () => fetchVenues() });
 
-  const venues = venuesQuery.data ?? [];
+  const venues = useMemo(
+    () => (venuesQuery.data ?? []).filter((v) => isWithinRadius(coords, v)),
+    [venuesQuery.data, coords],
+  );
   const [venueId, setVenueId] = useState<string | null>(null);
   const [venuePickerOpen, setVenuePickerOpen] = useState(false);
   const [venueDialogOpen, setVenueDialogOpen] = useState(false);
@@ -212,23 +215,23 @@ function MatchesPage() {
   const live = useMemo(
     () =>
       (activeQuery.data ?? []).filter(
-        (m) => effectiveStatus(m) === "active" && matchStart(m).getTime() <= Date.now(),
+        (m) => effectiveStatus(m) === "active" && matchStart(m).getTime() <= Date.now() && isWithinRadius(coords, m.venue),
       ),
-    [activeQuery.data],
+    [activeQuery.data, coords],
   );
   const upcoming = useMemo(
     () =>
       (activeQuery.data ?? []).filter(
-        (m) => effectiveStatus(m) === "active" && matchStart(m).getTime() > Date.now(),
+        (m) => effectiveStatus(m) === "active" && matchStart(m).getTime() > Date.now() && isWithinRadius(coords, m.venue),
       ),
-    [activeQuery.data],
+    [activeQuery.data, coords],
   );
   const finished = useMemo(
     () => [
       ...(finishedQuery.data ?? []),
       ...(activeQuery.data ?? []).filter((m) => effectiveStatus(m) !== "active"),
-    ],
-    [activeQuery.data, finishedQuery.data],
+    ].filter((m) => isWithinRadius(coords, m.venue)),
+    [activeQuery.data, finishedQuery.data, coords],
   );
 
   const distanceToVenue =

@@ -302,3 +302,18 @@ export async function reverseGeocode(lat: number, lng: number): Promise<{ addres
     return { address: "", city: "", state: "" };
   }
 }
+/** Raio (metros) para considerar partidas e campos "perto" do usuário. */
+export const NEARBY_RADIUS_METERS = 30000;
+
+/** True quando o local está dentro do raio; sem referência ou sem coordenadas, não filtra. */
+export function isWithinRadius(
+  ref: Coords | null | undefined,
+  place: { latitude?: unknown; longitude?: unknown } | null | undefined,
+  radius = NEARBY_RADIUS_METERS,
+): boolean {
+  if (!ref) return true;
+  const lat = Number(place?.latitude);
+  const lng = Number(place?.longitude);
+  if (!place || !Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+  return distanceMeters(ref, { lat, lng }) <= radius;
+}

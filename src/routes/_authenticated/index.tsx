@@ -19,7 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchMatches, fetchVenues } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { distanceMeters, formatDistance, useGeolocation } from "@/lib/geo";
+import { distanceMeters, formatDistance, isWithinRadius, useGeolocation } from "@/lib/geo";
 import { friendlyError } from "@/lib/supabase";
 
 const MapRadar = lazy(() => import("@/components/app/map-radar"));
@@ -86,7 +86,7 @@ function MapPage() {
     });
 
     if (coords) {
-      return [...withValidVenue].sort((a, b) => {
+      return withValidVenue.filter((m) => isWithinRadius(coords, m.venue)).sort((a, b) => {
         const distanceA = distanceMeters(coords, { lat: Number(a.venue?.latitude), lng: Number(a.venue?.longitude) });
         const distanceB = distanceMeters(coords, { lat: Number(b.venue?.latitude), lng: Number(b.venue?.longitude) });
         return distanceA - distanceB;

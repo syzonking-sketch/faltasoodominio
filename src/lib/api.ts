@@ -50,7 +50,13 @@ export async function createVenue(input: {
   latitude: number;
   longitude: number;
 }): Promise<Venue> {
-  return unwrap<Venue>(await supabase.from("venues").insert(input).select("*").single());
+  const first = await supabase.from("venues").insert(input).select("*").single();
+  // Banco sem as colunas city/state (schema antigo): salva sem elas em vez de falhar.
+  if (first.error && /column/i.test(first.error.message) && /(city|state)/i.test(first.error.message)) {
+    const { city: _c, state: _s, ...rest } = input;
+    return unwrap<Venue>(await supabase.from("venues").insert(rest).select("*").single());
+  }
+  return unwrap<Venue>(first);
 }
 
 /* --------------------------------- Matches --------------------------------- */
