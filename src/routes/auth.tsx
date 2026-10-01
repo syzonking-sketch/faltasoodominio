@@ -270,6 +270,12 @@ function AuthPage() {
               </form>
             </TabsContent>
           </Tabs>
+
+          <p className="mt-4 text-center">
+            <a href="/privacy" className="text-[11px] font-semibold text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline">
+              Política de Privacidade
+            </a>
+          </p>
         </section>
       </main>
     </div>

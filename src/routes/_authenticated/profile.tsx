@@ -464,6 +464,11 @@ function ProfilePage() {
                 <Button variant="ghost" className="h-12 w-full rounded-full text-destructive hover:bg-destructive/10" onClick={() => void signOut()}>
                   <LogOut className="size-4" /> Sair da conta
                 </Button>
+                <p className="mt-3 text-center">
+                  <a href="/privacy" className="text-[11px] font-semibold text-muted-foreground underline-offset-2 transition-colors hover:text-foreground hover:underline">
+                    Política de Privacidade
+                  </a>
+                </p>
               </div>
             </>
           )}

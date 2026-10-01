@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 // Troque pelo e-mail real de contato antes de publicar na Play Store.
@@ -25,7 +26,7 @@ export const Route = createFileRoute("/privacy")({
   component: PrivacyPage,
 });
 
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="mt-8">
       <h2 className="text-display text-lg font-bold text-foreground">{title}</h2>
